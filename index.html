@@ -65,6 +65,126 @@
             border-color: transparent !important;
         }
 
+        .idea-cta {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            will-change: transform, width, padding, border-radius, top, right;
+            transition: all 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+            background-size: 200% 100%;
+            animation: cta-shift 4s ease-in-out infinite, cta-glow 3s ease-in-out infinite;
+            box-shadow: 0 12px 30px -12px rgba(34, 211, 238, 0.75);
+        }
+
+        .idea-tagline {
+            display: inline-block;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, #67e8f9, #a5b4fc, #f9a8d4, #67e8f9);
+            background-size: 250% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: tagline-shift 4s linear infinite, tagline-float 2.8s ease-in-out infinite;
+            text-shadow: 0 0 24px rgba(103, 232, 249, 0.18);
+        }
+
+        .idea-cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,.32) 50%, transparent 75%);
+            transform: translateX(-120%);
+            animation: cta-shine 3.8s ease-in-out infinite;
+        }
+
+        .idea-cta::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            z-index: 0;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.2);
+            pointer-events: none;
+        }
+
+        .idea-cta:hover {
+            animation-duration: 1.5s, 1.2s;
+            box-shadow: 0 16px 35px -12px rgba(34, 211, 238, 0.55);
+            transform: translateY(-3px);
+        }
+
+        .idea-cta.is-floating {
+            position: fixed;
+            top: 0.75rem;
+            right: max(1rem, calc((100vw - 56rem) / 2));
+            z-index: 45;
+            width: var(--floating-cta-width) !important;
+            height: var(--floating-cta-height) !important;
+            min-width: 0;
+            min-height: 0;
+            padding: 0.5rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            gap: 0.4rem;
+            align-items: center;
+            box-shadow: 0 12px 28px -10px rgba(34, 211, 238, 0.8);
+            transform: translateY(0) scale(1);
+            transition: width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                padding 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                border-radius 0.42s ease,
+                top 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                right 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.42s ease;
+            transition-property: width, padding, border-radius, top, right, transform, box-shadow;
+        }
+
+        .idea-cta.is-floating:hover {
+            transform: translateY(0) scale(1);
+        }
+
+        .idea-cta.is-floating::after {
+            inset: 1px;
+            border-radius: 9999px;
+        }
+
+        .idea-cta.is-floating svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .idea-cta span,
+        .idea-cta svg {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes cta-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes cta-glow {
+            0%, 100% { filter: saturate(1) brightness(1); }
+            50% { filter: saturate(1.25) brightness(1.08); }
+        }
+
+        @keyframes cta-shine {
+            0%, 35% { transform: translateX(-120%); }
+            65%, 100% { transform: translateX(120%); }
+        }
+
+        @keyframes tagline-shift {
+            to { background-position: 250% center; }
+        }
+
+        @keyframes tagline-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+
         .status-panel {
             opacity: 0;
             max-height: 0;
@@ -98,7 +218,7 @@
     <!-- TOP NAVIGATION BAR -->
     <header class="sticky top-0 z-40 glass-nav px-4 py-3 transition-all duration-300">
         <div class="max-w-4xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
+            <div id="brandBlock" class="flex items-center gap-3">
                 <img src="avh.png" alt="AVH Logo" class="h-10 w-auto object-contain hover:scale-105 transition-transform duration-200" onerror="this.src='https://placehold.co/100x100/6366f1/ffffff?text=AVH'">
                 <div>
                     <h1 class="font-extrabold text-lg leading-none bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">AVH IDEENBOX</h1>
@@ -106,32 +226,37 @@
                 </div>
             </div>
 
-            <button id="openModalBtn" class="bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white text-sm font-bold py-2 px-4 rounded-full flex items-center gap-2 shadow-lg shadow-indigo-500/25 active:scale-95 transition-all duration-200">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                <span>Idee einreichen</span>
-            </button>
         </div>
     </header>
 
     <!-- MAIN CONTENT CONTAINER -->
     <main class="max-w-4xl mx-auto w-full px-4 pt-6 flex-grow">
 
-        <!-- SCHÜLERSPRECHER WELCOME BANNER -->
-        <div class="glass-card rounded-3xl p-5 mb-8 relative overflow-hidden flex flex-col md:flex-row items-center gap-5 border border-indigo-500/20">
-            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div class="relative shrink-0">
-                <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 border-indigo-500/40 shadow-xl relative group">
-                    <img src="ich.png" alt="Schülersprecher Kandidat" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/150x150/4f46e5/ffffff?text=SV'">
-                </div>
-                <span class="absolute -bottom-2 -right-1 bg-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full text-white shadow">Wählt mich!</span>
-            </div>
+        <!-- IDEE EINREICHEN CTA -->
+        <div id="ideaCtaSection" class="mb-8 text-center">
+            <p class="idea-tagline text-base md:text-lg mb-4">Deine Idee ist mein Programm!</p>
+            <button id="mainIdeaButton" class="idea-cta group w-full bg-gradient-to-r from-brand-600 via-indigo-500 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white text-base font-extrabold py-4 px-8 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/25 active:scale-[0.99] transition-all duration-300">
+                <i data-lucide="lightbulb" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+                <span>Idee hinzufügen</span>
+            </button>
+        </div>
 
-            <div class="text-center md:text-left flex-1">
-                <h2 class="text-xl font-bold text-white mb-1">Hey! Hast du eine Idee für die Schule? 💡</h2>
-                <p class="text-xs md:text-sm text-gray-300 leading-relaxed">
-                    Egal ob neuer Kaffeeautomat, bessere Sitzplätze auf dem Schulhof oder neue Sportgeräte – stimme ab und reiche deine eigenen Vorschläge ein!
-                </p>
+        <div id="welcomeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+            <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300" id="welcomeContainer">
+                <button id="closeWelcomeIcon" type="button" aria-label="Willkommensfenster schließen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+                <div class="w-40 h-40 md:w-52 md:h-52 mx-auto rounded-3xl overflow-hidden border-2 border-indigo-500/40 shadow-xl mb-4">
+                    <img src="ich.png" alt="Schülersprecher" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300/4f46e5/ffffff?text=SV'">
+                </div>
+                <p class="text-xs uppercase tracking-[0.18em] text-indigo-300 font-bold">Schülersprecher-Kandidat</p>
+                <h2 class="text-2xl font-extrabold text-white mt-2">Deine Idee zählt.</h2>
+                <p class="text-sm text-gray-300 leading-relaxed mt-3">Ich sehe eure Ideen, kann Fragen dazu beantworten und euch Rückmeldung geben. Alles bleibt <strong class="font-extrabold text-white">anonym</strong>, damit niemand Angst haben muss, erkannt zu werden.</p>
+                <p class="text-sm text-indigo-200 font-semibold mt-4">Trau dich und füge eine Idee hinzu.</p>
+                <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button id="welcomeIdeaButton" type="button" class="flex-1 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all">Idee hinzufügen</button>
+                    <button id="closeWelcomeBtn" type="button" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-xl transition-all">Später</button>
+                </div>
             </div>
         </div>
 
@@ -208,14 +333,21 @@
                     </label>
                     <input type="text" id="ideaTitle" required maxlength="100" placeholder="z. B. Mehr Sitzgelegenheiten im Pausenhof" 
                            class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+                    <p id="titleError" class="hidden text-xs text-rose-300 mt-1"></p>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">
                         Beschreibung <span class="text-red-400">*</span>
                     </label>
-                    <textarea id="ideaDescription" required rows="4" maxlength="1000" placeholder="Beschreibe kurz, was verändert werden soll..." 
+                    <textarea id="ideaDescription" required rows="4" maxlength="1000" placeholder="Beschreibe kurz, was verändert werden soll..."
                               class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"></textarea>
+                    <div class="flex items-center justify-between gap-2 mt-2">
+                        <p id="descriptionError" class="hidden text-xs text-rose-300"></p>
+                        <button id="generateDescriptionBtn" type="button" class="ml-auto inline-flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-indigo-200 text-[11px] font-bold px-3 py-2 rounded-xl transition-all">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span id="generateDescriptionLabel">Beschreibung mit KI</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div>
@@ -228,7 +360,7 @@
 
                 <div id="aiProcessingState" class="hidden flex items-center gap-3 bg-brand-600/10 border border-brand-500/20 p-3 rounded-xl">
                     <div class="animate-spin rounded-full h-4 w-4 border-2 border-brand-500 border-t-transparent"></div>
-                    <span class="text-xs text-brand-300 font-medium">KI prüft Rechtschreibung, Relevanz & Duplikate...</span>
+                    <span id="aiProcessingLabel" class="text-xs text-brand-300 font-medium">KI prüft Rechtschreibung, Relevanz & Duplikate ... 10s</span>
                 </div>
 
                 <div class="pt-2 flex justify-end gap-3">
@@ -279,6 +411,7 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRucGtncW9lYmJweXV0b2luc2JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDQ3ODQsImV4cCI6MjEwNDAyMDc4NH0.4ez0lvMr0CDAVHf1QMfT-MuQOt6dniseMgBhuLYff-A";
 
         const GROQ_KEY = "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";
+        const QWEN_KEY = GROQ_KEY;
         const MISTRAL_KEY_1 = "8dlkpvm5IxRUm8rc9Otp6iiTK9xejUGM";
         const MISTRAL_KEY_2 = "pPJw3RadOLvoDnatop1cocCQU0TKwNsS";
         const GEMINI_KEY = "AQ.Ab8RN6LB8xzPj0vSa1Dkp6tEkTE4cwH1EJG_TUHrzItQvp7tpw";
@@ -307,8 +440,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             setupModalListeners();
+            setupWelcomeModal();
+            setupScrollCta();
+            document.getElementById('generateDescriptionBtn').addEventListener('click', generateDescription);
             document.getElementById('statusRejectedBtn').addEventListener('click', () => toggleStatusPanel('rejected'));
             document.getElementById('statusDoneBtn').addEventListener('click', () => toggleStatusPanel('done'));
+            registerPlatformVisitor();
             loadIdeas();
         });
 
@@ -325,14 +462,6 @@
             const modal = document.getElementById('ideaModal');
             const container = document.getElementById('modalContainer');
 
-            document.getElementById('openModalBtn').addEventListener('click', () => {
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    container.classList.remove('scale-95');
-                }, 10);
-            });
-
             const closeModal = () => {
                 modal.classList.add('opacity-0');
                 container.classList.add('scale-95');
@@ -341,6 +470,138 @@
 
             document.getElementById('closeModalBtn').addEventListener('click', closeModal);
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+        }
+
+        function setupScrollCta() {
+            const section = document.getElementById('ideaCtaSection');
+            const button = document.getElementById('mainIdeaButton');
+            const header = document.querySelector('header');
+            const headerInner = header ? header.firstElementChild : null;
+            const brandBlock = document.getElementById('brandBlock');
+            if (!section || !button) return;
+
+            let floatThreshold = section.offsetTop + section.offsetHeight;
+            let isFloating = false;
+
+            const recalculateThreshold = () => {
+                if (!isFloating) {
+                    floatThreshold = section.offsetTop + section.offsetHeight;
+                }
+            };
+
+            const getFloatingWidth = () => {
+                const savedPadding = brandBlock.style.paddingRight;
+                brandBlock.style.paddingRight = '';
+                const menuWidth = brandBlock.getBoundingClientRect().width;
+                brandBlock.style.paddingRight = savedPadding;
+                return Math.max(150, Math.min(210, menuWidth * 0.5));
+            };
+
+            const getFloatingHeight = () => Math.round(headerInner.getBoundingClientRect().height);
+
+            const updateFloatingMetrics = () => {
+                if (!isFloating || !headerInner || !brandBlock) return;
+                const innerBox = headerInner.getBoundingClientRect();
+                const measuredWidth = getFloatingWidth();
+                const measuredHeight = getFloatingHeight();
+                button.style.setProperty('--floating-cta-width', `${Math.round(measuredWidth)}px`);
+                button.style.setProperty('--floating-cta-height', `${measuredHeight}px`);
+                button.style.right = `${Math.max(16, window.innerWidth - innerBox.right)}px`;
+                brandBlock.style.paddingRight = `${Math.round(measuredWidth + 16)}px`;
+            };
+
+            const updateCta = () => {
+                const shouldFloat = window.scrollY > floatThreshold;
+                if (shouldFloat === isFloating) return;
+
+                if (shouldFloat && headerInner && brandBlock) {
+                    const innerBox = headerInner.getBoundingClientRect();
+                    const measuredWidth = getFloatingWidth();
+                    const measuredHeight = getFloatingHeight();
+                    button.style.setProperty('--floating-cta-width', `${Math.round(measuredWidth)}px`);
+                    button.style.setProperty('--floating-cta-height', `${measuredHeight}px`);
+                    button.style.right = `${Math.max(16, window.innerWidth - innerBox.right)}px`;
+                    brandBlock.style.paddingRight = `${Math.round(measuredWidth + 16)}px`;
+                }
+
+                isFloating = shouldFloat;
+                button.classList.toggle('is-floating', shouldFloat);
+
+                if (!shouldFloat) {
+                    button.style.removeProperty('--floating-cta-width');
+                    button.style.removeProperty('--floating-cta-height');
+                    button.style.right = '';
+                    brandBlock.style.paddingRight = '';
+                }
+            };
+
+            window.addEventListener('scroll', updateCta, { passive: true });
+            window.addEventListener('resize', () => {
+                recalculateThreshold();
+                updateFloatingMetrics();
+                updateCta();
+            });
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', updateFloatingMetrics);
+            }
+            if (window.ResizeObserver && headerInner) {
+                new ResizeObserver(updateFloatingMetrics).observe(headerInner);
+            }
+            updateCta();
+        }
+
+        function setupWelcomeModal() {
+            const welcome = document.getElementById('welcomeModal');
+            const container = document.getElementById('welcomeContainer');
+            const openWelcome = () => {
+                welcome.classList.remove('hidden');
+                setTimeout(() => {
+                    welcome.classList.remove('opacity-0');
+                    container.classList.remove('scale-95');
+                }, 10);
+            };
+            const closeWelcome = () => {
+                welcome.classList.add('opacity-0');
+                container.classList.add('scale-95');
+                setTimeout(() => welcome.classList.add('hidden'), 300);
+            };
+
+            document.getElementById('mainIdeaButton').addEventListener('click', openModal);
+            document.getElementById('welcomeIdeaButton').addEventListener('click', () => {
+                closeWelcome();
+                openModal();
+            });
+            document.getElementById('closeWelcomeBtn').addEventListener('click', closeWelcome);
+            document.getElementById('closeWelcomeIcon').addEventListener('click', closeWelcome);
+
+            const visits = Number(localStorage.getItem('avh_visit_count') || '0') + 1;
+            localStorage.setItem('avh_visit_count', String(visits));
+            if (visits % 2 === 0) openWelcome();
+        }
+
+        function openModal() {
+            const modal = document.getElementById('ideaModal');
+            const container = document.getElementById('modalContainer');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                container.classList.remove('scale-95');
+            }, 10);
+        }
+
+        async function registerPlatformVisitor() {
+            if (!supabaseClient) return;
+            const visitorKey = 'avh_visitor_key';
+            let visitorId = localStorage.getItem(visitorKey);
+            if (!visitorId) {
+                visitorId = getOrCreateDeviceId();
+                localStorage.setItem(visitorKey, visitorId);
+            }
+
+            await supabaseClient.from('platform_visitors').upsert({
+                visitor_id: visitorId,
+                last_seen_at: new Date().toISOString()
+            }, { onConflict: 'visitor_id' });
         }
 
         // ==========================================
@@ -722,7 +983,7 @@
             return null;
         }
 
-        async function tryGroqApi(apiKey, model, prompt) {
+        async function tryGroqApi(apiKey, model, prompt, responseFormat = { type: "json_object" }) {
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
@@ -731,16 +992,23 @@
                         model: model,
                         messages: [{ role: 'user', content: prompt }],
                         temperature: 0.1,
-                        response_format: { type: "json_object" }
+                        response_format: responseFormat
                     })
                 });
-                if (!response.ok) return null;
+                if (!response.ok) {
+                    console.warn(`Groq ${model} antwortete mit HTTP ${response.status}.`);
+                    return null;
+                }
                 const data = await response.json();
                 return JSON.parse(data.choices[0].message.content.trim());
             } catch (e) { return null; }
         }
 
-        async function tryMistralApi(apiKey, model, prompt) {
+        async function tryQwenApi(apiKey, model, prompt, responseFormat = { type: "json_object" }) {
+            return tryGroqApi(apiKey, model, prompt, responseFormat);
+        }
+
+        async function tryMistralApi(apiKey, model, prompt, responseFormat = { type: "json_object" }) {
             try {
                 const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
                     method: 'POST',
@@ -749,29 +1017,104 @@
                         model: model || 'ministral-8b-2512',
                         messages: [{ role: 'user', content: prompt }],
                         temperature: 0.1,
-                        response_format: { type: "json_object" }
+                        response_format: responseFormat
                     })
                 });
-                if (!response.ok) return null;
+                if (!response.ok) {
+                    console.warn(`Mistral ${model} antwortete mit HTTP ${response.status}.`);
+                    return null;
+                }
                 const data = await response.json();
                 return JSON.parse(data.choices[0].message.content.trim());
-            } catch (e) { return null; }
+            } catch (e) {
+                console.warn(`Mistral ${model} konnte nicht verarbeitet werden.`, e);
+                return null;
+            }
         }
 
-        async function tryGeminiApi(apiKey, prompt) {
+        async function tryGeminiApi(apiKey, prompt, responseSchema = null) {
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json" }
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            ...(responseSchema ? { responseSchema } : {})
+                        }
                     })
                 });
-                if (!response.ok) return null;
+                if (!response.ok) {
+                    console.warn(`Gemini antwortete mit HTTP ${response.status}.`);
+                    return null;
+                }
                 const data = await response.json();
                 return JSON.parse(data.candidates[0].content.parts[0].text.trim());
-            } catch (e) { return null; }
+            } catch (e) {
+                console.warn('Gemini-Antwort konnte nicht verarbeitet werden.', e);
+                return null;
+            }
+        }
+
+        const geminiModerationSchema = {
+            type: "OBJECT",
+            properties: {
+                result: { type: "STRING", enum: ["OK", "CORRECTED", "DUPLICATE", "REJECTED"] },
+                corrected_title: { type: "STRING" },
+                corrected_description: { type: "STRING" },
+                duplicate_idea_id: { type: "STRING" },
+                reason: { type: "STRING" }
+            },
+            required: ["result", "corrected_title", "corrected_description", "duplicate_idea_id", "reason"]
+        };
+
+        const geminiCommentSchema = {
+            type: "OBJECT",
+            properties: { approved: { type: "BOOLEAN" } },
+            required: ["approved"]
+        };
+
+        const moderationSchema = {
+            type: "json_schema",
+            json_schema: {
+                name: "idea_moderation",
+                strict: true,
+                schema: {
+                    type: "object",
+                    properties: {
+                        result: { type: "string", enum: ["OK", "CORRECTED", "DUPLICATE", "REJECTED"] },
+                        corrected_title: { type: "string" },
+                        corrected_description: { type: "string" },
+                        duplicate_idea_id: { type: "string" },
+                        reason: { type: "string" }
+                    },
+                    required: ["result", "corrected_title", "corrected_description", "duplicate_idea_id", "reason"],
+                    additionalProperties: false
+                }
+            }
+        };
+
+        const commentSchema = {
+            type: "json_schema",
+            json_schema: {
+                name: "comment_moderation",
+                strict: true,
+                schema: {
+                    type: "object",
+                    properties: { approved: { type: "boolean" } },
+                    required: ["approved"],
+                    additionalProperties: false
+                }
+            }
+        };
+
+        function isValidModerationResult(result) {
+            return result && ['OK', 'CORRECTED', 'DUPLICATE', 'REJECTED'].includes(result.result)
+                && typeof result.corrected_title === 'string'
+                && typeof result.corrected_description === 'string'
+                && typeof result.duplicate_idea_id === 'string'
+                && typeof result.reason === 'string';
         }
 
         async function callAiModerationEngine(title, description) {
@@ -787,9 +1130,9 @@
 Du bist Moderator für eine Schulplattform.
 AUFGABE:
 1. Wenn die Idee beleidigend, obszön, vulgär, respektlos, hasserfüllt oder ein Schimpfwort enthält, dann REJECTED mit reason: "Verstoß: Beleidigende Sprache oder Schimpfwort erkannt."
-2. Wenn es ein echter, sinnvoller Schulvorschlag ist, dann OK oder CORRECTED. Dabei gilt ein Vorschlag als schulrelevant, wenn er konkrete Verbesserungsvorschläge für Schule, Unterricht, Pausenhof, Räume, Sport, Technik oder den Schulalltag beschreibt. Beispiele: "Mehr Sitzplätze im Pausenhof", "Neue Sportgeräte", "Besseres WLAN in den Klassenräumen".
+2. Wenn es ein echter, sinnvoller Schulvorschlag ist, dann OK oder CORRECTED. Dabei gilt ein Vorschlag als schulrelevant, wenn er Schule, Unterricht, Pausenhof, Räume, Sport, Technik, AGs, Clubs, Projekte oder den Schulalltag betrifft. Auch Vorschläge für neue oder bessere schulische Angebote wie eine Theater-AG, einen Chor, eine Kunst-AG, Workshops oder Schulveranstaltungen sind konkrete Schulvorschläge. Beispiele: "Mehr Sitzplätze im Pausenhof", "Neue Sportgeräte", "Besseres WLAN in den Klassenräumen", "Eine Theater-AG gründen".
 3. Wenn es Smalltalk, allgemeine Fragen oder keine konkrete Schulidee ist, dann REJECTED, reason: "Kein konkreter Schulvorschlag".
-4. Rechtschreibung korrigieren, aber den Stil nicht verändern. Das gilt für TITEL UND BESCHREIBUNG. Jeder Rechtschreibfehler muss korrigiert werden.
+4. Rechtschreibung korrigieren, aber den Stil und den Inhalt nicht verändern. Im TITEL dürfen ausschließlich Rechtschreibfehler korrigiert werden. Keine neuen Wörter, keine zusätzlichen Informationen, keine Umformulierung und keine Werbung im Titel. Das gilt außerdem für die BESCHREIBUNG. Jeder Rechtschreibfehler muss korrigiert werden.
 5. DUPLIKATE PRÜFEN: Vergleiche nicht nur wörtlich, sondern semantisch. Dasselbe Thema in anderer Formulierung zählt als Duplikat: z. B. "Mehr Sitzplätze im Pausenhof" und "Bessere Sitzgelegenheiten für die Pause" sind gleich. Es zählt auch als Duplikat, wenn Titel oder Beschreibung ähnlich sind, auch wenn ein Teil anders formuliert wurde.
 6. DU MUSST DIE BESCHREIBUNG MITBEACHTEN. Nicht nur den Titel. Ein Duplikat kann auch durch die Beschreibung erkannt werden.
 7. EXISTIERENDE IDEEN: ${JSON.stringify(existingIdeasContext)}
@@ -800,37 +1143,206 @@ VORSCHLAG:
 - combined_text: "${combinedText}"`;
 
             const chain = [
-                () => tryGroqApi(GROQ_KEY, "groq/compound", prompt),
-                () => tryGroqApi(GROQ_KEY, "openai/gpt-oss-120b", prompt),
-                () => tryGroqApi(GROQ_KEY, "qwen/qwen3.6-27b", prompt),
+                () => tryGroqApi(GROQ_KEY, "openai/gpt-oss-20b", prompt, moderationSchema),
+                () => tryGroqApi(GROQ_KEY, "groq/compound-mini", prompt),
+                () => tryQwenApi(QWEN_KEY, "qwen/qwen3.6-27b", prompt),
                 () => tryMistralApi(MISTRAL_KEY_1, "ministral-8b-2512", prompt),
-                () => tryGeminiApi(GEMINI_KEY, prompt),
                 () => tryMistralApi(MISTRAL_KEY_2, "ministral-8b-2512", prompt)
             ];
 
-            for (const step of chain) {
-                const result = await runWithRetries(step, 2);
-                if (result) return result;
+            for (let pass = 0; pass < 3; pass++) {
+                for (const step of chain) {
+                    const result = await runWithRetries(step, 2);
+                    if (isValidModerationResult(result)) return result;
+                }
             }
 
-            return { result: 'OK', corrected_title: title, corrected_description: description };
+            return { result: 'OK', corrected_title: title, corrected_description: description, duplicate_idea_id: '', reason: '' };
         }
 
         async function moderateCommentText(text) {
             const prompt = `Prüfe diesen Kommentar für ein Schulforum auf Beleidigungen/Spam. JSON: {"approved": true/false}`;
             let res = await runWithRetries(() => tryMistralApi(MISTRAL_KEY_1, "ministral-8b-2512", prompt + `\nText: "${text}"`), 2);
-            if (res) return res;
+            if (res && typeof res.approved === 'boolean') return res;
 
             const fallbackChain = [
-                () => tryGroqApi(GROQ_KEY, "groq/compound", prompt + `\nText: "${text}"`),
-                () => tryGeminiApi(GEMINI_KEY, prompt + `\nText: "${text}"`)
+                () => tryGroqApi(GROQ_KEY, "openai/gpt-oss-20b", prompt + `\nText: "${text}"`, commentSchema)
             ];
 
             for (const step of fallbackChain) {
                 const fallbackRes = await runWithRetries(step, 2);
-                if (fallbackRes) return fallbackRes;
+                if (fallbackRes && typeof fallbackRes.approved === 'boolean') return fallbackRes;
             }
             return { approved: false };
+        }
+
+        let moderationCache = null;
+
+        function setFormMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message || '';
+            element.classList.toggle('hidden', !message);
+        }
+
+        function isUsableDescription(value) {
+            return typeof value === 'string' && value.trim().length > 0;
+        }
+
+        function removeMarkdown(value) {
+            return value
+                .replace(/```[\s\S]*?```/g, match => match.replace(/```/g, ''))
+                .replace(/^\s{0,3}#{1,6}\s*/gm, '')
+                .replace(/^\s*[-*+]\s+/gm, '')
+                .replace(/[*_`~]/g, '')
+                .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+                .replace(/\s{2,}/g, ' ')
+                .trim();
+        }
+
+        function normalizeDescriptionCandidate(candidate) {
+            if (!candidate || typeof candidate !== 'object') return null;
+            if (candidate.json && typeof candidate.json === 'string') {
+                try {
+                    candidate = JSON.parse(candidate.json);
+                } catch (error) {
+                    return null;
+                }
+            }
+            const title = candidate.title || candidate.title_corrected || candidate.corrected_title;
+            let description = candidate.description || candidate.corrected_description;
+            if (description && typeof description === 'object' && typeof description.json === 'string') {
+                try {
+                    description = JSON.parse(description.json).description;
+                } catch (error) {
+                    return null;
+                }
+            }
+            if (typeof description === 'string' && description.trim().startsWith('{')) {
+                try {
+                    description = JSON.parse(description).description;
+                } catch (error) {
+                    return null;
+                }
+            }
+            if (typeof title !== 'string' || typeof description !== 'string') return null;
+            return { title: title.trim(), description: removeMarkdown(description.trim()) };
+        }
+
+        function logRejectedDescriptionCandidate(provider, candidate) {
+            const normalized = normalizeDescriptionCandidate(candidate);
+            if (!normalized) {
+                console.warn(`${provider}: Antwort ohne title/description erhalten.`, candidate);
+                return;
+            }
+            if (!normalized.title) console.warn(`${provider}: Titel ist leer.`);
+            if (!isUsableDescription(normalized.description)) {
+                console.warn(`${provider}: Beschreibung ist leer.`, normalized.description);
+            }
+        }
+
+        function startModerationCountdown() {
+            const label = document.getElementById('aiProcessingLabel');
+            let seconds = 10;
+            let stopped = false;
+            const updateLabel = value => {
+                label.textContent = value === 'done'
+                    ? 'Fast fertig'
+                    : `KI prüft Rechtschreibung, Relevanz & Duplikate ... ${value}s`;
+            };
+            updateLabel(seconds);
+            let timer;
+            const tick = () => {
+                if (stopped) return;
+                seconds = seconds > 0 ? seconds - 1 : 0;
+                updateLabel(seconds === 0 ? 'done' : seconds);
+                const delay = seconds <= 3 ? 1500 : seconds <= 5 ? 900 : 1000;
+                timer = setTimeout(tick, delay);
+            };
+            timer = setTimeout(tick, 1000);
+            return () => {
+                stopped = true;
+                clearTimeout(timer);
+            };
+        }
+
+        async function generateDescription() {
+            const title = document.getElementById('ideaTitle').value.trim();
+            const currentDescription = document.getElementById('ideaDescription').value.trim();
+            const button = document.getElementById('generateDescriptionBtn');
+            const label = document.getElementById('generateDescriptionLabel');
+            if (!title) {
+                setFormMessage('titleError', 'Gib zuerst eine Überschrift ein.');
+                return;
+            }
+
+            button.disabled = true;
+            label.textContent = currentDescription ? 'Wird verbessert ...' : 'Wird erstellt ...';
+            try {
+                const moderation = await callAiModerationEngine(title, currentDescription);
+                if (!moderation || !isValidModerationResult(moderation)) {
+                    setFormMessage('descriptionError', 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden.');
+                    return;
+                }
+                if (moderation.result === 'REJECTED') {
+                    setFormMessage('titleError', moderation.reason || 'Diese Überschrift ist nicht erlaubt.');
+                    return;
+                }
+                if (moderation.result === 'DUPLICATE') {
+                    const existingIdea = currentIdeas.find(i => i.id === moderation.duplicate_idea_id);
+                    if (existingIdea) {
+                        showDuplicateModal(existingIdea);
+                    } else {
+                        setFormMessage('descriptionError', 'Diese Idee ist bereits vorhanden.');
+                    }
+                    return;
+                }
+
+                const correctedTitle = moderation.corrected_title.trim() || title;
+                const prompt = `Korrigiere im Titel ausschließlich Rechtschreibfehler. Behalte jedes Wort, die Reihenfolge und die Bedeutung bei. Füge im Titel nichts hinzu und formuliere ihn nicht um. Formuliere oder verbessere danach eine kurze und einfache Beschreibung für einen Vorschlag an den Schülersprecher. Schreibe in normaler Alltagssprache, freundlich und direkt. Verwende kurze Sätze und höchstens 2 bis 3 Sätze. Schreibe nicht formell, wissenschaftlich oder wie Werbung. Beschreibe kein fertiges Angebot, sondern was an der Schule eingeführt, verbessert oder organisiert werden soll. Nutze einfache Wörter und erkläre nur den wichtigsten Nutzen. Nutze passende Emojis, aber keine Markdown-Formatierung. Antworte ausschließlich als JSON mit genau diesem Format: {"title":"...","description":"..."}. Überschrift: ${JSON.stringify(correctedTitle)}. Beschreibung: ${JSON.stringify(currentDescription)}`;
+                const schema = { type: "json_object" };
+                const descriptionChain = [
+                    { name: 'Groq GPT-OSS 20B', call: () => tryGroqApi(GROQ_KEY, 'openai/gpt-oss-20b', prompt, schema) },
+                    { name: 'Groq Compound Mini', call: () => tryGroqApi(GROQ_KEY, 'groq/compound-mini', prompt, schema) },
+                    { name: 'qwen/qwen3.6-27b', call: () => tryQwenApi(QWEN_KEY, 'qwen/qwen3.6-27b', prompt, schema) },
+                    { name: 'Mistral 1', call: () => tryMistralApi(MISTRAL_KEY_1, 'ministral-8b-2512', prompt) },
+                    { name: 'Mistral 2', call: () => tryMistralApi(MISTRAL_KEY_2, 'ministral-8b-2512', prompt) }
+                ];
+                let result = null;
+                for (let pass = 0; pass < 3 && !result; pass++) {
+                    for (const provider of descriptionChain) {
+                        const candidate = await runWithRetries(provider.call, 2);
+                        const normalized = normalizeDescriptionCandidate(candidate);
+                        if (normalized && normalized.title && isUsableDescription(normalized.description)) {
+                            result = normalized;
+                            break;
+                        }
+                        logRejectedDescriptionCandidate(provider.name, candidate);
+                    }
+                }
+                if (!result) throw new Error('Keine gültige Beschreibung erhalten.');
+                result.title = correctedTitle.trim();
+                result.description = result.description.trim();
+                const resultKey = `${result.title}\n${result.description}`;
+                document.getElementById('ideaDescription').value = result.description.trim();
+                document.getElementById('ideaTitle').value = result.title;
+                moderationCache = {
+                    inputKey: `${title}\n${currentDescription}`,
+                    key: resultKey,
+                    result: {
+                        result: 'CORRECTED',
+                        corrected_title: result.title,
+                        corrected_description: result.description,
+                        duplicate_idea_id: '',
+                        reason: ''
+                    }
+                };
+                setFormMessage('descriptionError', '');
+            } catch (error) {
+                setFormMessage('descriptionError', 'Die KI konnte gerade keine Beschreibung erstellen.');
+            } finally {
+                button.disabled = false;
+                label.textContent = document.getElementById('ideaDescription').value.trim() ? 'Beschreibung verbessern' : 'Beschreibung mit KI';
+            }
         }
 
         // ==========================================
@@ -845,11 +1357,28 @@ VORSCHLAG:
             const submitBtn = document.getElementById('submitBtn');
             const aiState = document.getElementById('aiProcessingState');
 
+            if (!rawDescription) {
+                setFormMessage('descriptionError', 'Bitte schreibe eine Beschreibung oder lasse sie zuerst von der KI erstellen.');
+                return;
+            }
+
             submitBtn.disabled = true;
             aiState.classList.remove('hidden');
+            const stopCountdown = startModerationCountdown();
+            setFormMessage('titleError', '');
+            setFormMessage('descriptionError', '');
 
             try {
-                const ai = await callAiModerationEngine(rawTitle, rawDescription);
+                const cacheKey = `${rawTitle}\n${rawDescription}`;
+                const ai = moderationCache && (moderationCache.key === cacheKey || moderationCache.inputKey === cacheKey)
+                    ? moderationCache.result
+                    : await callAiModerationEngine(rawTitle, rawDescription);
+
+                if (!ai || !isValidModerationResult(ai)) {
+                    setFormMessage('descriptionError', 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden. Bitte versuche es erneut.');
+                    return;
+                }
+                moderationCache = { key: cacheKey, result: ai };
 
                 if (ai.result === 'DUPLICATE' && ai.duplicate_idea_id) {
                     const existingIdea = currentIdeas.find(i => i.id === ai.duplicate_idea_id);
@@ -861,13 +1390,9 @@ VORSCHLAG:
                 }
 
                 if (ai.result === 'REJECTED') {
-                    await supabaseClient.from('ideas').insert([{
-                        title: rawTitle, description: rawDescription, author_name: author,
-                        is_published: false, status: 'rejected', moderation_result: ai
-                    }]);
-                    showToast(ai.reason ? `Abgelehnt: ${ai.reason}` : 'Kein gültiger Schulvorschlag.', 'error');
-                    resetFormState();
-                    closeModal();
+                    const message = ai.reason || 'Diese Idee kann so nicht veröffentlicht werden.';
+                    setFormMessage(rawDescription ? 'descriptionError' : 'titleError', message);
+                    showToast(`Nicht veröffentlicht: ${message}`, 'error');
                     return;
                 }
 
@@ -892,6 +1417,7 @@ VORSCHLAG:
             } catch (err) {
                 showToast('Fehler beim Speichern der Idee.', 'error');
             } finally {
+                stopCountdown();
                 resetFormState();
             }
         }
@@ -946,7 +1472,6 @@ async function loadComments(ideaId) {
         .select('*')
         .eq('idea_id', ideaId)
         .eq('is_published', true)
-        .eq('is_official', false)
         .order('created_at', { ascending: true });
 
     if (error || !data || data.length === 0) {
@@ -955,9 +1480,12 @@ async function loadComments(ideaId) {
     }
 
     listContainer.innerHTML = data.map(c => `
-        <div class="bg-darkbg/50 p-2.5 rounded-xl border border-white/5">
+        <div class="${c.is_official ? 'bg-amber-500/10 border-amber-500/30' : 'bg-darkbg/50 border-white/5'} p-2.5 rounded-xl border">
             <div class="flex justify-between items-center text-[10px] text-gray-400 mb-1">
-                <span class="font-bold text-gray-300">${escapeHtml(c.author_name || 'Schüler')}</span>
+                <span class="font-bold ${c.is_official ? 'text-amber-400 flex items-center gap-1' : 'text-gray-300'}">
+                    ${c.is_official ? '<img src="ich.png" alt="SV" class="w-4 h-4 rounded-full object-cover">' : ''}
+                    ${escapeHtml(c.author_name || 'Schüler')}
+                </span>
                 <span>${formatTimeAgo(c.created_at)}</span>
             </div>
             <p class="text-gray-200 text-xs">${escapeHtml(c.content)}</p>
