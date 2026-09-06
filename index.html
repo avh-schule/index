@@ -1648,7 +1648,11 @@ ${JSON.stringify(currentDescription)}
                     </div>
                     <p class="text-gray-200 text-xs">${escapeHtml(c.content)}</p>
                 </div>
-            `).join('');
+            `).join('') + `
+                <p class="text-rose-400 text-[10px] font-semibold text-center pt-1">
+                    Achtung: Nur gold markierte Kommentare stammen von dem Schülersprecher.
+                </p>
+            `;
         }
 
         async function handleCommentSubmit(e, ideaId) {
