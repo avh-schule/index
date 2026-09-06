@@ -448,8 +448,12 @@
         const SUPABASE_URL = "https://tnpkgqoebbpyutoinsbi.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRucGtncW9lYmJweXV0b2luc2JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0NDQ3ODQsImV4cCI6MjEwNDAyMDc4NH0.4ez0lvMr0CDAVHf1QMfT-MuQOt6dniseMgBhuLYff-A";
 
-        const GROQ_KEY = "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";
-        const QWEN_KEY = GROQ_KEY;
+        // Zwei Groq API-Keys als Fallback
+        const GROQ_KEYS = [
+            "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",
+            "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"
+        ];
+
         const MISTRAL_KEY_1 = "8dlkpvm5IxRUm8rc9Otp6iiTK9xejUGM";
         const MISTRAL_KEY_2 = "pPJw3RadOLvoDnatop1cocCQU0TKwNsS";
 
@@ -954,9 +958,12 @@
 
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
-                                    <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${statusInfo.color}">
-                                        ${statusInfo.label}
-                                    </span>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${statusInfo.color}">
+                                            ${statusInfo.label}
+                                        </span>
+                                        ${!idea.is_my_idea ? '<span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-gray-500/30 bg-gray-500/10 text-gray-400">Schüleridee</span>' : ''}
+                                    </div>
                                     <span class="text-[11px] text-gray-500 font-medium">${timeAgo}</span>
                                 </div>
 
@@ -1120,8 +1127,15 @@
             } catch (e) { return null; }
         }
 
-        async function tryQwenApi(apiKey, model, prompt, responseFormat = { type: "json_object" }) {
-            return tryGroqApi(apiKey, model, prompt, responseFormat);
+        // Fallback-Funktion: probiert alle Groq-Keys durch
+        async function tryGroqApiWithFallback(model, prompt, responseFormat = { type: "json_object" }, temperature = 0.1) {
+            for (const key of GROQ_KEYS) {
+                const result = await tryGroqApi(key, model, prompt, responseFormat, temperature);
+                if (result && typeof result === 'object') {
+                    return result;
+                }
+            }
+            return null;
         }
 
         async function tryMistralApi(apiKey, model, prompt, responseFormat = { type: "json_object" }) {
@@ -1217,10 +1231,10 @@ VORSCHLAG:
 - combined_text: "${combinedText}"`;
 
             const chain = [
-                () => tryGroqApi(GROQ_KEY, "openai/gpt-oss-120b", prompt, moderationSchema),
-                () => tryGroqApi(GROQ_KEY, "openai/gpt-oss-20b", prompt, moderationSchema),
-                () => tryGroqApi(GROQ_KEY, "groq/compound-mini", prompt),
-                () => tryQwenApi(QWEN_KEY, "qwen/qwen3.8-27b", prompt),
+                () => tryGroqApiWithFallback("openai/gpt-oss-120b", prompt, moderationSchema),
+                () => tryGroqApiWithFallback("openai/gpt-oss-20b", prompt, moderationSchema),
+                () => tryGroqApiWithFallback("groq/compound-mini", prompt),
+                () => tryGroqApiWithFallback("qwen/qwen3.8-27b", prompt, moderationSchema),
                 () => tryMistralApi(MISTRAL_KEY_1, "ministral-14b-2512", prompt),
                 () => tryMistralApi(MISTRAL_KEY_2, "ministral-14b-2512", prompt),
                 () => tryMistralApi(MISTRAL_KEY_1, "ministral-8b-2512", prompt),
@@ -1252,8 +1266,8 @@ VORSCHLAG:
             if (res && typeof res.approved === 'boolean') return res;
 
             const fallbackChain = [
-                () => tryGroqApi(GROQ_KEY, "openai/gpt-oss-120b", prompt + `\nText: "${text}"`, commentSchema),
-                () => tryGroqApi(GROQ_KEY, "openai/gpt-oss-20b", prompt + `\nText: "${text}"`, commentSchema)
+                () => tryGroqApiWithFallback("openai/gpt-oss-120b", prompt + `\nText: "${text}"`, commentSchema),
+                () => tryGroqApiWithFallback("openai/gpt-oss-20b", prompt + `\nText: "${text}"`, commentSchema)
             ];
 
             for (const step of fallbackChain) {
@@ -1446,10 +1460,10 @@ ${JSON.stringify(currentDescription)}
 `;
                 const schema = { type: "json_object" };
                 const descriptionChain = [
-                    { name: 'Groq GPT-OSS 120B', call: () => tryGroqApi(GROQ_KEY, 'openai/gpt-oss-120b', prompt, schema) },
-                    { name: 'Groq GPT-OSS 20B', call: () => tryGroqApi(GROQ_KEY, 'openai/gpt-oss-20b', prompt, schema) },
-                    { name: 'Groq Compound Mini', call: () => tryGroqApi(GROQ_KEY, 'groq/compound-mini', prompt, schema) },
-                    { name: 'qwen/qwen3.8-27b', call: () => tryQwenApi(QWEN_KEY, 'qwen/qwen3.8-27b', prompt, schema) },
+                    { name: 'Groq GPT-OSS 120B', call: () => tryGroqApiWithFallback('openai/gpt-oss-120b', prompt, schema) },
+                    { name: 'Groq GPT-OSS 20B', call: () => tryGroqApiWithFallback('openai/gpt-oss-20b', prompt, schema) },
+                    { name: 'Groq Compound Mini', call: () => tryGroqApiWithFallback('groq/compound-mini', prompt, schema) },
+                    { name: 'qwen/qwen3.8-27b', call: () => tryGroqApiWithFallback('qwen/qwen3.8-27b', prompt, schema) },
                     { name: 'Mistral 1 14B', call: () => tryMistralApi(MISTRAL_KEY_1, 'ministral-14b-2512', prompt) },
                     { name: 'Mistral 2 14B', call: () => tryMistralApi(MISTRAL_KEY_2, 'ministral-14b-2512', prompt) },
                     { name: 'Mistral 1 8B', call: () => tryMistralApi(MISTRAL_KEY_1, 'ministral-8b-2512', prompt) },
@@ -1559,6 +1573,7 @@ ${JSON.stringify(currentDescription)}
                 const { data, error } = await supabaseClient.from('ideas').insert([{
                     title: finalTitle, description: finalDesc, author_name: author,
                     status: 'waiting_for_review', is_published: true, ai_corrected: ai.result === 'CORRECTED',
+                    is_my_idea: false,
                     original_title: rawTitle, original_description: rawDescription, moderation_result: ai
                 }]).select();
 
