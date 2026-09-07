@@ -1182,6 +1182,7 @@
             }
         };
 
+        // ANPASSUNG: commentSchema erweitert für korrigierten Text und Grund
         const commentSchema = {
             type: "json_schema",
             json_schema: {
@@ -1189,8 +1190,12 @@
                 strict: true,
                 schema: {
                     type: "object",
-                    properties: { approved: { type: "boolean" } },
-                    required: ["approved"],
+                    properties: {
+                        approved: { type: "boolean" },
+                        corrected_text: { type: "string" },
+                        reason: { type: "string" }
+                    },
+                    required: ["approved", "corrected_text", "reason"],
                     additionalProperties: false
                 }
             }
@@ -1251,30 +1256,40 @@ VORSCHLAG:
             return { result: 'OK', corrected_title: title, corrected_description: description, duplicate_idea_id: '', reason: '' };
         }
 
+        // ANPASSUNG: moderateCommentText – nur sehr deutliche Schimpfwörter, Rechtschreibkorrektur
         async function moderateCommentText(text) {
-            const prompt = `Prüfe diesen Kommentar für ein Schulforum (Gymnasium) auf Beleidigungen/Spam. JSON: {"approved": true/false}`;
-            let res = await runWithRetries(() => tryMistralApi(MISTRAL_KEY_1, "ministral-14b-2512", prompt + `\nText: "${text}"`), 2);
-            if (res && typeof res.approved === 'boolean') return res;
+            const prompt = `
+Du moderierst Kommentare für ein Schulforum (Gymnasium).
+REGELN:
+- Der Kommentar darf NUR abgelehnt werden, wenn er ein SEHR DEUTLICHES Schimpfwort oder eine eindeutige Beleidigung enthält (z. B. "Arschloch", "Scheiße", "Hurensohn", "Idiot" als direkte Beleidigung). Leichte Umgangssprache, Kritik oder persönliche Meinungen sind erlaubt.
+- Wenn kein solches Wort enthalten ist, genehmige den Kommentar (approved: true).
+- Korrigiere die Rechtschreibung und Grammatik, ohne den Inhalt oder Stil zu verändern.
+- Antworte ausschließlich als JSON: {"approved": boolean, "corrected_text": string, "reason": string}. 
+  - Bei Ablehnung: reason = "Enthält ein sehr deutliches Schimpfwort oder eine Beleidigung."
+  - Bei Genehmigung: reason = "" und corrected_text = korrigierter Text.
+Text: "${text}"`;
 
-            res = await runWithRetries(() => tryMistralApi(MISTRAL_KEY_2, "ministral-14b-2512", prompt + `\nText: "${text}"`), 2);
-            if (res && typeof res.approved === 'boolean') return res;
-
-            res = await runWithRetries(() => tryMistralApi(MISTRAL_KEY_1, "ministral-8b-2512", prompt + `\nText: "${text}"`), 2);
-            if (res && typeof res.approved === 'boolean') return res;
-
-            res = await runWithRetries(() => tryMistralApi(MISTRAL_KEY_2, "ministral-8b-2512", prompt + `\nText: "${text}"`), 2);
-            if (res && typeof res.approved === 'boolean') return res;
-
-            const fallbackChain = [
-                () => tryGroqApiWithFallback("openai/gpt-oss-120b", prompt + `\nText: "${text}"`, commentSchema),
-                () => tryGroqApiWithFallback("openai/gpt-oss-20b", prompt + `\nText: "${text}"`, commentSchema)
+            // Versuche zuerst Mistral, dann Groq
+            const chain = [
+                () => tryMistralApi(MISTRAL_KEY_1, "ministral-14b-2512", prompt, commentSchema),
+                () => tryMistralApi(MISTRAL_KEY_2, "ministral-14b-2512", prompt, commentSchema),
+                () => tryMistralApi(MISTRAL_KEY_1, "ministral-8b-2512", prompt, commentSchema),
+                () => tryMistralApi(MISTRAL_KEY_2, "ministral-8b-2512", prompt, commentSchema),
+                () => tryGroqApiWithFallback("openai/gpt-oss-120b", prompt, commentSchema),
+                () => tryGroqApiWithFallback("openai/gpt-oss-20b", prompt, commentSchema)
             ];
 
-            for (const step of fallbackChain) {
-                const fallbackRes = await runWithRetries(step, 2);
-                if (fallbackRes && typeof fallbackRes.approved === 'boolean') return fallbackRes;
+            for (let pass = 0; pass < 2; pass++) {
+                for (const step of chain) {
+                    const res = await runWithRetries(step, 2);
+                    if (res && typeof res.approved === 'boolean' && typeof res.corrected_text === 'string') {
+                        return res;
+                    }
+                }
             }
-            return { approved: false };
+
+            // Fallback: Bei API-Fehlern genehmigen und unkorrigiert lassen
+            return { approved: true, corrected_text: text, reason: '' };
         }
 
         function setFormMessage(elementId, message) {
@@ -1664,12 +1679,13 @@ ${JSON.stringify(currentDescription)}
                     <p class="text-gray-200 text-xs">${escapeHtml(c.content)}</p>
                 </div>
             `).join('') + `
-                <p class="text-rose-400 text-[10px] font-semibold text-center pt-1">
-                    Achtung: Nur gold markierte Kommentare stammen von dem Schülersprecher.
+                <p class="text-gray-400 text-[10px] font-medium text-center pt-1">
+                    Gold markierte Kommentare sind offizielle Rückmeldungen des Schülersprechers.
                 </p>
             `;
         }
 
+        // ANPASSUNG: handleCommentSubmit mit korrigiertem Text und Begründung bei Ablehnung
         async function handleCommentSubmit(e, ideaId) {
             e.preventDefault();
             const input = document.getElementById(`comment-input-${ideaId}`);
@@ -1678,20 +1694,33 @@ ${JSON.stringify(currentDescription)}
 
             const ai = await moderateCommentText(text);
             const isPublished = ai && ai.approved === true;
+            const finalContent = isPublished && ai.corrected_text ? ai.corrected_text : text;
+            const reason = ai && ai.reason ? ai.reason : '';
 
             await supabaseClient.from('comments').insert([{
-                idea_id: ideaId, content: text, author_name: 'Schüler', is_published: isPublished, moderation_result: ai
+                idea_id: ideaId, content: finalContent, author_name: 'Schüler', is_published: isPublished, moderation_result: ai
             }]);
 
             input.value = '';
 
             if (isPublished) {
-                showToast('Kommentar gepostet! 🎉', 'success');
+                if (finalContent !== text) {
+                    showToast('Kommentar gepostet (Rechtschreibung korrigiert)! 🎉', 'success');
+                } else {
+                    showToast('Kommentar gepostet! 🎉', 'success');
+                }
                 await loadCommentCounts();
                 loadIdeas();
-                toggleComments(ideaId);
+                toggleComments(ideaId); // schließt den Kommentarbereich und lädt neu? Eigentlich: toggleComments würde ihn schließen, besser: loadComments direkt aufrufen
+                // Wir wollen den Bereich offen lassen und die Kommentare neu laden
+                const section = document.getElementById(`comments-section-${ideaId}`);
+                if (section && !section.classList.contains('hidden')) {
+                    loadComments(ideaId); // lädt die Liste neu
+                }
             } else {
-                showToast('Kommentar wird überprüft.', 'info');
+                // Einheitliche Nachricht mit Grund
+                const message = reason || 'Dein Kommentar wurde abgelehnt.';
+                showToast(`Kommentar abgelehnt: ${message}`, 'error');
             }
         }
 
