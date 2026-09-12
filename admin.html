@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AVH Admin Command Center</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        surface: { base: '#090d16', card: '#121826', border: '#1f293d', hover: '#1a2333' },
+                        accent: { indigo: '#6366f1', amber: '#f59e0b', emerald: '#10b981', rose: '#f43f5e' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #090d16; color: #f3f4f6; }
+        .glass-panel { background: rgba(18, 24, 38, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.07); }
+        .glow-indigo { box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.25); }
+        .glow-amber { box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.25); }
+
+        .idea-card {
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .idea-card:hover { border-color: rgba(255,255,255,0.12); }
+
+        /* Sanfter Status-Wechsel */
+        .status-change-flash {
+            animation: statusFlash 0.5s ease;
+        }
+        @keyframes statusFlash {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            100% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+        }
+
+        /* Fade-in for new content */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20 selection:bg-indigo-500 selection:text-white">
+
+    <!-- LOGIN GATE -->
+    <div id="loginGate" class="fixed inset-0 z-[100] bg-surface-base flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm rounded-2xl p-6 glow-indigo text-center">
+            <div class="w-12 h-12 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="lock" class="w-5 h-5 text-indigo-400"></i>
+            </div>
+            <h2 class="text-sm font-bold text-white mb-1">Admin-Zugang</h2>
+            <p class="text-[11px] text-gray-400 mb-4">Bitte Passwort eingeben</p>
+            <form id="loginForm" class="space-y-3">
+                <input type="password" id="loginPassword" required autocomplete="current-password"
+                       placeholder="Passwort"
+                       class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 text-center">
+                <p id="loginError" class="hidden text-[11px] text-rose-400"></p>
+                <button type="submit" id="loginBtn"
+                        class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-bold transition-all">
+                    Anmelden
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOP NAVIGATION -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-surface-border px-4 py-3.5">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-full">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <span class="text-[11px] font-bold text-indigo-400 tracking-wider uppercase">Schülersprecher Admin</span>
+                </div>
+                <h1 class="font-bold text-sm text-white tracking-tight hidden sm:block">AVH Ideenbox Control Panel</h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="loadData()" class="flex items-center gap-2 px-3 py-1.5 bg-surface-hover hover:bg-white/10 text-gray-300 text-xs font-semibold rounded-xl border border-white/10 transition-all active:scale-95">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <span>Aktualisieren</span>
+                </button>
+                <button onclick="logout()" class="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-xl border border-rose-500/20 transition-all active:scale-95">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pt-8 space-y-6">
+
+        <!-- STATS BAR -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                <span class="text-[11px] font-medium text-gray-400">Gesamt</span>
+                <span id="statTotal" class="text-xl font-extrabold text-white mt-1">0</span>
+            </div>
+            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                <span class="text-[11px] font-medium text-amber-400"><i class="fa-solid fa-clock mr-1"></i>In Prüfung</span>
+                <span id="statReview" class="text-xl font-extrabold text-amber-400 mt-1">0</span>
+            </div>
+            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                <span class="text-[11px] font-medium text-indigo-400"><i class="fa-solid fa-hammer mr-1"></i>Wird umgesetzt</span>
+                <span id="statProgress" class="text-xl font-extrabold text-indigo-400 mt-1">0</span>
+            </div>
+            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                <span class="text-[11px] font-medium text-emerald-400"><i class="fa-solid fa-flag-checkered mr-1"></i>Umgesetzt</span>
+                <span id="statDone" class="text-xl font-extrabold text-emerald-400 mt-1">0</span>
+            </div>
+            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                <span class="text-[11px] font-medium text-cyan-400"><i class="fa-solid fa-users mr-1"></i>Besucher</span>
+                <span id="statVisitors" class="text-xl font-extrabold text-cyan-400 mt-1">0</span>
+            </div>
+        </div>
+
+        <!-- MESSAGES SECTION -->
+        <div class="glass-panel rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
+                    Nachrichten an Schüler
+                </h2>
+                <button onclick="openMessageModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all active:scale-95">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    Neue Nachricht
+                </button>
+            </div>
+            <div id="messagesList" class="space-y-2">
+                <div class="text-xs text-gray-400 text-center py-3">Lade Nachrichten...</div>
+            </div>
+        </div>
+
+        <!-- IDEAS CONTAINER -->
+        <div id="ideasContainer" class="space-y-4">
+            <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">
+                <i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400"></i>
+                Lade Daten...
+            </div>
+        </div>
+    </main>
+
+    <!-- EDIT IDEA MODAL -->
+    <div id="editModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-indigo relative">
+            <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="edit-3" class="w-4 h-4 text-indigo-400"></i> Idee überarbeiten
+            </h3>
+            <form onsubmit="saveEdit(event)" class="space-y-4">
+                <input type="hidden" id="editId">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Titel</label>
+                    <input type="text" id="editTitle" required class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Beschreibung</label>
+                    <textarea id="editDesc" rows="4" required class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- OFFICIAL COMMENT MODAL -->
+    <div id="commentModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-amber relative">
+            <h3 class="text-sm font-bold text-amber-400 mb-1 flex items-center gap-2">
+                <i data-lucide="badge-check" class="w-4 h-4"></i> Antwort vom Schülersprecher
+            </h3>
+            <p class="text-[11px] text-gray-400 mb-4">SV-Kommentare sind immer gold. Optional oben anheften.</p>
+            <form onsubmit="saveOfficialComment(event)" class="space-y-4">
+                <input type="hidden" id="commentIdeaId">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Absender Name</label>
+                    <input type="text" id="commentAuthor" value="Schülersprecher" required class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Stellungnahme / Antwort</label>
+                    <textarea id="commentText" rows="4" placeholder="Antwort eingeben..." required class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 leading-relaxed"></textarea>
+                </div>
+                <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer select-none">
+                    <input id="commentPinned" type="checkbox" checked class="accent-amber-500 w-4 h-4">
+                    <span><i class="fa-solid fa-thumbtack text-amber-400 mr-1"></i> Kommentar oben anheften</span>
+                </label>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('commentModal')" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl text-xs font-bold transition-all">Veröffentlichen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT COMMENT MODAL -->
+    <div id="editCommentModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-amber relative">
+            <h3 class="text-sm font-bold text-amber-400 mb-4 flex items-center gap-2">
+                <i data-lucide="edit-3" class="w-4 h-4"></i> Kommentar bearbeiten
+            </h3>
+            <form onsubmit="saveEditComment(event)" class="space-y-4">
+                <input type="hidden" id="editCommentId">
+                <input type="hidden" id="editCommentIdeaId">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Absender</label>
+                    <input type="text" id="editCommentAuthor" required class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Inhalt</label>
+                    <textarea id="editCommentText" rows="4" required class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 leading-relaxed"></textarea>
+                </div>
+                <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer select-none">
+                    <input id="editCommentPinned" type="checkbox" class="accent-amber-500 w-4 h-4">
+                    <span><i class="fa-solid fa-thumbtack text-amber-400 mr-1"></i> Oben angeheftet</span>
+                </label>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('editCommentModal')" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl text-xs font-bold transition-all">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MESSAGE MODAL (Admin) -->
+    <div id="messageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-indigo relative">
+            <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
+                <span id="messageModalHeading">Neue Nachricht</span>
+            </h3>
+            <form onsubmit="saveMessage(event)" class="space-y-4">
+                <input type="hidden" id="messageEditId">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Überschrift</label>
+                    <input type="text" id="messageTitleInput" required maxlength="120"
+                           class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Beschreibung</label>
+                    <textarea id="messageDescInput" rows="4" required maxlength="1000"
+                              class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Anzeigen pro Nutzer</label>
+                        <input type="number" id="messageDisplayCount" min="1" max="50" value="2" required
+                               class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div class="flex items-end">
+                        <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer select-none">
+                            <input id="messageActive" type="checkbox" checked class="accent-indigo-500 w-4 h-4">
+                            <span>Aktiv</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('messageModal')" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // WORKER-KONFIGURATION
+        // ============================================================
+        const WORKER_URL = "https://empty-thunder-9d68.aliitat80.workers.dev";
+
+        function getAdminPassword() {
+            return sessionStorage.getItem('avh_admin_pw') || '';
+        }
+
+        async function adminFetch(path, options = {}) {
+            const res = await fetch(`${WORKER_URL}${path}`, {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': getAdminPassword(),
+                    ...(options.headers || {})
+                },
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+            if (res.status === 401) {
+                sessionStorage.removeItem('avh_admin_pw');
+                document.getElementById('loginGate').classList.remove('hidden');
+                throw new Error('Unauthorized');
+            }
+            if (!res.ok) {
+                let msg = `Worker error ${res.status}`;
+                try { msg += ': ' + (await res.text()); } catch(e){}
+                throw new Error(msg);
+            }
+            return res.json();
+        }
+
+        let listData = [];
+        let commentCountsMap = {};
+        let pinnedCommentsMap = {};
+        const adminCommentsCache = {};
+        const openCommentBoxes = new Set(); // Verfolgt geöffnete Kommentar-Boxen für Re-Render
+
+        const STATUS_OPTIONS = {
+            'waiting_for_review': 'In Prüfung',
+            'in_discussion': 'In Besprechung',
+            'reviewing': 'Angenommen',
+            'in_progress': 'Wird umgesetzt',
+            'done': 'Umgesetzt',
+            'rejected': 'Nicht möglich',
+            'invisible': 'Unsichtbar (KI-gefiltert)'
+        };
+
+        const STATUS_STYLES = {
+            'waiting_for_review': 'border-amber-500/30 text-amber-400 bg-amber-500/10',
+            'in_discussion': 'border-sky-500/30 text-sky-400 bg-sky-500/10',
+            'reviewing': 'border-blue-500/30 text-blue-400 bg-blue-500/10',
+            'in_progress': 'border-indigo-500/30 text-indigo-400 bg-indigo-500/10',
+            'done': 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10',
+            'rejected': 'border-rose-500/30 text-rose-400 bg-rose-500/10',
+            'invisible': 'border-slate-500/40 text-slate-300 bg-slate-700/30'
+        };
+
+        // ============================================================
+        // INITIALISIERUNG + LOGIN
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            const gate = document.getElementById('loginGate');
+            const form = document.getElementById('loginForm');
+            const input = document.getElementById('loginPassword');
+            const errorEl = document.getElementById('loginError');
+
+            if (getAdminPassword()) {
+                gate.classList.add('hidden');
+                loadData();
+            } else {
+                input.focus();
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorEl.classList.add('hidden');
+                const pw = input.value;
+
+                let ok = false;
+                try {
+                    const res = await fetch(`${WORKER_URL}/api/admin/login`, {
+                        method: 'POST',
+                        headers: { 'X-Admin-Password': pw, 'Content-Type': 'application/json' }
+                    });
+                    ok = res.ok;
+                } catch (err) {
+                    errorEl.textContent = 'Verbindung zum Server fehlgeschlagen.';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                if (!ok) {
+                    errorEl.textContent = 'Falsches Passwort.';
+                    errorEl.classList.remove('hidden');
+                    input.value = '';
+                    input.focus();
+                    return;
+                }
+
+                sessionStorage.setItem('avh_admin_pw', pw);
+                gate.classList.add('hidden');
+                input.value = '';
+                loadData();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal('editModal');
+                    closeModal('commentModal');
+                    closeModal('editCommentModal');
+                    closeModal('messageModal');
+                }
+            });
+        });
+
+        function logout() {
+            sessionStorage.removeItem('avh_admin_pw');
+            location.reload();
+        }
+
+        // ============================================================
+        // DATEN LADEN
+        // ============================================================
+        async function loadData() {
+            try {
+                listData = await adminFetch('/api/admin/ideas');
+            } catch (e) {
+                if (e.message !== 'Unauthorized') {
+                    alert('Fehler beim Laden: ' + e.message);
+                }
+                return;
+            }
+            await Promise.all([
+                loadPinnedComments(),
+                loadCommentCounts(),
+                loadVisitorCount(),
+                loadMessages()
+            ]);
+            updateStats();
+            render();
+        }
+
+        async function loadPinnedComments() {
+            try {
+                pinnedCommentsMap = await adminFetch('/api/admin/pinned-comments');
+            } catch (e) {
+                pinnedCommentsMap = {};
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent = listData.length;
+            document.getElementById('statReview').textContent = listData.filter(i => i.status === 'waiting_for_review' || i.status === 'reviewing' || i.status === 'in_discussion').length;
+            document.getElementById('statProgress').textContent = listData.filter(i => i.status === 'in_progress').length;
+            document.getElementById('statDone').textContent = listData.filter(i => i.status === 'done').length;
+        }
+
+        async function loadVisitorCount() {
+            try {
+                const stats = await adminFetch('/api/admin/stats');
+                document.getElementById('statVisitors').textContent = stats.visitors;
+            } catch (e) { /* ignore */ }
+        }
+
+        async function loadCommentCounts() {
+            try {
+                commentCountsMap = await adminFetch('/api/admin/comment-counts');
+            } catch (e) {
+                commentCountsMap = {};
+            }
+        }
+
+        // ============================================================
+        // RENDER
+        // ============================================================
+        function render() {
+            const c = document.getElementById('ideasContainer');
+            if (!listData.length) {
+                c.innerHTML = '<div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">Keine Ideen vorhanden.</div>';
+                return;
+            }
+
+            c.innerHTML = listData.map(item => {
+                const curStatusStyle = STATUS_STYLES[item.status] || STATUS_STYLES['waiting_for_review'];
+                const commentCount = commentCountsMap[item.id] || 0;
+
+                // Status-Banner (nur für invisible/rejected)
+                let statusBanner = '';
+                if (item.status === 'invisible') {
+                    statusBanner = `
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800/60 border border-slate-600/40">
+                            <i data-lucide="eye-off" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider">KI-gefiltert · für Nutzer unsichtbar</span>
+                        </div>`;
+                } else if (item.status === 'rejected') {
+                    statusBanner = `
+                        <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-500/5 border border-rose-500/20">
+                            <i data-lucide="ban" class="w-3.5 h-3.5 text-rose-400"></i>
+                            <span class="text-[10px] font-bold text-rose-300 uppercase tracking-wider">Manuell abgelehnt · sichtbar im „Nicht möglich"-Bereich</span>
+                        </div>`;
+                }
+
+                return `
+                <div class="idea-card glass-panel rounded-2xl p-5 space-y-4">
+
+                    <div class="flex items-center justify-between gap-3 flex-wrap pb-3 border-b border-surface-border">
+
+                        <div class="relative">
+                            <select onchange="changeStatus('${item.id}', this.value)" class="appearance-none text-xs font-bold rounded-xl px-3 py-1.5 pr-7 border cursor-pointer focus:outline-none transition-all ${curStatusStyle}">
+                                ${Object.keys(STATUS_OPTIONS).map(key => `
+                                    <option value="${key}" ${item.status === key ? 'selected' : ''} class="bg-surface-card text-white">
+                                        ${STATUS_OPTIONS[key]}
+                                    </option>
+                                `).join('')}
+                            </select>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-60"></i>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 ml-auto">
+                            <button onclick="openCommentModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-bold rounded-xl border border-amber-500/30 flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-reply text-[11px]"></i>
+                                <span>Antworten</span>
+                            </button>
+                            <button onclick="openEditModal('${item.id}')" class="p-1.5 bg-surface-hover hover:bg-white/10 text-gray-300 rounded-xl border border-white/5 transition-all">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="deleteIdea('${item.id}')" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-xl border border-rose-500/20 transition-all">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${statusBanner}
+
+                    <div class="space-y-1.5">
+                        <h4 class="font-bold text-sm text-white leading-snug">${esc(item.title)}</h4>
+                        <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-line">${esc(item.description)}</p>
+                    </div>
+
+                    ${pinnedCommentsMap[item.id] ? `
+                        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 space-y-1">
+                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                                <i class="fa-solid fa-thumbtack"></i>
+                                Angeheftet · ${esc(pinnedCommentsMap[item.id].author_name || 'Schülersprecher')}
+                            </div>
+                            <p class="text-xs text-amber-100 leading-relaxed">${esc(pinnedCommentsMap[item.id].content)}</p>
+                        </div>
+                    ` : ''}
+
+                    <div class="flex items-center justify-between text-[11px] text-gray-400 pt-1">
+                        <span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3 text-gray-500"></i> ${esc(item.author_name || 'Anonym')}</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleIdeaOwnership('${item.id}')" class="px-2 py-1 rounded-lg border text-[10px] font-bold transition-all ${item.is_my_idea ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300' : 'bg-amber-500/10 border-amber-500/30 text-amber-300'}">
+                                ${item.is_my_idea ? 'Meine Idee' : 'Schüleridee'}
+                            </button>
+                            <span class="flex items-center gap-1 font-semibold text-indigo-400"><i data-lucide="thumbs-up" class="w-3 h-3"></i> ${item.upvotes_count || 0} Stimmen</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-surface-border">
+                        <button onclick="toggleComments('${item.id}')" class="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition-all">
+                            <i data-lucide="messages-square" class="w-3.5 h-3.5"></i> Kommentare verwalten (${commentCount})
+                        </button>
+                        <div id="comments-box-${item.id}" class="hidden mt-3 space-y-2"></div>
+                    </div>
+
+                </div>
+            `}).join('');
+
+            lucide.createIcons();
+
+            // Offene Kommentar-Boxen wiederherstellen
+            if (openCommentBoxes.size > 0) {
+                openCommentBoxes.forEach(id => {
+                    toggleComments(id, true);
+                });
+            }
+        }
+
+        // ============================================================
+        // AKTIONEN (optimistisch für flüssiges UI)
+        // ============================================================
+        async function changeStatus(id, newStatus) {
+            const idx = listData.findIndex(i => i.id === id);
+            if (idx === -1) return;
+            const prevStatus = listData[idx].status;
+            const prevPublished = listData[idx].is_published;
+            if (prevStatus === newStatus) return;
+
+            // Optimistic update
+            listData[idx].status = newStatus;
+            listData[idx].is_published = newStatus !== 'invisible';
+            updateStats();
+            render();
+
+            try {
+                await adminFetch(`/api/admin/ideas/${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    body: { status: newStatus }
+                });
+            } catch (e) {
+                // Rollback
+                listData[idx].status = prevStatus;
+                listData[idx].is_published = prevPublished;
+                updateStats();
+                render();
+                alert('Fehler: ' + e.message);
+            }
+        }
+
+        async function toggleIdeaOwnership(id) {
+            const item = listData.find(idea => idea.id === id);
+            if (!item) return;
+            const prev = !!item.is_my_idea;
+            const next = !prev;
+            item.is_my_idea = next;
+            render();
+            try {
+                await adminFetch(`/api/admin/ideas/${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    body: { is_my_idea: next }
+                });
+            } catch (e) {
+                item.is_my_idea = prev;
+                render();
+                alert('Fehler: ' + e.message);
+            }
+        }
+
+        async function deleteIdea(id) {
+            if (!confirm('Idee unwiderruflich löschen?')) return;
+            const idx = listData.findIndex(i => i.id === id);
+            if (idx === -1) return;
+            const backup = listData[idx];
+            listData.splice(idx, 1);
+            openCommentBoxes.delete(id);
+            updateStats();
+            render();
+            try {
+                await adminFetch(`/api/admin/ideas/${encodeURIComponent(id)}`, { method: 'DELETE' });
+            } catch (e) {
+                listData.splice(idx, 0, backup);
+                updateStats();
+                render();
+                alert('Fehler: ' + e.message);
+            }
+        }
+
+        function openEditModal(id) {
+            const item = listData.find(i => i.id === id);
+            if (!item) return;
+            document.getElementById('editId').value = item.id;
+            document.getElementById('editTitle').value = item.title;
+            document.getElementById('editDesc').value = item.description;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        async function saveEdit(e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const title = document.getElementById('editTitle').value;
+            const description = document.getElementById('editDesc').value;
+            const item = listData.find(i => i.id === id);
+            if (!item) return;
+
+            const prevTitle = item.title;
+            const prevDesc = item.description;
+
+            // Optimistic
+            item.title = title;
+            item.description = description;
+            closeModal('editModal');
+            render();
+
+            try {
+                await adminFetch(`/api/admin/ideas/${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    body: { title, description }
+                });
+            } catch (err) {
+                item.title = prevTitle;
+                item.description = prevDesc;
+                render();
+                alert('Fehler: ' + err.message);
+            }
+        }
+
+        function openCommentModal(id) {
+            document.getElementById('commentIdeaId').value = id;
+            document.getElementById('commentPinned').checked = true;
+            document.getElementById('commentModal').classList.remove('hidden');
+        }
+
+        async function saveOfficialComment(e) {
+            e.preventDefault();
+            const idea_id = document.getElementById('commentIdeaId').value;
+            const author_name = document.getElementById('commentAuthor').value;
+            const content = document.getElementById('commentText').value;
+            const is_pinned = document.getElementById('commentPinned').checked;
+
+            try {
+                await adminFetch('/api/admin/comments', {
+                    method: 'POST',
+                    body: { idea_id, author_name, content, is_pinned }
+                });
+            } catch (e) {
+                alert('Fehler: ' + e.message);
+                return;
+            }
+            document.getElementById('commentText').value = '';
+            closeModal('commentModal');
+            await loadCommentCounts();
+            await loadPinnedComments();
+            render();
+            // Kommentar-Box öffnen und laden
+            openCommentBoxes.add(idea_id);
+            toggleComments(idea_id, true);
+        }
+
+        async function toggleComments(ideaId, forceReload = false) {
+            const box = document.getElementById(`comments-box-${ideaId}`);
+            if (!box) return;
+            if (box.classList.contains('hidden') || forceReload) {
+                box.classList.remove('hidden');
+                openCommentBoxes.add(ideaId);
+                box.innerHTML = '<span class="text-[10px] text-gray-500">Lade Kommentare...</span>';
+
+                let data = [];
+                try {
+                    data = await adminFetch(`/api/admin/ideas/${encodeURIComponent(ideaId)}/comments`);
+                } catch (e) {
+                    box.innerHTML = '<span class="text-[10px] text-rose-400">Fehler beim Laden</span>';
+                    return;
+                }
+                adminCommentsCache[ideaId] = data;
+
+                if (!data || !data.length) {
+                    box.innerHTML = '<span class="text-[10px] text-gray-500 italic block py-1">Keine Kommentare vorhanden</span>';
+                    return;
+                }
+
+                box.innerHTML = data.map(c => `
+                    <div class="p-3 rounded-xl text-xs flex items-center justify-between border transition-all ${
+                        !c.is_published
+                            ? 'bg-rose-500/15 border-rose-500/50 ring-1 ring-rose-500/30'
+                            : c.is_pinned
+                                ? 'bg-amber-500/15 border-amber-400 ring-1 ring-amber-400/30'
+                                : c.is_official
+                                    ? 'bg-amber-500/10 border-amber-500/30'
+                                    : 'bg-surface-base border-surface-border'
+                    }">
+                        <div class="space-y-0.5 flex-1 min-w-0">
+                            <span class="font-bold text-[10px] flex items-center gap-1 flex-wrap ${
+                                !c.is_published ? 'text-rose-400'
+                                : c.is_official ? 'text-amber-400'
+                                : 'text-gray-400'
+                            }">
+                                ${!c.is_published ? '<i class="fa-solid fa-ban text-[10px]"></i> ' : ''}
+                                ${c.is_official && c.is_pinned && c.is_published ? '<i class="fa-solid fa-thumbtack text-[10px]"></i> ' : ''}
+                                ${c.is_official && !c.is_pinned && c.is_published ? '<i class="fa-solid fa-user-shield text-[10px]"></i> ' : ''}
+                                ${esc(c.author_name || 'Schülersprecher')}
+                                ${!c.is_published
+                                    ? '<span class="ml-1 px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[9px] font-bold uppercase tracking-wider">KI-gefiltert</span>'
+                                    : ''}
+                            </span>
+                            <p class="${!c.is_published ? 'text-rose-100/80 italic' : 'text-gray-200'}">${esc(c.content)}</p>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0 ml-2">
+                            ${!c.is_published ? `
+                                <button onclick="publishComment('${c.id}', '${ideaId}')"
+                                        class="text-emerald-400 hover:text-emerald-300 p-1"
+                                        title="Wieder sichtbar machen">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                </button>
+                            ` : ''}
+                            <button onclick="openEditCommentModal('${c.id}', '${ideaId}')"
+                                    class="text-indigo-400 hover:text-indigo-300 p-1"
+                                    title="Bearbeiten">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="deleteComment('${c.id}', '${ideaId}')"
+                                    class="text-rose-400 hover:text-rose-300 p-1"
+                                    title="Löschen">
+                                <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            } else {
+                box.classList.add('hidden');
+                openCommentBoxes.delete(ideaId);
+            }
+        }
+
+        function openEditCommentModal(commentId, ideaId) {
+            const comment = (adminCommentsCache[ideaId] || []).find(c => c.id === commentId);
+            if (!comment) return;
+            document.getElementById('editCommentId').value = comment.id;
+            document.getElementById('editCommentIdeaId').value = ideaId;
+            document.getElementById('editCommentAuthor').value = comment.author_name || '';
+            document.getElementById('editCommentText').value = comment.content || '';
+            document.getElementById('editCommentPinned').checked = !!comment.is_pinned;
+            document.getElementById('editCommentModal').classList.remove('hidden');
+        }
+
+        async function saveEditComment(e) {
+            e.preventDefault();
+            const id = document.getElementById('editCommentId').value;
+            const ideaId = document.getElementById('editCommentIdeaId').value;
+            const author_name = document.getElementById('editCommentAuthor').value;
+            const content = document.getElementById('editCommentText').value;
+            const is_pinned = document.getElementById('editCommentPinned').checked;
+
+            // Optimistic cache update
+            const cached = (adminCommentsCache[ideaId] || []).find(c => c.id === id);
+            const prev = cached ? { author_name: cached.author_name, content: cached.content, is_pinned: cached.is_pinned } : null;
+            if (cached) {
+                cached.author_name = author_name;
+                cached.content = content;
+                cached.is_pinned = is_pinned;
+            }
+
+            closeModal('editCommentModal');
+
+            try {
+                await adminFetch(`/api/admin/comments/${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    body: { author_name, content, is_pinned }
+                });
+            } catch (err) {
+                if (cached && prev) {
+                    cached.author_name = prev.author_name;
+                    cached.content = prev.content;
+                    cached.is_pinned = prev.is_pinned;
+                }
+                alert('Fehler: ' + err.message);
+                return;
+            }
+            await loadCommentCounts();
+            await loadPinnedComments();
+            render();
+            openCommentBoxes.add(ideaId);
+            toggleComments(ideaId, true);
+        }
+
+        async function deleteComment(commentId, ideaId) {
+            if (!confirm('Kommentar löschen?')) return;
+
+            // Optimistic: aus dem Cache entfernen
+            const arr = adminCommentsCache[ideaId];
+            let removed = null;
+            let removedIdx = -1;
+            if (arr) {
+                removedIdx = arr.findIndex(c => c.id === commentId);
+                if (removedIdx !== -1) {
+                    removed = arr[removedIdx];
+                    arr.splice(removedIdx, 1);
+                }
+            }
+
+            try {
+                await adminFetch(`/api/admin/comments/${encodeURIComponent(commentId)}`, { method: 'DELETE' });
+            } catch (e) {
+                if (arr && removed) arr.splice(removedIdx, 0, removed);
+                alert('Fehler: ' + e.message);
+                return;
+            }
+            await loadCommentCounts();
+            await loadPinnedComments();
+            render();
+            openCommentBoxes.add(ideaId);
+            toggleComments(ideaId, true);
+        }
+        async function publishComment(commentId, ideaId) {
+            if (!confirm('Diesen Kommentar für alle Schüler sichtbar machen?')) return;
+
+            const arr = adminCommentsCache[ideaId];
+            const cached = arr ? arr.find(c => c.id === commentId) : null;
+            const prevPublished = cached ? cached.is_published : false;
+
+            // Optimistisches Update
+            if (cached) cached.is_published = true;
+
+            try {
+                await adminFetch(`/api/admin/comments/${encodeURIComponent(commentId)}`, {
+                    method: 'PATCH',
+                    body: { is_published: true }
+                });
+            } catch (e) {
+                if (cached) cached.is_published = prevPublished;
+                alert('Fehler: ' + e.message);
+                return;
+            }
+
+            await loadCommentCounts();
+            render();
+            openCommentBoxes.add(ideaId);
+            toggleComments(ideaId, true);
+        }
+
+        // ============================================================
+        // MESSAGES
+        // ============================================================
+        let messagesData = [];
+
+        async function loadMessages() {
+            const box = document.getElementById('messagesList');
+            try {
+                messagesData = await adminFetch('/api/admin/messages');
+            } catch (e) {
+                box.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Fehler beim Laden</div>';
+                return;
+            }
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const box = document.getElementById('messagesList');
+            if (!messagesData.length) {
+                box.innerHTML = '<div class="text-xs text-gray-500 text-center py-3 italic">Noch keine Nachrichten erstellt.</div>';
+                return;
+            }
+            box.innerHTML = messagesData.map(m => `
+                <div class="p-3 rounded-xl border ${m.is_active ? 'bg-surface-base border-surface-border' : 'bg-surface-base/50 border-white/5 opacity-70'}">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="font-bold text-xs text-white">${esc(m.title)}</h4>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full border ${m.is_active ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' : 'bg-gray-500/10 border-gray-500/30 text-gray-400'}">
+                                    ${m.is_active ? 'Aktiv' : 'Inaktiv'}
+                                </span>
+                                <span class="text-[10px] text-indigo-300"><i class="fa-solid fa-repeat mr-1"></i>${m.display_count}× anzeigen</span>
+                            </div>
+                            <p class="text-[11px] text-gray-300 mt-1 whitespace-pre-line">${esc(m.description)}</p>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button onclick="toggleMessageActive('${m.id}')" title="Aktiv-Status umschalten" class="p-1.5 bg-surface-hover hover:bg-white/10 text-gray-300 rounded-lg border border-white/5">
+                                <i data-lucide="${m.is_active ? 'eye-off' : 'eye'}" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="openMessageModal('${m.id}')" class="p-1.5 bg-surface-hover hover:bg-white/10 text-gray-300 rounded-lg border border-white/5">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="deleteMessage('${m.id}')" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg border border-rose-500/20">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function openMessageModal(id) {
+            const heading = document.getElementById('messageModalHeading');
+            if (id) {
+                const m = messagesData.find(x => x.id === id);
+                if (!m) return;
+                heading.textContent = 'Nachricht bearbeiten';
+                document.getElementById('messageEditId').value = m.id;
+                document.getElementById('messageTitleInput').value = m.title;
+                document.getElementById('messageDescInput').value = m.description;
+                document.getElementById('messageDisplayCount').value = m.display_count;
+                document.getElementById('messageActive').checked = !!m.is_active;
+            } else {
+                heading.textContent = 'Neue Nachricht';
+                document.getElementById('messageEditId').value = '';
+                document.getElementById('messageTitleInput').value = '';
+                document.getElementById('messageDescInput').value = '';
+                document.getElementById('messageDisplayCount').value = '2';
+                document.getElementById('messageActive').checked = true;
+            }
+            document.getElementById('messageModal').classList.remove('hidden');
+        }
+
+        async function saveMessage(e) {
+            e.preventDefault();
+            const id = document.getElementById('messageEditId').value;
+            const title = document.getElementById('messageTitleInput').value.trim();
+            const description = document.getElementById('messageDescInput').value.trim();
+            const display_count = parseInt(document.getElementById('messageDisplayCount').value, 10) || 1;
+            const is_active = document.getElementById('messageActive').checked;
+
+            if (id) {
+                const m = messagesData.find(x => x.id === id);
+                if (m) {
+                    Object.assign(m, { title, description, display_count, is_active });
+                    closeModal('messageModal');
+                    renderMessages();
+                    try {
+                        await adminFetch(`/api/admin/messages/${encodeURIComponent(id)}`, {
+                            method: 'PATCH',
+                            body: { title, description, display_count, is_active }
+                        });
+                    } catch (err) {
+                        alert('Fehler: ' + err.message);
+                        await loadMessages();
+                    }
+                }
+            } else {
+                try {
+                    await adminFetch('/api/admin/messages', {
+                        method: 'POST',
+                        body: { title, description, display_count, is_active }
+                    });
+                } catch (err) {
+                    alert('Fehler: ' + err.message);
+                    return;
+                }
+                closeModal('messageModal');
+                await loadMessages();
+            }
+        }
+
+        async function toggleMessageActive(id) {
+            const m = messagesData.find(x => x.id === id);
+            if (!m) return;
+            const prev = m.is_active;
+            m.is_active = !prev;
+            renderMessages();
+            try {
+                await adminFetch(`/api/admin/messages/${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    body: { is_active: m.is_active }
+                });
+            } catch (e) {
+                m.is_active = prev;
+                renderMessages();
+                alert('Fehler: ' + e.message);
+            }
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('Nachricht löschen?')) return;
+            const idx = messagesData.findIndex(x => x.id === id);
+            if (idx === -1) return;
+            const backup = messagesData[idx];
+            messagesData.splice(idx, 1);
+            renderMessages();
+            try {
+                await adminFetch(`/api/admin/messages/${encodeURIComponent(id)}`, { method: 'DELETE' });
+            } catch (e) {
+                messagesData.splice(idx, 0, backup);
+                renderMessages();
+                alert('Fehler: ' + e.message);
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function esc(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

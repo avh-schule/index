@@ -1,37 +1,1720 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wartung</title>
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
-      color: #1a1a1a;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      text-align: center;
-      padding: 2rem;
-    }
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-    p {
-      font-size: 1.1rem;
-      color: #555;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="avh.png">
+    <title>Schüler-Ideenplattform | AVH</title>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0b0f17">
+
+    <!-- iOS-Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AVH Ideen">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
+    <!-- Allgemein -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff', 100: '#e0ebff', 500: '#6366f1', 600: '#4f46e5',
+                            700: '#4338ca', accent: '#ff4757', neon: '#00f2fe'
+                        },
+                        darkbg: '#0b0f17',
+                        cardbg: '#161e2e'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f17;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(22, 30, 46, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            will-change: transform;
+        }
+
+        .glass-nav {
+            background: rgba(11, 15, 23, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .upvote-btn-active {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            box-shadow: 0 2px 10px rgba(255, 71, 87, 0.3);
+            color: white !important;
+            border-color: transparent !important;
+        }
+
+        .idea-cta {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            will-change: transform, width, padding, border-radius, top, right;
+            transition: all 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+            background-size: 200% 100%;
+            animation: cta-shift 4s ease-in-out infinite, cta-glow 3s ease-in-out infinite;
+            box-shadow: 0 12px 30px -12px rgba(34, 211, 238, 0.75);
+        }
+
+        .idea-tagline {
+            display: inline-block;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, #67e8f9, #a5b4fc, #f9a8d4, #67e8f9);
+            background-size: 250% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: tagline-shift 4s linear infinite, tagline-float 2.8s ease-in-out infinite;
+            text-shadow: 0 0 24px rgba(103, 232, 249, 0.18);
+        }
+
+        .idea-cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(110deg, transparent 25%, rgba(255,255,255,.32) 50%, transparent 75%);
+            transform: translateX(-120%);
+            animation: cta-shine 3.8s ease-in-out infinite;
+        }
+
+        .idea-cta::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            z-index: 0;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.2);
+            pointer-events: none;
+        }
+
+        .idea-cta:hover {
+            animation-duration: 1.5s, 1.2s;
+            box-shadow: 0 16px 35px -12px rgba(34, 211, 238, 0.55);
+            transform: translateY(-3px);
+        }
+
+        .idea-cta.is-floating {
+            position: fixed;
+            top: 0.75rem;
+            right: max(1rem, calc((100vw - 56rem) / 2));
+            z-index: 45;
+            width: var(--floating-cta-width) !important;
+            height: var(--floating-cta-height) !important;
+            min-width: 0;
+            min-height: 0;
+            padding: 0.5rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8125rem;
+            gap: 0.4rem;
+            align-items: center;
+            box-shadow: 0 12px 28px -10px rgba(34, 211, 238, 0.8);
+            transform: translateY(0) scale(1);
+            transition: width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                padding 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                border-radius 0.42s ease,
+                top 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                right 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.42s ease;
+            transition-property: width, padding, border-radius, top, right, transform, box-shadow;
+        }
+
+        .idea-cta.is-floating:hover {
+            transform: translateY(0) scale(1);
+        }
+
+        .idea-cta.is-floating::after {
+            inset: 1px;
+            border-radius: 9999px;
+        }
+
+        .idea-cta.is-floating svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .idea-cta span,
+        .idea-cta svg {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes cta-shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes cta-glow { 0%, 100% { filter: saturate(1) brightness(1); } 50% { filter: saturate(1.25) brightness(1.08); } }
+        @keyframes cta-shine { 0%, 35% { transform: translateX(-120%); } 65%, 100% { transform: translateX(120%); } }
+        @keyframes tagline-shift { to { background-position: 250% center; } }
+        @keyframes tagline-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+        .idea-card-anim {
+            transition: transform 0.45s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f17; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+
+        .undo-redo-btn {
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: #9ca3af;
+            transition: color 0.2s;
+            font-size: 1rem;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            outline: none;
+        }
+        .undo-redo-btn:hover:not(:disabled) { color: #ffffff; }
+        .undo-redo-btn:disabled { color: #4b5563; cursor: default; pointer-events: none; }
+
+        /* === FEIERBLÄTTER / KONFETTI === */
+        .confetti-piece {
+            position: fixed;
+            top: -24px;
+            z-index: 60;
+            pointer-events: none;
+            border-radius: 3px;
+            will-change: transform, opacity;
+            animation-name: confetti-fall;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+        }
+        @keyframes confetti-fall {
+            0%   { transform: translateY(0) rotate(0deg) rotateY(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg) rotateY(360deg); opacity: 0; }
+        }
+
+        /* === STATUS-PANELS (Nicht möglich / Umgesetzt) === */
+        .status-toggle-btn {
+            background: rgba(22, 30, 46, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.25s ease,
+                        border-radius 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.2s ease;
+        }
+        .status-toggle-btn:active { transform: scale(0.995); }
+        .status-toggle-rejected { border-color: rgba(244, 63, 94, 0.25); }
+        .status-toggle-rejected:hover { border-color: rgba(244, 63, 94, 0.45); }
+        .status-toggle-done { border-color: rgba(16, 185, 129, 0.25); }
+        .status-toggle-done:hover { border-color: rgba(16, 185, 129, 0.45); }
+
+        .status-wrapper.is-open > .status-toggle-btn {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom-color: transparent;
+        }
+
+        .status-panel {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity 0.28s ease;
+        }
+        .status-wrapper.is-open > .status-panel {
+            max-height: 3000px;
+            opacity: 1;
+        }
+        .status-panel-inner {
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: none;
+            border-radius: 0 0 1rem 1rem;
+            background: rgba(22, 30, 46, 0.78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 1rem;
+        }
+        .status-panel-inner.status-panel-rejected { border-color: rgba(244, 63, 94, 0.25); }
+        .status-panel-inner.status-panel-done { border-color: rgba(16, 185, 129, 0.25); }
+    </style>
 </head>
-<body>
-  <div>
-    <h1>Unter Wartung</h1>
-    <p>Jemand hat die Website manipuliert.</p>
-  </div>
+<body class="min-h-screen flex flex-col pb-24 md:pb-12">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 glass-nav px-4 py-3 transition-all duration-300">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div id="brandBlock" class="flex items-center gap-3">
+                <img src="avh.png" alt="AVH Logo" class="h-10 w-auto object-contain hover:scale-105 transition-transform duration-200" onerror="this.src='https://placehold.co/100x100/6366f1/ffffff?text=AVH'">
+                <div>
+                    <h1 class="font-extrabold text-lg leading-none bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">AVH IDEENBOX</h1>
+                    <p class="text-[10px] text-gray-400 font-medium">Deine Stimme für unsere Schule</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full px-4 pt-6 flex-grow">
+
+        <!-- IDEE EINREICHEN CTA -->
+        <div id="ideaCtaSection" class="mb-8 text-center">
+            <p class="idea-tagline text-base md:text-lg mb-4">Deine Idee ist mein Programm!</p>
+            <button id="mainIdeaButton" class="idea-cta group w-full bg-gradient-to-r from-brand-600 via-indigo-500 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white text-base font-extrabold py-4 px-8 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/25 active:scale-[0.99] transition-all duration-300">
+                <i data-lucide="lightbulb" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+                <span>Idee hinzufügen</span>
+            </button>
+        </div>
+
+        <div id="welcomeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+            <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300 relative" id="welcomeContainer">
+                <button id="closeWelcomeIcon" type="button" aria-label="Willkommensfenster schließen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+                <div class="w-40 h-40 md:w-52 md:h-52 mx-auto rounded-3xl overflow-hidden border-2 border-indigo-500/40 shadow-xl mb-4">
+                    <img src="ich.png" alt="Schülersprecher" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300/4f46e5/ffffff?text=SV'">
+                </div>
+                <p class="text-xs uppercase tracking-[0.18em] text-indigo-300 font-bold">Schülersprecher</p>
+                <h2 class="text-2xl font-extrabold text-white mt-2">Danke für euer Vertrauen! 🎉</h2>
+                <p class="text-sm text-gray-300 leading-relaxed mt-3">Ich sehe eure Ideen, kann Fragen dazu beantworten und euch Rückmeldung geben. Alles bleibt <strong class="font-extrabold text-white">anonym</strong>, damit niemand Angst haben muss, erkannt zu werden.</p>
+                <p class="text-sm text-indigo-200 font-semibold mt-4">Trau dich und füge eine Idee hinzu.</p>
+                <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button id="welcomeIdeaButton" type="button" class="flex-1 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all">Idee hinzufügen</button>
+                    <button id="closeWelcomeBtn" type="button" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-xl transition-all">Später</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: ADMIN-NACHRICHT -->
+        <div id="messageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+            <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300 relative" id="messageContainer">
+                <button id="closeMessageIcon" type="button" aria-label="Nachricht schließen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center mb-4">
+                    <i data-lucide="megaphone" class="w-7 h-7 text-indigo-400"></i>
+                </div>
+                <p class="text-xs uppercase tracking-[0.18em] text-indigo-300 font-bold">Mitteilung</p>
+                <h2 id="messageTitle" class="text-2xl font-extrabold text-white mt-2"></h2>
+                <p id="messageBody" class="text-sm text-gray-300 leading-relaxed mt-3 whitespace-pre-line"></p>
+                <div class="flex mt-6">
+                    <button id="messageOkBtn" type="button" class="flex-1 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATUS SECTIONS -->
+        <div class="mb-6 space-y-3">
+            <!-- NICHT MÖGLICH -->
+            <div id="statusRejectedWrapper" class="status-wrapper hidden">
+                <button id="statusRejectedBtn" type="button" class="status-toggle-btn status-toggle-rejected w-full rounded-2xl p-3 text-left">
+                    <div class="text-[10px] uppercase tracking-[0.18em] text-rose-300/80 font-bold">Nicht möglich</div>
+                    <div class="mt-2 flex items-center justify-between">
+                        <span id="statusRejectedCount" class="text-2xl font-extrabold text-white">0</span>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-ban text-rose-300 text-lg"></i>
+                            <i id="statusRejectedChevron" class="fa-solid fa-chevron-down text-rose-300 text-sm transition-transform duration-300"></i>
+                        </div>
+                    </div>
+                </button>
+                <div class="status-panel">
+                    <div class="status-panel-inner status-panel-rejected">
+                        <div id="statusRejectedList" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UMGEsetZT -->
+            <div id="statusDoneWrapper" class="status-wrapper hidden">
+                <button id="statusDoneBtn" type="button" class="status-toggle-btn status-toggle-done w-full rounded-2xl p-3 text-left">
+                    <div class="text-[10px] uppercase tracking-[0.18em] text-emerald-300/80 font-bold">Umgesetzt</div>
+                    <div class="mt-2 flex items-center justify-between">
+                        <span id="statusDoneCount" class="text-2xl font-extrabold text-white">0</span>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-flag-checkered text-emerald-300 text-lg"></i>
+                            <i id="statusDoneChevron" class="fa-solid fa-chevron-down text-emerald-300 text-sm transition-transform duration-300"></i>
+                        </div>
+                    </div>
+                </button>
+                <div class="status-panel">
+                    <div class="status-panel-inner status-panel-done">
+                        <div id="statusDoneList" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTER & SORTING TABS -->
+        <div class="flex items-center justify-between gap-2 mb-6 overflow-x-auto pb-2 scrollbar-none">
+            <div class="flex bg-cardbg/80 p-1 rounded-2xl border border-white/5">
+                <button id="sortVotesBtn" onclick="setSort('votes')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 bg-brand-600 text-white shadow-md">
+                    🔥 Beliebteste
+                </button>
+                <button id="sortNewestBtn" onclick="setSort('newest')" class="px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-all duration-200">
+                    ✨ Neueste
+                </button>
+            </div>
+
+            <div class="text-xs text-gray-400 font-medium px-2 shrink-0">
+                <span id="ideaCount">0</span> Ideen veröffentlicht
+            </div>
+        </div>
+
+        <!-- IDEAS LIST CONTAINER -->
+        <div id="ideasList" class="space-y-4 relative">
+            <div class="glass-card rounded-2xl p-5 animate-pulse space-y-3">
+                <div class="h-4 bg-gray-700/50 rounded w-1/3"></div>
+                <div class="h-3 bg-gray-700/30 rounded w-full"></div>
+                <div class="h-3 bg-gray-700/30 rounded w-2/3"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: NEUE IDEE EINREICHEN -->
+    <div id="ideaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card w-full max-w-lg rounded-3xl p-6 relative shadow-2xl border border-white/10 transform scale-95 transition-transform duration-300" id="modalContainer">
+
+            <button id="closeModalBtn" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 p-2 rounded-full transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="mb-6">
+                <h3 class="text-xl font-extrabold text-white flex items-center gap-2">
+                    <span>🚀</span> Neue Idee einreichen
+                </h3>
+                <p class="text-xs text-gray-400 mt-1">Deine Idee wird automatisch geprüft und veröffentlicht.</p>
+            </div>
+
+            <form id="ideaForm" onsubmit="handleIdeaSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">
+                        Überschrift <span class="text-red-400">*</span>
+                    </label>
+                    <input type="text" id="ideaTitle" required maxlength="100" placeholder="z. B. Mehr Sitzgelegenheiten im Pausenhof"
+                           class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+                    <p id="titleError" class="hidden text-xs text-rose-300 mt-1"></p>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300">
+                            Beschreibung <span class="text-red-400">*</span>
+                        </label>
+                        <div class="flex items-center gap-1">
+                            <button id="undoBtn" type="button" class="undo-redo-btn" title="Rückgängig" aria-label="Rückgängig">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                            <button id="redoBtn" type="button" class="undo-redo-btn" title="Wiederholen" aria-label="Wiederholen">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="ideaDescription" required rows="4" maxlength="1000" placeholder="Beschreibe kurz, was verändert werden soll..."
+                              class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"></textarea>
+                    <div class="flex items-center justify-between gap-2 mt-2">
+                        <p id="descriptionError" class="hidden text-xs text-rose-300"></p>
+                        <button id="generateDescriptionBtn" type="button" class="ml-auto inline-flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-indigo-200 text-[11px] font-bold px-3 py-2 rounded-xl transition-all">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span id="generateDescriptionLabel">Beschreibung mit KI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">
+                        Dein Name <span class="text-gray-500 font-normal">(Freiwillig)</span>
+                    </label>
+                    <input type="text" id="ideaAuthor" placeholder="Anonym oder dein Name/Klasse"
+                           class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+                </div>
+
+                <div id="aiProcessingState" class="hidden flex items-center gap-3 bg-brand-600/10 border border-brand-500/20 p-3 rounded-xl">
+                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-brand-500 border-t-transparent"></div>
+                    <span id="aiProcessingLabel" class="text-xs text-brand-300 font-medium">KI prüft Rechtschreibung, Relevanz & Duplikate ... 10s</span>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-3">
+                    <button type="button" id="cancelModalBtn" class="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:bg-white/5 transition-all">
+                        Abbrechen
+                    </button>
+                    <button type="submit" id="submitBtn" class="bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 active:scale-95 transition-all flex items-center gap-2">
+                        <span>Veröffentlichen</span>
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: DUPLIKATS-MELDUNG -->
+    <div id="duplicateModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-amber-500/30">
+            <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="alert-circle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Diese Idee gibt es schon!</h3>
+            <p class="text-xs text-gray-300 mb-4">Ein sehr ähnlicher Vorschlag existiert bereits:</p>
+
+            <div class="bg-darkbg/80 p-4 rounded-2xl border border-white/5 text-left mb-6">
+                <h4 id="dupTitle" class="font-bold text-sm text-brand-300"></h4>
+                <p id="dupDesc" class="text-xs text-gray-400 mt-1 line-clamp-2"></p>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeDuplicateModal()" class="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-gray-300">
+                    Schließen
+                </button>
+                <button id="goToExistingBtn" class="flex-1 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 rounded-xl text-xs font-bold text-white shadow-lg shadow-brand-600/30">
+                    Zur bestehenden Idee
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <script>
+        // ==========================================
+        // 1. WORKER-KONFIGURATION
+        // ==========================================
+        const WORKER_URL = "https://empty-thunder-9d68.aliitat80.workers.dev";
+
+        async function workerFetch(path, options = {}) {
+            const res = await fetch(`${WORKER_URL}${path}`, {
+                method: options.method || 'GET',
+                headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+            if (!res.ok) {
+                let msg = `Worker error ${res.status}`;
+                try { msg += ': ' + (await res.text()); } catch (e) {}
+                throw new Error(msg);
+            }
+            return res.json();
+        }
+
+        let currentIdeas = [];
+        let commentCountsMap = {};
+        let currentSort = 'votes';
+        let deviceId = getOrCreateDeviceId();
+        let moderationCache = null;
+
+        const commentsCache = {};
+        const commentsSubmitting = new Set();
+        const commentsLastText = {};
+
+        const officialCommentsCache = {};
+
+        let undoStack = [];
+        let redoStack = [];
+        let currentState = { title: '', description: '' };
+
+        const openCommentSections = new Set();
+
+        const STATUS_CONFIG = {
+            'waiting_for_review': { label: '<i class="fa-solid fa-clock mr-1"></i> In Prüfung', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
+            'in_discussion': { label: '<i class="fa-solid fa-comments mr-1"></i> In Besprechung', color: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
+            'reviewing': { label: '<i class="fa-solid fa-check-circle mr-1"></i> Angenommen', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+            'in_progress': { label: '<i class="fa-solid fa-hammer mr-1"></i> Wird umgesetzt', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+            'done': { label: '<i class="fa-solid fa-flag-checkered mr-1"></i> Umgesetzt', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+            'rejected': { label: '<i class="fa-solid fa-ban mr-1"></i> Nicht möglich', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
+            'invisible': { label: '<i class="fa-solid fa-eye-slash mr-1"></i> Unsichtbar', color: 'bg-gray-500/10 text-gray-300 border-gray-500/20' }
+        };
+
+        // ==========================================
+        // 2. INITIALISIERUNG
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setupModalListeners();
+            setupWelcomeModal();
+            setupMessageModal();
+            setupScrollCta();
+            document.getElementById('generateDescriptionBtn').addEventListener('click', generateDescription);
+            document.getElementById('undoBtn').addEventListener('click', undo);
+            document.getElementById('redoBtn').addEventListener('click', redo);
+            document.getElementById('statusRejectedBtn').addEventListener('click', () => toggleStatusPanel('rejected'));
+            document.getElementById('statusDoneBtn').addEventListener('click', () => toggleStatusPanel('done'));
+
+            ['ideaTitle', 'ideaDescription'].forEach(id => {
+                document.getElementById(id).addEventListener('input', () => {
+                    pushUndo();
+                });
+            });
+
+            ['undoBtn', 'redoBtn'].forEach(id => {
+                document.getElementById(id).addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                });
+            });
+
+            registerPlatformVisitor();
+            loadIdeas();
+            resetHistory();
+            updateUndoRedoButtons();
+
+            setTimeout(() => showPendingMessages(), 1200);
+
+            setInterval(() => {
+                const active = document.activeElement;
+                if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+                const modal = document.getElementById('ideaModal');
+                if (modal && !modal.classList.contains('hidden')) return;
+                refreshRealtime();
+            }, 300000);
+
+            let lastRealtime = 0;
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) return;
+                const now = Date.now();
+                if (now - lastRealtime < 60000) return;
+                lastRealtime = now;
+                refreshRealtime();
+            });
+        });
+
+        async function refreshRealtime() {
+            try {
+                await loadCommentCounts();
+                const fresh = await workerFetch('/api/ideas');
+                const prevSig = JSON.stringify(currentIdeas.map(i => [i.id, i.upvotes_count, i.status, i.title, i.description]));
+                const nextSig = JSON.stringify((fresh || []).map(i => [i.id, i.upvotes_count, i.status, i.title, i.description]));
+                currentIdeas = fresh || [];
+                document.getElementById('ideaCount').textContent = getVisibleIdeas().length;
+                updateStatusHighlights();
+                if (prevSig !== nextSig) {
+                    sortAndRenderIdeas();
+                } else {
+                    currentIdeas.forEach(idea => {
+                        const card = document.getElementById(`idea-card-${idea.id}`);
+                        if (!card) return;
+                        const btn = card.querySelector('button[onclick*="toggleComments"]');
+                        if (btn) {
+                            const c = commentCountsMap[idea.id] || 0;
+                            btn.querySelector('span').textContent = `Kommentare (${c})`;
+                        }
+                    });
+                }
+                openCommentSections.forEach(id => {
+                    loadComments(id);
+                });
+            } catch (e) {
+                console.warn('Realtime refresh failed:', e);
+            }
+        }
+
+        function getOrCreateDeviceId() {
+            let id = localStorage.getItem('avh_device_id');
+            if (!id) {
+                id = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+                localStorage.setItem('avh_device_id', id);
+            }
+            return id;
+        }
+
+        function setupModalListeners() {
+            const modal = document.getElementById('ideaModal');
+            const container = document.getElementById('modalContainer');
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                container.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            };
+
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+        }
+
+        function setupScrollCta() {
+            const section = document.getElementById('ideaCtaSection');
+            const button = document.getElementById('mainIdeaButton');
+            const header = document.querySelector('header');
+            const headerInner = header ? header.firstElementChild : null;
+            const brandBlock = document.getElementById('brandBlock');
+            if (!section || !button) return;
+
+            let floatThreshold = section.offsetTop + section.offsetHeight;
+            let isFloating = false;
+
+            const recalculateThreshold = () => {
+                if (!isFloating) {
+                    floatThreshold = section.offsetTop + section.offsetHeight;
+                }
+            };
+
+            const getFloatingWidth = () => {
+                const savedPadding = brandBlock.style.paddingRight;
+                brandBlock.style.paddingRight = '';
+                const menuWidth = brandBlock.getBoundingClientRect().width;
+                brandBlock.style.paddingRight = savedPadding;
+                return Math.max(150, Math.min(210, menuWidth * 0.5));
+            };
+
+            const getFloatingHeight = () => Math.round(headerInner.getBoundingClientRect().height);
+
+            const updateFloatingMetrics = () => {
+                if (!isFloating || !headerInner || !brandBlock) return;
+                const innerBox = headerInner.getBoundingClientRect();
+                const measuredWidth = getFloatingWidth();
+                const measuredHeight = getFloatingHeight();
+                button.style.setProperty('--floating-cta-width', `${Math.round(measuredWidth)}px`);
+                button.style.setProperty('--floating-cta-height', `${measuredHeight}px`);
+                button.style.right = `${Math.max(16, window.innerWidth - innerBox.right)}px`;
+                brandBlock.style.paddingRight = `${Math.round(measuredWidth + 16)}px`;
+            };
+
+            const updateCta = () => {
+                const shouldFloat = window.scrollY > floatThreshold;
+                if (shouldFloat === isFloating) return;
+
+                if (shouldFloat && headerInner && brandBlock) {
+                    const innerBox = headerInner.getBoundingClientRect();
+                    const measuredWidth = getFloatingWidth();
+                    const measuredHeight = getFloatingHeight();
+                    button.style.setProperty('--floating-cta-width', `${Math.round(measuredWidth)}px`);
+                    button.style.setProperty('--floating-cta-height', `${measuredHeight}px`);
+                    button.style.right = `${Math.max(16, window.innerWidth - innerBox.right)}px`;
+                    brandBlock.style.paddingRight = `${Math.round(measuredWidth + 16)}px`;
+                }
+
+                isFloating = shouldFloat;
+                button.classList.toggle('is-floating', shouldFloat);
+
+                if (!shouldFloat) {
+                    button.style.removeProperty('--floating-cta-width');
+                    button.style.removeProperty('--floating-cta-height');
+                    button.style.right = '';
+                    brandBlock.style.paddingRight = '';
+                }
+            };
+
+            window.addEventListener('scroll', updateCta, { passive: true });
+            window.addEventListener('resize', () => {
+                recalculateThreshold();
+                updateFloatingMetrics();
+                updateCta();
+            });
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', updateFloatingMetrics);
+            }
+            if (window.ResizeObserver && headerInner) {
+                new ResizeObserver(updateFloatingMetrics).observe(headerInner);
+            }
+            updateCta();
+        }
+
+        function launchConfetti() {
+            const colors = ['#6366f1', '#00f2fe', '#ff4757', '#fbbf24', '#34d399', '#f472b6', '#a78bfa', '#22d3ee'];
+            const shapes = ['0px', '2px', '50%', '2px 8px 2px 8px'];
+            const count = 80;
+            for (let i = 0; i < count; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                const size = 6 + Math.random() * 8;
+                piece.style.left = (Math.random() * 100) + 'vw';
+                piece.style.width = size + 'px';
+                piece.style.height = (size * (0.6 + Math.random() * 0.8)) + 'px';
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.borderRadius = shapes[Math.floor(Math.random() * shapes.length)];
+                piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+                piece.style.animationDelay = (Math.random() * 0.7) + 's';
+                piece.style.opacity = String(0.75 + Math.random() * 0.25);
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 6000);
+            }
+        }
+
+        function setupWelcomeModal() {
+            const welcome = document.getElementById('welcomeModal');
+            const container = document.getElementById('welcomeContainer');
+            const openWelcome = () => {
+                welcome.classList.remove('hidden');
+                setTimeout(() => {
+                    welcome.classList.remove('opacity-0');
+                    container.classList.remove('scale-95');
+                }, 10);
+                launchConfetti();
+                setTimeout(launchConfetti, 600);
+            };
+            const closeWelcome = () => {
+                welcome.classList.add('opacity-0');
+                container.classList.add('scale-95');
+                setTimeout(() => welcome.classList.add('hidden'), 300);
+            };
+
+            document.getElementById('mainIdeaButton').addEventListener('click', openModal);
+            document.getElementById('welcomeIdeaButton').addEventListener('click', () => {
+                closeWelcome();
+                openModal();
+            });
+            document.getElementById('closeWelcomeBtn').addEventListener('click', closeWelcome);
+            document.getElementById('closeWelcomeIcon').addEventListener('click', closeWelcome);
+
+            localStorage.removeItem('avh_visit_count');
+
+            const visits = Number(localStorage.getItem('avh_welcome_v2') || '0') + 1;
+            localStorage.setItem('avh_welcome_v2', String(visits));
+            if (visits <= 2) {
+                openWelcome();
+            }
+        }
+
+        // ==========================================
+        // ADMIN-NACHRICHTEN (localStorage, robust)
+        // ==========================================
+        function safeMsgKey(id) {
+            return 'avh_msg_count_' + String(id).replace(/[^a-zA-Z0-9]/g, '_');
+        }
+
+        function getMessageShowCount(id) {
+            try {
+                return parseInt(localStorage.getItem(safeMsgKey(id)) || '0', 10) || 0;
+            } catch (e) { return 0; }
+        }
+
+        function setMessageShowCount(id, count) {
+            try {
+                localStorage.setItem(safeMsgKey(id), String(count));
+            } catch (e) {}
+        }
+
+        let messageModalOpen = false;
+        const messagesShownThisSession = new Set();
+
+        function setupMessageModal() {
+            const modal = document.getElementById('messageModal');
+            const container = document.getElementById('messageContainer');
+            const close = () => {
+                modal.classList.add('opacity-0');
+                container.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    messageModalOpen = false;
+                    setTimeout(() => showPendingMessages(), 600);
+                }, 300);
+            };
+            document.getElementById('closeMessageIcon').addEventListener('click', close);
+            document.getElementById('messageOkBtn').addEventListener('click', close);
+        }
+
+        async function showPendingMessages() {
+            if (messageModalOpen) return;
+            const welcome = document.getElementById('welcomeModal');
+            const ideaModal = document.getElementById('ideaModal');
+            const dupModal = document.getElementById('duplicateModal');
+            if ((welcome && !welcome.classList.contains('hidden')) ||
+                (ideaModal && !ideaModal.classList.contains('hidden')) ||
+                (dupModal && !dupModal.classList.contains('hidden'))) {
+                setTimeout(showPendingMessages, 1500);
+                return;
+            }
+
+            let messages = [];
+            try {
+                messages = await workerFetch('/api/messages');
+            } catch (e) { return; }
+            if (!messages || !messages.length) return;
+
+            for (const msg of messages) {
+                if (messagesShownThisSession.has(msg.id)) continue;
+                const shown = getMessageShowCount(msg.id);
+                const max = Math.max(1, parseInt(msg.display_count, 10) || 1);
+                if (shown < max) {
+                    setMessageShowCount(msg.id, shown + 1);
+                    messagesShownThisSession.add(msg.id);
+                    openMessageModalFor(msg);
+                    return;
+                }
+            }
+        }
+
+        function openMessageModalFor(msg) {
+            const modal = document.getElementById('messageModal');
+            const container = document.getElementById('messageContainer');
+            document.getElementById('messageTitle').textContent = msg.title || '';
+            document.getElementById('messageBody').textContent = msg.description || '';
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                container.classList.remove('scale-95');
+            });
+            messageModalOpen = true;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openModal() {
+            const modal = document.getElementById('ideaModal');
+            const container = document.getElementById('modalContainer');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                container.classList.remove('scale-95');
+            }, 10);
+            resetHistory();
+            updateUndoRedoButtons();
+        }
+
+        async function registerPlatformVisitor() {
+            const visitorKey = 'avh_visitor_key';
+            let visitorId = localStorage.getItem(visitorKey);
+            if (!visitorId) {
+                visitorId = getOrCreateDeviceId();
+                localStorage.setItem(visitorKey, visitorId);
+            }
+            try {
+                await workerFetch('/api/visitors', { method: 'POST', body: { visitorId } });
+            } catch (e) {
+                console.warn('Besucherregistrierung fehlgeschlagen:', e);
+            }
+        }
+
+        // ==========================================
+        // 3. UNDO/REDO
+        // ==========================================
+        function getCurrentFormState() {
+            return {
+                title: document.getElementById('ideaTitle').value,
+                description: document.getElementById('ideaDescription').value
+            };
+        }
+
+        function setFormState(state) {
+            document.getElementById('ideaTitle').value = state.title;
+            document.getElementById('ideaDescription').value = state.description;
+        }
+
+        function pushUndo() {
+            const newState = getCurrentFormState();
+            if (newState.title === currentState.title && newState.description === currentState.description) {
+                return;
+            }
+            undoStack.push(currentState);
+            currentState = newState;
+            redoStack = [];
+            updateUndoRedoButtons();
+        }
+
+        function undo() {
+            if (undoStack.length === 0) return;
+            redoStack.push(currentState);
+            currentState = undoStack.pop();
+            setFormState(currentState);
+            updateUndoRedoButtons();
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+            undoStack.push(currentState);
+            currentState = redoStack.pop();
+            setFormState(currentState);
+            updateUndoRedoButtons();
+        }
+
+        function resetHistory() {
+            undoStack = [];
+            redoStack = [];
+            currentState = getCurrentFormState();
+            updateUndoRedoButtons();
+        }
+
+        function updateUndoRedoButtons() {
+            document.getElementById('undoBtn').disabled = undoStack.length === 0;
+            document.getElementById('redoBtn').disabled = redoStack.length === 0;
+        }
+
+        // ==========================================
+        // 4. DATEN LADEN
+        // ==========================================
+        async function loadCommentCounts() {
+            try {
+                commentCountsMap = await workerFetch('/api/comment-counts');
+            } catch (e) {
+                console.warn('Kommentar-Zähler konnten nicht geladen werden.', e);
+            }
+        }
+
+        async function loadAllOfficialComments() {
+            try {
+                const map = await workerFetch('/api/official-comments');
+                Object.keys(officialCommentsCache).forEach(k => delete officialCommentsCache[k]);
+                Object.assign(officialCommentsCache, map || {});
+            } catch (e) { /* ignore */ }
+        }
+
+        function updateStatusHighlights() {
+            const rejectedCount = currentIdeas.filter(i => i.status === 'rejected').length;
+            const doneCount = currentIdeas.filter(i => i.status === 'done').length;
+
+            const rejectedWrapper = document.getElementById('statusRejectedWrapper');
+            const doneWrapper = document.getElementById('statusDoneWrapper');
+            document.getElementById('statusRejectedCount').textContent = rejectedCount;
+            document.getElementById('statusDoneCount').textContent = doneCount;
+
+            rejectedWrapper.classList.toggle('hidden', rejectedCount === 0);
+            doneWrapper.classList.toggle('hidden', doneCount === 0);
+
+            if (rejectedCount === 0) rejectedWrapper.classList.remove('is-open');
+            if (doneCount === 0) doneWrapper.classList.remove('is-open');
+
+            updateStatusChevrons();
+        }
+
+        function updateStatusChevrons() {
+            const rOpen = document.getElementById('statusRejectedWrapper').classList.contains('is-open');
+            const dOpen = document.getElementById('statusDoneWrapper').classList.contains('is-open');
+            const rCh = document.getElementById('statusRejectedChevron');
+            const dCh = document.getElementById('statusDoneChevron');
+            if (rCh) rCh.style.transform = rOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+            if (dCh) dCh.style.transform = dOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        async function getOfficialStatusReason(ideaId) {
+            try {
+                const comment = await workerFetch(`/api/ideas/${ideaId}/official-comment`);
+                if (!comment) return 'Kein offizieller Hinweis hinterlegt.';
+                return comment.content || 'Kein offizieller Hinweis hinterlegt.';
+            } catch (e) {
+                return 'Kein offizieller Hinweis hinterlegt.';
+            }
+        }
+
+        async function toggleStatusPanel(status) {
+            const isRejected = status === 'rejected';
+            const wrapper = document.getElementById(isRejected ? 'statusRejectedWrapper' : 'statusDoneWrapper');
+            const otherWrapper = document.getElementById(isRejected ? 'statusDoneWrapper' : 'statusRejectedWrapper');
+
+            // Anderes Panel immer schließen
+            otherWrapper.classList.remove('is-open');
+
+            // Gleiches Panel: togglen
+            if (wrapper.classList.contains('is-open')) {
+                wrapper.classList.remove('is-open');
+                updateStatusChevrons();
+                return;
+            }
+
+            const matchingIdeas = currentIdeas.filter(i => i.status === status);
+            if (!matchingIdeas.length) return;
+
+            const listEl = document.getElementById(isRejected ? 'statusRejectedList' : 'statusDoneList');
+            listEl.innerHTML = '<div class="text-xs text-gray-400 text-center py-2"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Lade...</div>';
+            wrapper.classList.add('is-open');
+            updateStatusChevrons();
+
+            const entries = await Promise.all(matchingIdeas.map(async idea => {
+                const reason = await getOfficialStatusReason(idea.id);
+                return `
+                    <div class="w-full text-left p-3 rounded-xl bg-darkbg/60 border border-white/5">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <button type="button" onclick="jumpToIdea('${idea.id}')"
+                                    class="text-xs font-bold text-white flex-1 text-left hover:text-indigo-300 transition-colors truncate">
+                                ${escapeHtml(idea.title)}
+                            </button>
+                            <button type="button" onclick="toggleStatusReason('${idea.id}')" aria-label="Details ein-/ausblenden"
+                                    class="w-6 h-6 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors shrink-0">
+                                <i class="status-chevron fa-solid fa-chevron-right text-[10px] text-gray-400"
+                                   data-idea-id="${idea.id}" style="transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);"></i>
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-gray-400 line-clamp-2">${escapeHtml(idea.description)}</p>
+                        <div id="status-reason-${idea.id}" class="hidden mt-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-2">
+                            <div class="text-[9px] uppercase tracking-[0.14em] text-amber-300 font-bold mb-1">${status === 'done' ? 'Details' : 'Grund'}</div>
+                            <p class="text-[11px] text-amber-100 leading-relaxed">${escapeHtml(reason)}</p>
+                        </div>
+                    </div>
+                `;
+            }));
+
+            listEl.innerHTML = entries.join('');
+        }
+
+        function jumpToIdea(ideaId) {
+            const card = document.getElementById(`idea-card-${ideaId}`);
+            if (card) {
+                document.getElementById('statusRejectedWrapper').classList.remove('is-open');
+                document.getElementById('statusDoneWrapper').classList.remove('is-open');
+                updateStatusChevrons();
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function toggleStatusReason(ideaId) {
+            const el = document.getElementById(`status-reason-${ideaId}`);
+            const chevron = document.querySelector(`.status-chevron[data-idea-id="${ideaId}"]`);
+            if (!el) return;
+            const isHidden = el.classList.contains('hidden');
+            if (isHidden) {
+                el.classList.remove('hidden');
+                if (chevron) chevron.style.transform = 'rotate(90deg)';
+            } else {
+                el.classList.add('hidden');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        async function loadIdeas() {
+            await loadCommentCounts();
+
+            try {
+                currentIdeas = await workerFetch('/api/ideas');
+            } catch (e) {
+                showToast('Fehler beim Laden der Ideen', 'error');
+                return;
+            }
+
+            await loadAllOfficialComments();
+
+            document.getElementById('ideaCount').textContent = getVisibleIdeas().length;
+            updateStatusHighlights();
+            sortAndRenderIdeas();
+        }
+
+        function setSort(type) {
+            currentSort = type;
+            document.getElementById('sortVotesBtn').className = type === 'votes'
+                ? 'px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 bg-brand-600 text-white shadow-md'
+                : 'px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-all duration-200';
+
+            document.getElementById('sortNewestBtn').className = type === 'newest'
+                ? 'px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 bg-brand-600 text-white shadow-md'
+                : 'px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-all duration-200';
+
+            sortAndRenderIdeas();
+        }
+
+        function sortAndRenderIdeas() {
+            const cardsBefore = document.querySelectorAll('.idea-card-anim');
+            const firstPositions = new Map();
+
+            cardsBefore.forEach(card => {
+                const id = card.id.replace('idea-card-', '');
+                firstPositions.set(id, card.getBoundingClientRect().top);
+            });
+
+            if (currentSort === 'votes') {
+                currentIdeas.sort((a, b) => b.upvotes_count - a.upvotes_count || new Date(b.created_at) - new Date(a.created_at));
+            } else {
+                currentIdeas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            }
+
+            renderIdeas();
+
+            requestAnimationFrame(() => {
+                currentIdeas.forEach(idea => {
+                    const card = document.getElementById(`idea-card-${idea.id}`);
+                    if (!card) return;
+
+                    const firstTop = firstPositions.get(idea.id);
+                    if (firstTop !== undefined) {
+                        const lastTop = card.getBoundingClientRect().top;
+                        const deltaY = firstTop - lastTop;
+
+                        if (deltaY !== 0) {
+                            card.style.transition = 'none';
+                            card.style.transform = `translateY(${deltaY}px)`;
+
+                            requestAnimationFrame(() => {
+                                card.style.transition = 'transform 0.45s cubic-bezier(0.2, 0, 0, 1)';
+                                card.style.transform = '';
+                            });
+                        }
+                    }
+                });
+            });
+        }
+
+        // ==========================================
+        // 5. RENDERN
+        // ==========================================
+        function getVisibleIdeas() {
+            return currentIdeas.filter(idea => !['rejected', 'done', 'invisible'].includes(idea.status));
+        }
+
+        function renderIdeas() {
+            const container = document.getElementById('ideasList');
+            const votedSet = getVotedIdeasSet();
+            const visibleIdeas = getVisibleIdeas();
+
+            if (visibleIdeas.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-card rounded-3xl p-12 text-center border border-white/5">
+                        <p class="text-4xl mb-3">🌱</p>
+                        <h3 class="text-base font-bold text-white">Noch keine Ideen vorhanden</h3>
+                        <p class="text-xs text-gray-400 mt-1">Sei der Erste und reiche einen Vorschlag ein!</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = visibleIdeas.map(idea => {
+                const isVoted = votedSet.has(idea.id);
+                const statusInfo = STATUS_CONFIG[idea.status] || STATUS_CONFIG['waiting_for_review'];
+                const timeAgo = formatTimeAgo(idea.created_at);
+                const commentsCount = commentCountsMap[idea.id] || 0;
+                const cachedOfficial = officialCommentsCache[idea.id];
+
+                return `
+                    <div id="idea-card-${idea.id}" class="glass-card idea-card-anim rounded-2xl p-5 border border-white/5 hover:border-white/10 relative">
+                        <div class="flex items-start gap-4">
+
+                            <button onclick="handleVote('${idea.id}')"
+                                    title="${isVoted ? 'Stimme zurücknehmen' : 'Unterstützen'}"
+                                    class="shrink-0 flex flex-col items-center justify-center w-12 h-14 rounded-xl border border-white/10 ${isVoted ? 'upvote-btn-active' : 'bg-darkbg/60 text-gray-300 hover:border-brand-500/50 hover:text-white'} transition-all duration-150 active:scale-95">
+                                <i data-lucide="chevron-up" class="w-5 h-5"></i>
+                                <span class="text-xs font-extrabold mt-0.5">${idea.upvotes_count}</span>
+                            </button>
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${statusInfo.color}">
+                                            ${statusInfo.label}
+                                        </span>
+                                        ${!idea.is_my_idea ? '<span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-gray-500/30 bg-gray-500/10 text-gray-400">Schüleridee</span>' : ''}
+                                    </div>
+                                    <span class="text-[11px] text-gray-500 font-medium">${timeAgo}</span>
+                                </div>
+
+                                <h3 class="text-base font-bold text-white tracking-tight leading-snug mb-1">
+                                    ${escapeHtml(idea.title)}
+                                </h3>
+
+                                <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-line mb-3">
+                                    ${escapeHtml(idea.description)}
+                                </p>
+
+                                <div id="official-status-${idea.id}" class="${cachedOfficial ? '' : 'hidden '}mb-4 pt-3 border-t border-white/5">
+                                    ${cachedOfficial ? renderOfficialStatusHtml(cachedOfficial) : ''}
+                                </div>
+
+                                <div class="flex items-center justify-between text-[11px] text-gray-400 pt-2 border-t border-white/5">
+                                    <span class="flex items-center gap-1 font-medium">
+                                        <i data-lucide="user" class="w-3 h-3 text-brand-500"></i>
+                                        ${escapeHtml(idea.author_name || 'Anonym')}
+                                    </span>
+
+                                    <button onclick="toggleComments('${idea.id}')" class="flex items-center gap-1.5 hover:text-white transition-colors">
+                                        <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                                        <span>Kommentare (${commentsCount})</span>
+                                    </button>
+                                </div>
+
+                                <div id="comments-section-${idea.id}" class="${openCommentSections.has(idea.id) ? '' : 'hidden '}mt-4 pt-3 border-t border-white/5 space-y-3">
+                                    <div id="comments-list-${idea.id}" class="space-y-2 text-xs">
+                                        ${openCommentSections.has(idea.id) && commentsCache[idea.id]
+                                            ? renderCommentsHtml(commentsCache[idea.id])
+                                            : '<div class="text-gray-500 text-center py-2">Lade Kommentare...</div>'}
+                                    </div>
+                                    <form onsubmit="handleCommentSubmit(event, '${idea.id}')" class="flex gap-2 pt-1">
+                                        <input type="text" id="comment-input-${idea.id}" placeholder="Kommentar schreiben..." required
+                                               class="flex-1 bg-darkbg/90 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500">
+                                        <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all">
+                                            Senden
+                                        </button>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+
+            openCommentSections.forEach(ideaId => {
+                loadComments(ideaId);
+            });
+        }
+
+        function renderOfficialStatusHtml(comment) {
+            if (!comment) return '';
+            return `
+                <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3 rounded-xl border border-amber-500/30 shadow-lg relative overflow-hidden">
+                    <div class="flex justify-between items-center text-[10px] mb-1">
+                        <span class="font-black text-amber-400 flex items-center gap-1 uppercase tracking-wider">
+                            ${escapeHtml(comment.author_name || 'Schülersprecher')}
+                        </span>
+                        <span class="text-amber-500/60 font-medium">${formatTimeAgo(comment.created_at)}</span>
+                    </div>
+                    <p class="text-amber-100 text-xs font-medium leading-relaxed">${escapeHtml(comment.content)}</p>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 6. VOTEN
+        // ==========================================
+        function getVotedIdeasSet() {
+            const votes = JSON.parse(localStorage.getItem('avh_user_upvotes') || '[]');
+            return new Set(votes);
+        }
+
+        async function handleVote(ideaId) {
+            const votedSet = getVotedIdeasSet();
+            const idea = currentIdeas.find(i => i.id === ideaId);
+            if (!idea) return;
+
+            const hasVoted = votedSet.has(ideaId);
+
+            if (hasVoted) {
+                votedSet.delete(ideaId);
+                idea.upvotes_count = Math.max(0, idea.upvotes_count - 1);
+                localStorage.setItem('avh_user_upvotes', JSON.stringify(Array.from(votedSet)));
+
+                sortAndRenderIdeas();
+
+                try {
+                    await workerFetch(`/api/ideas/${ideaId}/vote`, {
+                        method: 'POST',
+                        body: { action: 'decrement', deviceId, currentCount: idea.upvotes_count }
+                    });
+                } catch (e) {
+                    console.warn('Vote fehlgeschlagen:', e);
+                }
+                showToast('Stimme zurückgenommen', 'info');
+            } else {
+                votedSet.add(ideaId);
+                idea.upvotes_count++;
+                localStorage.setItem('avh_user_upvotes', JSON.stringify(Array.from(votedSet)));
+
+                sortAndRenderIdeas();
+
+                try {
+                    await workerFetch(`/api/ideas/${ideaId}/vote`, {
+                        method: 'POST',
+                        body: { action: 'increment', deviceId, currentCount: idea.upvotes_count }
+                    });
+                } catch (e) {
+                    console.warn('Vote fehlgeschlagen:', e);
+                }
+                showToast('Idee unterstützt! 🚀', 'success');
+            }
+        }
+
+        // ==========================================
+        // 7. FORM / KI
+        // ==========================================
+        function setFormMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message || '';
+            element.classList.toggle('hidden', !message);
+        }
+
+        function startModerationCountdown() {
+            const label = document.getElementById('aiProcessingLabel');
+            let seconds = 10;
+            let stopped = false;
+            const updateLabel = value => {
+                label.textContent = value === 'done'
+                    ? 'Fast fertig'
+                    : `KI prüft Rechtschreibung, Relevanz & Duplikate ... ${value}s`;
+            };
+            updateLabel(seconds);
+            let timer;
+            const tick = () => {
+                if (stopped) return;
+                seconds = seconds > 0 ? seconds - 1 : 0;
+                updateLabel(seconds === 0 ? 'done' : seconds);
+                const delay = seconds <= 3 ? 1500 : seconds <= 5 ? 900 : 1000;
+                timer = setTimeout(tick, delay);
+            };
+            timer = setTimeout(tick, 1000);
+            return () => {
+                stopped = true;
+                clearTimeout(timer);
+            };
+        }
+
+        async function generateDescription() {
+            const title = document.getElementById('ideaTitle').value.trim();
+            const currentDescription = document.getElementById('ideaDescription').value.trim();
+            const button = document.getElementById('generateDescriptionBtn');
+            const label = document.getElementById('generateDescriptionLabel');
+            if (!title) {
+                setFormMessage('titleError', 'Gib zuerst eine Überschrift ein.');
+                return;
+            }
+
+            pushUndo();
+
+            button.disabled = true;
+            label.textContent = currentDescription ? 'Wird verbessert ...' : 'Wird erstellt ...';
+            try {
+                const res = await workerFetch('/api/ai/generate-description', {
+                    method: 'POST',
+                    body: { title, currentDescription }
+                });
+
+                if (res.status === 'ERROR') {
+                    setFormMessage('descriptionError', 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden.');
+                    return;
+                }
+                if (res.status === 'REJECTED') {
+                    setFormMessage('titleError', res.reason || 'Diese Überschrift ist nicht erlaubt.');
+                    return;
+                }
+                if (res.status === 'DUPLICATE') {
+                    if (res.idea) {
+                        showDuplicateModal(res.idea);
+                    } else {
+                        setFormMessage('descriptionError', 'Diese Idee ist bereits vorhanden.');
+                    }
+                    return;
+                }
+
+                if (res.status === 'SUCCESS') {
+                    document.getElementById('ideaTitle').value = res.title;
+                    document.getElementById('ideaDescription').value = res.description;
+
+                    currentState = getCurrentFormState();
+                    redoStack = [];
+                    updateUndoRedoButtons();
+
+                    moderationCache = {
+                        inputKey: `${title}\n${currentDescription}`,
+                        key: `${res.title}\n${res.description}`,
+                        result: res.moderation || {
+                            result: 'CORRECTED',
+                            corrected_title: res.title,
+                            corrected_description: res.description,
+                            duplicate_idea_id: '',
+                            reason: ''
+                        }
+                    };
+                    setFormMessage('descriptionError', '');
+                }
+            } catch (error) {
+                setFormMessage('descriptionError', 'Die KI konnte gerade keine Beschreibung erstellen.');
+            } finally {
+                button.disabled = false;
+                label.textContent = document.getElementById('ideaDescription').value.trim() ? 'Beschreibung verbessern' : 'Beschreibung mit KI';
+            }
+        }
+
+        // ==========================================
+        // 8. HANDLERS
+        // ==========================================
+        async function handleIdeaSubmit(e) {
+            e.preventDefault();
+            const rawTitle = document.getElementById('ideaTitle').value.trim();
+            const rawDescription = document.getElementById('ideaDescription').value.trim();
+            const author = document.getElementById('ideaAuthor').value.trim() || 'Anonym';
+
+            const submitBtn = document.getElementById('submitBtn');
+            const aiState = document.getElementById('aiProcessingState');
+
+            if (!rawDescription) {
+                setFormMessage('descriptionError', 'Bitte schreibe eine Beschreibung oder lasse sie zuerst von der KI erstellen.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            aiState.classList.remove('hidden');
+            const stopCountdown = startModerationCountdown();
+            setFormMessage('titleError', '');
+            setFormMessage('descriptionError', '');
+
+            try {
+                const cacheKey = `${rawTitle}\n${rawDescription}`;
+                const body = { title: rawTitle, description: rawDescription, author };
+                if (moderationCache && (moderationCache.key === cacheKey || moderationCache.inputKey === cacheKey)) {
+                    body.cachedModeration = moderationCache.result;
+                }
+
+                const res = await workerFetch('/api/ideas', { method: 'POST', body });
+
+                if (res.result === 'ERROR') {
+                    setFormMessage('descriptionError', res.reason || 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden. Bitte versuche es erneut.');
+                    return;
+                }
+
+                if (res.result === 'DUPLICATE') {
+                    if (res.idea) {
+                        showDuplicateModal(res.idea);
+                        resetFormState();
+                        return;
+                    }
+                    setFormMessage('descriptionError', 'Diese Idee ist bereits vorhanden.');
+                    return;
+                }
+
+                if (res.result === 'REJECTED') {
+                    const message = res.reason || 'Diese Idee kann so nicht veröffentlicht werden.';
+                    setFormMessage(rawDescription ? 'descriptionError' : 'titleError', message);
+                    showToast(`Nicht veröffentlicht: ${message}`, 'error');
+                    return;
+                }
+
+                showToast(res.result === 'CORRECTED' ? 'Idee korrigiert & veröffentlicht! ✨' : 'Idee veröffentlicht! 🎉', 'success');
+
+                document.getElementById('ideaForm').reset();
+                resetHistory();
+                closeModal();
+                await loadIdeas();
+                setSort('newest');
+
+            } catch (err) {
+                showToast('Fehler beim Speichern der Idee.', 'error');
+            } finally {
+                stopCountdown();
+                resetFormState();
+            }
+        }
+
+        function resetFormState() {
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('aiProcessingState').classList.add('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('ideaModal').classList.add('opacity-0');
+            setTimeout(() => document.getElementById('ideaModal').classList.add('hidden'), 300);
+        }
+
+        function showDuplicateModal(idea) {
+            document.getElementById('dupTitle').textContent = idea.title;
+            document.getElementById('dupDesc').textContent = idea.description;
+
+            const btn = document.getElementById('goToExistingBtn');
+            btn.onclick = () => {
+                closeDuplicateModal();
+                closeModal();
+                const card = document.getElementById(`idea-card-${idea.id}`);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            };
+            document.getElementById('duplicateModal').classList.remove('hidden');
+        }
+
+        function closeDuplicateModal() {
+            document.getElementById('duplicateModal').classList.add('hidden');
+        }
+
+        async function toggleComments(ideaId) {
+            const section = document.getElementById(`comments-section-${ideaId}`);
+            if (!section) return;
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+                openCommentSections.add(ideaId);
+                loadComments(ideaId);
+            } else {
+                section.classList.add('hidden');
+                openCommentSections.delete(ideaId);
+            }
+        }
+
+        async function loadComments(ideaId) {
+            const listContainer = document.getElementById(`comments-list-${ideaId}`);
+            if (!listContainer) return;
+
+            let data = [];
+            try {
+                data = await workerFetch(`/api/ideas/${ideaId}/comments`);
+            } catch (e) {
+                listContainer.innerHTML = '<p class="text-gray-500 italic text-[11px]">Kommentare konnten nicht geladen werden.</p>';
+                return;
+            }
+
+            commentsCache[ideaId] = data;
+            listContainer.innerHTML = renderCommentsHtml(data);
+        }
+
+        function renderCommentsHtml(data) {
+            if (!data || data.length === 0) {
+                return '<p class="text-gray-500 italic text-[11px]">Noch keine Schüler-Kommentare.</p>';
+            }
+            return data.map(c => `
+                <div class="${c.is_official ? 'bg-amber-500/10 border-amber-500/30' : 'bg-darkbg/50 border-white/5'} p-2.5 rounded-xl border">
+                    <div class="flex justify-between items-center text-[10px] text-gray-400 mb-1">
+                        <span class="font-bold ${c.is_official ? 'text-amber-400 flex items-center gap-1' : 'text-gray-300'}">
+                            ${c.is_official ? '<img src="ich.png" alt="SV" class="w-4 h-4 rounded-full object-cover">' : ''}
+                            ${escapeHtml(c.author_name || 'Schüler')}
+                        </span>
+                        <span>${formatTimeAgo(c.created_at)}</span>
+                    </div>
+                    <p class="text-gray-200 text-xs">${escapeHtml(c.content)}</p>
+                </div>
+            `).join('') + `
+                <p class="text-gray-400 text-[10px] font-medium text-center pt-1">
+                    Gold markierte Kommentare sind offizielle Rückmeldungen des Schülersprechers.
+                </p>
+            `;
+        }
+
+        async function handleCommentSubmit(e, ideaId) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (commentsSubmitting.has(ideaId)) return;
+
+            const input = document.getElementById(`comment-input-${ideaId}`);
+            if (!input) return;
+            const submitBtn = input.parentElement.querySelector('button[type="submit"]');
+            const text = input.value.trim();
+            if (!text) return;
+
+            if (commentsLastText[ideaId] === text) {
+                showToast('Diesen Kommentar hast du bereits gesendet.', 'info');
+                input.value = '';
+                return;
+            }
+
+            commentsSubmitting.add(ideaId);
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
+            }
+
+            try {
+                const res = await workerFetch(`/api/ideas/${ideaId}/comments`, {
+                    method: 'POST',
+                    body: { text }
+                });
+
+                input.value = '';
+
+                if (res.published) {
+                    commentsLastText[ideaId] = text;
+                    showToast(res.corrected
+                        ? 'Kommentar gepostet (Rechtschreibung korrigiert)! 🎉'
+                        : 'Kommentar gepostet! 🎉', 'success');
+                    await loadCommentCounts();
+                    await loadIdeas();
+                    loadComments(ideaId);
+                } else {
+                    showToast(`Kommentar abgelehnt: ${res.reason || 'Unbekannter Grund'}`, 'error');
+                }
+            } catch (err) {
+                showToast('Fehler beim Senden des Kommentars.', 'error');
+            } finally {
+                setTimeout(() => {
+                    commentsSubmitting.delete(ideaId);
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+                    }
+                }, 1500);
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-brand-600';
+
+            toast.className = `${bgClass} text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 transform translate-y-5 opacity-0 transition-all duration-300 pointer-events-auto`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-y-5', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-5');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'Gerade eben';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `vor ${minutes} Min.`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `vor ${hours} Std.`;
+            return `vor ${Math.floor(hours / 24)} Tag(en)`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+  <script>
+  // Service Worker registrieren (mit Update-Erkennung)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .then((reg) => {
+        console.log('SW registriert:', reg.scope);
+
+        // Update-Erkennung
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker?.addEventListener('statechange', () => {
+            // 'installed' + es gibt schon einen Controller = echtes Update (nicht Erstinstallation)
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              if (typeof showToast === 'function') {
+                showToast('Neue Version verfügbar – lade neu', 'info');
+                setTimeout(() => window.location.reload(), 2000);
+              } else {
+                window.location.reload();
+              }
+            }
+          });
+        });
+      })
+      .catch((err) => console.warn('SW Registrierung fehlgeschlagen:', err));
+  }
+
+  // ⚠️ controllerchange-Reload NUR, wenn es vorher schon einen Controller gab
+  // So vermeiden wir Reload beim allerersten Besuch
+  let hadController = !!navigator.serviceWorker?.controller;
+  navigator.serviceWorker?.addEventListener('controllerchange', () => {
+    if (hadController) {
+      window.location.reload();
+    }
+    hadController = true;
+  });
+
+  // PWA Installations-Prompt
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallButton();
+  });
+
+  function showInstallButton() {
+    if (document.getElementById('pwaInstallBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'pwaInstallBtn';
+    btn.textContent = '📲 App installieren';
+    btn.className = 'fixed bottom-5 left-5 z-50 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl transition-all';
+    btn.onclick = async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      btn.remove();
+    };
+    document.body.appendChild(btn);
+  }
+
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('pwaInstallBtn')?.remove();
+  });
+</script>
 </body>
 </html>
