@@ -6,17 +6,17 @@
     <link rel="icon" type="image/png" href="avh.png">
     <title>Schüler-Ideenplattform | AVH</title>
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/index/manifest.json">
     <meta name="theme-color" content="#0b0f17">
 
     <!-- iOS-Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AVH Ideen">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="/index/icons/apple-touch-icon.png">
 
     <!-- Allgemein -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/index/icons/icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script>
@@ -1655,7 +1655,7 @@
   <script>
   // Service Worker registrieren (mit Update-Erkennung)
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    navigator.serviceWorker.register('/index/sw.js', { scope: '/' })
       .then((reg) => {
         console.log('SW registriert:', reg.scope);
 
