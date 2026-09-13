@@ -1274,37 +1274,34 @@
             const votes = JSON.parse(localStorage.getItem('avh_user_upvotes') || '[]');
             return new Set(votes);
         }
-async function handleVote(ideaId) {
+        async function handleVote(ideaId) {
     const votedSet = getVotedIdeasSet();
     const idea = currentIdeas.find(i => i.id === ideaId);
     if (!idea) return;
 
     const hasVoted = votedSet.has(ideaId);
 
-    // Alten Zustand sichern
-    const oldCount = idea.upvotes_count;
+    // Zustand VOR der Änderung merken
+    const oldCount = Number(idea.upvotes_count) || 0;
     const oldVoted = hasVoted;
 
-    // Optimistische UI-Änderung
+    // Optimistische Änderung
     if (hasVoted) {
-        // Stimme lokal zurücknehmen
         votedSet.delete(ideaId);
-        idea.upvotes_count = Math.max(0, idea.upvotes_count - 1);
+        idea.upvotes_count = Math.max(0, oldCount - 1);
     } else {
-        // Stimme lokal hinzufügen
         votedSet.add(ideaId);
-        idea.upvotes_count++;
+        idea.upvotes_count = oldCount + 1;
     }
 
     localStorage.setItem(
         'avh_user_upvotes',
-        JSON.stringify(Array.from(votedSet))
+        JSON.stringify([...votedSet])
     );
 
     sortAndRenderIdeas();
 
     try {
-        // Änderung an Server senden
         await workerFetch(`/api/ideas/${ideaId}/vote`, {
             method: 'POST',
             body: {
@@ -1314,7 +1311,7 @@ async function handleVote(ideaId) {
             }
         });
 
-        // Server erfolgreich
+        // Nur bei erfolgreichem Server-Request Erfolg anzeigen
         showToast(
             hasVoted
                 ? 'Stimme zurückgenommen'
@@ -1323,12 +1320,13 @@ async function handleVote(ideaId) {
         );
 
     } catch (e) {
-        console.warn('Vote fehlgeschlagen – Änderung wird zurückgesetzt:', e);
+        console.warn(
+            'Vote fehlgeschlagen – Änderung wird zurückgesetzt:',
+            e
+        );
 
-        // ==========================================
-        // SERVER FEHLGESCHLAGEN → ZUSTAND RESTAURIEREN
-        // ==========================================
-
+        // 🔴 SERVER FEHLGESCHLAGEN:
+        // Upvote wieder entfernen ODER zurückgenommenen Vote wiederherstellen
         idea.upvotes_count = oldCount;
 
         if (oldVoted) {
@@ -1339,10 +1337,10 @@ async function handleVote(ideaId) {
 
         localStorage.setItem(
             'avh_user_upvotes',
-            JSON.stringify(Array.from(votedSet))
+            JSON.stringify([...votedSet])
         );
 
-        // UI wieder auf den echten Zustand setzen
+        // UI wieder auf den alten Zustand setzen
         sortAndRenderIdeas();
 
         showToast(
