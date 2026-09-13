@@ -41,11 +41,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        html {
+            overscroll-behavior-y: contain;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #0b0f17;
             color: #f3f4f6;
             overflow-x: hidden;
+            overscroll-behavior-y: contain;   /* 👈 NEU: verhindert Pull-to-Refresh */
         }
 
         .glass-card {
