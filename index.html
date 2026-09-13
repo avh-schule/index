@@ -1700,7 +1700,7 @@
     if (document.getElementById('pwaInstallBtn')) return;
     const btn = document.createElement('button');
     btn.id = 'pwaInstallBtn';
-    btn.textContent = '📲 App installieren';
+    btn.innerHTML = '<i class="fa-solid fa-circle-down mr-2"></i>App installieren';
     btn.className = 'fixed bottom-5 left-5 z-50 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl transition-all';
     btn.onclick = async () => {
       if (!deferredPrompt) return;
