@@ -1656,41 +1656,28 @@
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
     </script>
-  <script>
-  // Service Worker registrieren (mit Update-Erkennung)
+<script>
+  // Service Worker registrieren – OHNE Reload
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/index/sw.js', { scope: '/index' })
+    navigator.serviceWorker.register('/index/sw.js', { scope: '/index/' })
       .then((reg) => {
         console.log('SW registriert:', reg.scope);
 
-        // Update-Erkennung
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           newWorker?.addEventListener('statechange', () => {
-            // 'installed' + es gibt schon einen Controller = echtes Update (nicht Erstinstallation)
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Nur ein Hinweis – KEIN Reload
               if (typeof showToast === 'function') {
-                showToast('Neue Version verfügbar – lade neu', 'info');
-                setTimeout(() => window.location.reload(), 2000);
-              } else {
-                window.location.reload();
+                showToast('Neue Version verfügbar ✨', 'info');
               }
+              console.log('Update bereit – wird beim nächsten Öffnen aktiv');
             }
           });
         });
       })
       .catch((err) => console.warn('SW Registrierung fehlgeschlagen:', err));
   }
-
-  // ⚠️ controllerchange-Reload NUR, wenn es vorher schon einen Controller gab
-  // So vermeiden wir Reload beim allerersten Besuch
-  let hadController = !!navigator.serviceWorker?.controller;
-  navigator.serviceWorker?.addEventListener('controllerchange', () => {
-    if (hadController) {
-      window.location.reload();
-    }
-    hadController = true;
-  });
 
   // PWA Installations-Prompt
   let deferredPrompt = null;
@@ -1704,8 +1691,8 @@
     if (document.getElementById('pwaInstallBtn')) return;
     const btn = document.createElement('button');
     btn.id = 'pwaInstallBtn';
-    btn.innerHTML = '<i class="fa-solid fa-circle-down mr-2"></i>App installieren';
-    btn.className = 'fixed bottom-5 left-5 z-50 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl transition-all';
+    btn.innerHTML = '<i class="fa-solid fa-mobile-screen-button mr-2"></i>App installieren';
+    btn.className = 'fixed bottom-5 left-5 z-50 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl transition-all active:scale-95';
     btn.onclick = async () => {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
