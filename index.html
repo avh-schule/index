@@ -1274,48 +1274,83 @@
             const votes = JSON.parse(localStorage.getItem('avh_user_upvotes') || '[]');
             return new Set(votes);
         }
+async function handleVote(ideaId) {
+    const votedSet = getVotedIdeasSet();
+    const idea = currentIdeas.find(i => i.id === ideaId);
+    if (!idea) return;
 
-        async function handleVote(ideaId) {
-            const votedSet = getVotedIdeasSet();
-            const idea = currentIdeas.find(i => i.id === ideaId);
-            if (!idea) return;
+    const hasVoted = votedSet.has(ideaId);
 
-            const hasVoted = votedSet.has(ideaId);
+    // Alten Zustand sichern
+    const oldCount = idea.upvotes_count;
+    const oldVoted = hasVoted;
 
-            if (hasVoted) {
-                votedSet.delete(ideaId);
-                idea.upvotes_count = Math.max(0, idea.upvotes_count - 1);
-                localStorage.setItem('avh_user_upvotes', JSON.stringify(Array.from(votedSet)));
+    // Optimistische UI-Änderung
+    if (hasVoted) {
+        // Stimme lokal zurücknehmen
+        votedSet.delete(ideaId);
+        idea.upvotes_count = Math.max(0, idea.upvotes_count - 1);
+    } else {
+        // Stimme lokal hinzufügen
+        votedSet.add(ideaId);
+        idea.upvotes_count++;
+    }
 
-                sortAndRenderIdeas();
+    localStorage.setItem(
+        'avh_user_upvotes',
+        JSON.stringify(Array.from(votedSet))
+    );
 
-                try {
-                    await workerFetch(`/api/ideas/${ideaId}/vote`, {
-                        method: 'POST',
-                        body: { action: 'decrement', deviceId, currentCount: idea.upvotes_count }
-                    });
-                } catch (e) {
-                    console.warn('Vote fehlgeschlagen:', e);
-                }
-                showToast('Stimme zurückgenommen', 'info');
-            } else {
-                votedSet.add(ideaId);
-                idea.upvotes_count++;
-                localStorage.setItem('avh_user_upvotes', JSON.stringify(Array.from(votedSet)));
+    sortAndRenderIdeas();
 
-                sortAndRenderIdeas();
-
-                try {
-                    await workerFetch(`/api/ideas/${ideaId}/vote`, {
-                        method: 'POST',
-                        body: { action: 'increment', deviceId, currentCount: idea.upvotes_count }
-                    });
-                } catch (e) {
-                    console.warn('Vote fehlgeschlagen:', e);
-                }
-                showToast('Idee unterstützt! 🚀', 'success');
+    try {
+        // Änderung an Server senden
+        await workerFetch(`/api/ideas/${ideaId}/vote`, {
+            method: 'POST',
+            body: {
+                action: hasVoted ? 'decrement' : 'increment',
+                deviceId,
+                currentCount: idea.upvotes_count
             }
+        });
+
+        // Server erfolgreich
+        showToast(
+            hasVoted
+                ? 'Stimme zurückgenommen'
+                : 'Idee unterstützt! 🚀',
+            hasVoted ? 'info' : 'success'
+        );
+
+    } catch (e) {
+        console.warn('Vote fehlgeschlagen – Änderung wird zurückgesetzt:', e);
+
+        // ==========================================
+        // SERVER FEHLGESCHLAGEN → ZUSTAND RESTAURIEREN
+        // ==========================================
+
+        idea.upvotes_count = oldCount;
+
+        if (oldVoted) {
+            votedSet.add(ideaId);
+        } else {
+            votedSet.delete(ideaId);
         }
+
+        localStorage.setItem(
+            'avh_user_upvotes',
+            JSON.stringify(Array.from(votedSet))
+        );
+
+        // UI wieder auf den echten Zustand setzen
+        sortAndRenderIdeas();
+
+        showToast(
+            'Der Server ist gerade nicht erreichbar. Deine Änderung wurde nicht übernommen. ⚠️',
+            'error'
+        );
+    }
+}
 
         // ==========================================
         // 7. FORM / KI
