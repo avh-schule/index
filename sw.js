@@ -1,25 +1,21 @@
-// sw.js
-
-const CACHE_VERSION = 'avh-v1';
+const CACHE_VERSION = 'avh-v2';   // 👈 v1 → v2, damit der neue SW greift
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
 const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/avh.png',
-  '/ich.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  // externe Ressourcen (optional, aber empfohlen für Offline)
+  '/index/',
+  '/index/index.html',
+  '/index/manifest.json',
+  '/index/avh.png',
+  '/index/ich.png',
+  '/index/icons/icon-192.png',
+  '/index/icons/icon-512.png',
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
   'https://unpkg.com/lucide@latest',
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
 ];
 
-// Installation: statische Dateien vorab cachen
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
@@ -33,7 +29,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Aktivierung: alte Caches aufräumen
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -47,15 +42,13 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch-Strategie
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Nur GET requests cachen
   if (request.method !== 'GET') return;
 
-  // Worker-API NIE cachen → immer Netzwerk
+  // Worker-API NIE cachen
   if (url.hostname.includes('workers.dev')) {
     event.respondWith(
       fetch(request).catch(() =>
@@ -68,7 +61,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Navigation → Network-first, Fallback index.html
+  // Nur Requests aus /index/ behandeln
+  if (!url.pathname.startsWith('/index/') && url.origin === self.location.origin) {
+    return; // Browser macht das normal
+  }
+
+  // Navigation → Network-first
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -77,12 +75,12 @@ self.addEventListener('fetch', (event) => {
           caches.open(RUNTIME_CACHE).then((c) => c.put(request, copy));
           return response;
         })
-        .catch(() => caches.match('/index.html'))
+        .catch(() => caches.match('/index/index.html'))
     );
     return;
   }
 
-  // Statische Assets → Cache-first mit Netzwerk-Update
+  // Statische Assets → Cache-first
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetchPromise = fetch(request)
