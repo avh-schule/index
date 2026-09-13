@@ -1655,7 +1655,7 @@
   <script>
   // Service Worker registrieren (mit Update-Erkennung)
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/index/sw.js', { scope: '/' })
+    navigator.serviceWorker.register('/index/sw.js', { scope: '/index' })
       .then((reg) => {
         console.log('SW registriert:', reg.scope);
 
