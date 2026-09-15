@@ -35,7 +35,6 @@
         }
         .idea-card:hover { border-color: rgba(255,255,255,0.12); }
 
-        /* Sanfter Status-Wechsel */
         .status-change-flash {
             animation: statusFlash 0.5s ease;
         }
@@ -44,13 +43,41 @@
             100% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
         }
 
-        /* Fade-in for new content */
         .fade-in {
             animation: fadeIn 0.3s ease-out;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-4px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Notfall-Modus Toggles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 9999px;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .toggle-input:checked + .toggle-switch { background: #f43f5e; }
+        .toggle-input:checked + .toggle-switch::after { transform: translateX(16px); }
+        .rl-item:has(.toggle-input:checked) {
+            border-color: rgba(244, 63, 94, 0.4);
+            background: rgba(244, 63, 94, 0.06);
         }
     </style>
 </head>
@@ -123,6 +150,73 @@
             <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
                 <span class="text-[11px] font-medium text-cyan-400"><i class="fa-solid fa-users mr-1"></i>Besucher</span>
                 <span id="statVisitors" class="text-xl font-extrabold text-cyan-400 mt-1">0</span>
+            </div>
+        </div>
+
+        <!-- NOTFALL-MODUS -->
+        <div class="glass-panel rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+                    Notfall-Modus · Spam-Schutz
+                </h2>
+                <div class="flex items-center gap-2">
+                    <span id="rateLimitStatus" class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">Inaktiv</span>
+                    <button onclick="blockAll()" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[10px] font-bold rounded-lg border border-rose-500/30 transition-all">Alles sperren</button>
+                    <button onclick="unblockAll()" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-500/30 transition-all">Alles freigeben</button>
+                </div>
+            </div>
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                Blockiere einzelne Schreibfunktionen, um bei Spam sofort zu reagieren. Lesen ist weiterhin möglich. Änderungen greifen innerhalb weniger Sekunden.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold text-white">Neue Ideen</div>
+                            <div class="text-[10px] text-gray-500">Einreichen sperren</div>
+                        </div>
+                    </div>
+                    <input type="checkbox" id="rl_block_new_ideas" class="sr-only toggle-input" onchange="updateRateLimit('block_new_ideas', this.checked)">
+                    <span class="toggle-switch"></span>
+                </label>
+
+                <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400 shrink-0"></i>
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold text-white">KI-Beschreibung</div>
+                            <div class="text-[10px] text-gray-500">Generierung sperren</div>
+                        </div>
+                    </div>
+                    <input type="checkbox" id="rl_block_ai_description" class="sr-only toggle-input" onchange="updateRateLimit('block_ai_description', this.checked)">
+                    <span class="toggle-switch"></span>
+                </label>
+
+                <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i data-lucide="thumbs-up" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold text-white">Votes</div>
+                            <div class="text-[10px] text-gray-500">Stimmen sperren</div>
+                        </div>
+                    </div>
+                    <input type="checkbox" id="rl_block_votes" class="sr-only toggle-input" onchange="updateRateLimit('block_votes', this.checked)">
+                    <span class="toggle-switch"></span>
+                </label>
+
+                <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <i data-lucide="message-square" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold text-white">Kommentare</div>
+                            <div class="text-[10px] text-gray-500">Posten sperren</div>
+                        </div>
+                    </div>
+                    <input type="checkbox" id="rl_block_comments" class="sr-only toggle-input" onchange="updateRateLimit('block_comments', this.checked)">
+                    <span class="toggle-switch"></span>
+                </label>
             </div>
         </div>
 
@@ -311,7 +405,7 @@
         let commentCountsMap = {};
         let pinnedCommentsMap = {};
         const adminCommentsCache = {};
-        const openCommentBoxes = new Set(); // Verfolgt geöffnete Kommentar-Boxen für Re-Render
+        const openCommentBoxes = new Set();
 
         const STATUS_OPTIONS = {
             'waiting_for_review': 'In Prüfung',
@@ -414,7 +508,8 @@
                 loadPinnedComments(),
                 loadCommentCounts(),
                 loadVisitorCount(),
-                loadMessages()
+                loadMessages(),
+                loadRateLimits()
             ]);
             updateStats();
             render();
@@ -451,6 +546,97 @@
         }
 
         // ============================================================
+        // NOTFALL-MODUS / RATE LIMITS
+        // ============================================================
+        let rateLimitsCache = null;
+        const RL_IDS = ['block_new_ideas', 'block_ai_description', 'block_votes', 'block_comments'];
+
+        async function loadRateLimits() {
+            try {
+                rateLimitsCache = await adminFetch('/api/admin/rate-limits');
+            } catch (e) {
+                rateLimitsCache = {
+                    block_new_ideas: false,
+                    block_ai_description: false,
+                    block_votes: false,
+                    block_comments: false
+                };
+            }
+            renderRateLimits();
+        }
+
+        function renderRateLimits() {
+            const rl = rateLimitsCache || {};
+            RL_IDS.forEach(id => {
+                const el = document.getElementById('rl_' + id);
+                if (el) el.checked = !!rl[id];
+            });
+            const anyActive = RL_IDS.some(id => rl[id]);
+            const statusEl = document.getElementById('rateLimitStatus');
+            if (!statusEl) return;
+            if (anyActive) {
+                statusEl.textContent = 'Aktiv';
+                statusEl.className = 'text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300';
+            } else {
+                statusEl.textContent = 'Inaktiv';
+                statusEl.className = 'text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300';
+            }
+        }
+
+        async function updateRateLimit(key, value) {
+            if (!rateLimitsCache) rateLimitsCache = { ...RL_IDS.reduce((a, k) => (a[k] = false, a), {}) };
+            const prev = rateLimitsCache[key];
+            rateLimitsCache[key] = value;
+            renderRateLimits();
+            try {
+                rateLimitsCache = await adminFetch('/api/admin/rate-limits', {
+                    method: 'PATCH',
+                    body: { [key]: value }
+                });
+                renderRateLimits();
+            } catch (e) {
+                rateLimitsCache[key] = prev;
+                renderRateLimits();
+                alert('Fehler: ' + e.message);
+            }
+        }
+
+        async function blockAll() {
+            if (!confirm('Alle Schreibfunktionen sperren? (Ideen, KI, Votes, Kommentare)')) return;
+            try {
+                rateLimitsCache = await adminFetch('/api/admin/rate-limits', {
+                    method: 'PATCH',
+                    body: {
+                        block_new_ideas: true,
+                        block_ai_description: true,
+                        block_votes: true,
+                        block_comments: true
+                    }
+                });
+                renderRateLimits();
+            } catch (e) {
+                alert('Fehler: ' + e.message);
+            }
+        }
+
+        async function unblockAll() {
+            try {
+                rateLimitsCache = await adminFetch('/api/admin/rate-limits', {
+                    method: 'PATCH',
+                    body: {
+                        block_new_ideas: false,
+                        block_ai_description: false,
+                        block_votes: false,
+                        block_comments: false
+                    }
+                });
+                renderRateLimits();
+            } catch (e) {
+                alert('Fehler: ' + e.message);
+            }
+        }
+
+        // ============================================================
         // RENDER
         // ============================================================
         function render() {
@@ -464,7 +650,6 @@
                 const curStatusStyle = STATUS_STYLES[item.status] || STATUS_STYLES['waiting_for_review'];
                 const commentCount = commentCountsMap[item.id] || 0;
 
-                // Status-Banner (nur für invisible/rejected)
                 let statusBanner = '';
                 if (item.status === 'invisible') {
                     statusBanner = `
@@ -549,7 +734,6 @@
 
             lucide.createIcons();
 
-            // Offene Kommentar-Boxen wiederherstellen
             if (openCommentBoxes.size > 0) {
                 openCommentBoxes.forEach(id => {
                     toggleComments(id, true);
@@ -558,7 +742,7 @@
         }
 
         // ============================================================
-        // AKTIONEN (optimistisch für flüssiges UI)
+        // AKTIONEN
         // ============================================================
         async function changeStatus(id, newStatus) {
             const idx = listData.findIndex(i => i.id === id);
@@ -567,7 +751,6 @@
             const prevPublished = listData[idx].is_published;
             if (prevStatus === newStatus) return;
 
-            // Optimistic update
             listData[idx].status = newStatus;
             listData[idx].is_published = newStatus !== 'invisible';
             updateStats();
@@ -579,7 +762,6 @@
                     body: { status: newStatus }
                 });
             } catch (e) {
-                // Rollback
                 listData[idx].status = prevStatus;
                 listData[idx].is_published = prevPublished;
                 updateStats();
@@ -646,7 +828,6 @@
             const prevTitle = item.title;
             const prevDesc = item.description;
 
-            // Optimistic
             item.title = title;
             item.description = description;
             closeModal('editModal');
@@ -692,7 +873,6 @@
             await loadCommentCounts();
             await loadPinnedComments();
             render();
-            // Kommentar-Box öffnen und laden
             openCommentBoxes.add(idea_id);
             toggleComments(idea_id, true);
         }
@@ -792,7 +972,6 @@
             const content = document.getElementById('editCommentText').value;
             const is_pinned = document.getElementById('editCommentPinned').checked;
 
-            // Optimistic cache update
             const cached = (adminCommentsCache[ideaId] || []).find(c => c.id === id);
             const prev = cached ? { author_name: cached.author_name, content: cached.content, is_pinned: cached.is_pinned } : null;
             if (cached) {
@@ -827,7 +1006,6 @@
         async function deleteComment(commentId, ideaId) {
             if (!confirm('Kommentar löschen?')) return;
 
-            // Optimistic: aus dem Cache entfernen
             const arr = adminCommentsCache[ideaId];
             let removed = null;
             let removedIdx = -1;
@@ -852,6 +1030,7 @@
             openCommentBoxes.add(ideaId);
             toggleComments(ideaId, true);
         }
+
         async function publishComment(commentId, ideaId) {
             if (!confirm('Diesen Kommentar für alle Schüler sichtbar machen?')) return;
 
@@ -859,7 +1038,6 @@
             const cached = arr ? arr.find(c => c.id === commentId) : null;
             const prevPublished = cached ? cached.is_published : false;
 
-            // Optimistisches Update
             if (cached) cached.is_published = true;
 
             try {
