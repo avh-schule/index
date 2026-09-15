@@ -49,7 +49,7 @@
             background-color: #0b0f17;
             color: #f3f4f6;
             overflow-x: hidden;
-            overscroll-behavior-y: contain;   /* 👈 NEU: verhindert Pull-to-Refresh */
+            overscroll-behavior-y: contain;
         }
 
         .glass-card {
@@ -201,7 +201,6 @@
         .undo-redo-btn:hover:not(:disabled) { color: #ffffff; }
         .undo-redo-btn:disabled { color: #4b5563; cursor: default; pointer-events: none; }
 
-        /* === FEIERBLÄTTER / KONFETTI === */
         .confetti-piece {
             position: fixed;
             top: -24px;
@@ -218,7 +217,6 @@
             100% { transform: translateY(110vh) rotate(720deg) rotateY(360deg); opacity: 0; }
         }
 
-        /* === STATUS-PANELS (Nicht möglich / Umgesetzt) === */
         .status-toggle-btn {
             background: rgba(22, 30, 46, 0.75);
             backdrop-filter: blur(16px);
@@ -510,6 +508,11 @@
                 headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
                 body: options.body ? JSON.stringify(options.body) : undefined
             });
+            if (res.status === 429) {
+                const err = new Error('RATE_LIMITED');
+                err.code = 'RATE_LIMITED';
+                throw err;
+            }
             if (!res.ok) {
                 let msg = `Worker error ${res.status}`;
                 try { msg += ': ' + (await res.text()); } catch (e) {}
@@ -1009,10 +1012,8 @@
             const wrapper = document.getElementById(isRejected ? 'statusRejectedWrapper' : 'statusDoneWrapper');
             const otherWrapper = document.getElementById(isRejected ? 'statusDoneWrapper' : 'statusRejectedWrapper');
 
-            // Anderes Panel immer schließen
             otherWrapper.classList.remove('is-open');
 
-            // Gleiches Panel: togglen
             if (wrapper.classList.contains('is-open')) {
                 wrapper.classList.remove('is-open');
                 updateStatusChevrons();
@@ -1274,81 +1275,75 @@
             const votes = JSON.parse(localStorage.getItem('avh_user_upvotes') || '[]');
             return new Set(votes);
         }
+
         async function handleVote(ideaId) {
-    const votedSet = getVotedIdeasSet();
-    const idea = currentIdeas.find(i => i.id === ideaId);
-    if (!idea) return;
+            const votedSet = getVotedIdeasSet();
+            const idea = currentIdeas.find(i => i.id === ideaId);
+            if (!idea) return;
 
-    const hasVoted = votedSet.has(ideaId);
+            const hasVoted = votedSet.has(ideaId);
 
-    // Zustand VOR der Änderung merken
-    const oldCount = Number(idea.upvotes_count) || 0;
-    const oldVoted = hasVoted;
+            const oldCount = Number(idea.upvotes_count) || 0;
+            const oldVoted = hasVoted;
 
-    // Optimistische Änderung
-    if (hasVoted) {
-        votedSet.delete(ideaId);
-        idea.upvotes_count = Math.max(0, oldCount - 1);
-    } else {
-        votedSet.add(ideaId);
-        idea.upvotes_count = oldCount + 1;
-    }
-
-    localStorage.setItem(
-        'avh_user_upvotes',
-        JSON.stringify([...votedSet])
-    );
-
-    sortAndRenderIdeas();
-
-    try {
-        await workerFetch(`/api/ideas/${ideaId}/vote`, {
-            method: 'POST',
-            body: {
-                action: hasVoted ? 'decrement' : 'increment',
-                deviceId,
-                currentCount: idea.upvotes_count
+            if (hasVoted) {
+                votedSet.delete(ideaId);
+                idea.upvotes_count = Math.max(0, oldCount - 1);
+            } else {
+                votedSet.add(ideaId);
+                idea.upvotes_count = oldCount + 1;
             }
-        });
 
-        // Nur bei erfolgreichem Server-Request Erfolg anzeigen
-        showToast(
-            hasVoted
-                ? 'Stimme zurückgenommen'
-                : 'Idee unterstützt! 🚀',
-            hasVoted ? 'info' : 'success'
-        );
+            localStorage.setItem(
+                'avh_user_upvotes',
+                JSON.stringify([...votedSet])
+            );
 
-    } catch (e) {
-        console.warn(
-            'Vote fehlgeschlagen – Änderung wird zurückgesetzt:',
-            e
-        );
+            sortAndRenderIdeas();
 
-        // 🔴 SERVER FEHLGESCHLAGEN:
-        // Upvote wieder entfernen ODER zurückgenommenen Vote wiederherstellen
-        idea.upvotes_count = oldCount;
+            try {
+                await workerFetch(`/api/ideas/${ideaId}/vote`, {
+                    method: 'POST',
+                    body: {
+                        action: hasVoted ? 'decrement' : 'increment',
+                        deviceId,
+                        currentCount: idea.upvotes_count
+                    }
+                });
 
-        if (oldVoted) {
-            votedSet.add(ideaId);
-        } else {
-            votedSet.delete(ideaId);
+                showToast(
+                    hasVoted
+                        ? 'Stimme zurückgenommen'
+                        : 'Idee unterstützt! 🚀',
+                    hasVoted ? 'info' : 'success'
+                );
+
+            } catch (e) {
+                console.warn('Vote fehlgeschlagen – Änderung wird zurückgesetzt:', e);
+
+                idea.upvotes_count = oldCount;
+
+                if (oldVoted) {
+                    votedSet.add(ideaId);
+                } else {
+                    votedSet.delete(ideaId);
+                }
+
+                localStorage.setItem(
+                    'avh_user_upvotes',
+                    JSON.stringify([...votedSet])
+                );
+
+                sortAndRenderIdeas();
+
+                showToast(
+                    e && e.code === 'RATE_LIMITED'
+                        ? 'Abstimmen ist gerade deaktiviert. ⚠️'
+                        : 'Der Server ist gerade nicht erreichbar. Deine Änderung wurde nicht übernommen. ⚠️',
+                    'error'
+                );
+            }
         }
-
-        localStorage.setItem(
-            'avh_user_upvotes',
-            JSON.stringify([...votedSet])
-        );
-
-        // UI wieder auf den alten Zustand setzen
-        sortAndRenderIdeas();
-
-        showToast(
-            'Der Server ist gerade nicht erreichbar. Deine Änderung wurde nicht übernommen. ⚠️',
-            'error'
-        );
-    }
-}
 
         // ==========================================
         // 7. FORM / KI
@@ -1443,7 +1438,12 @@
                     setFormMessage('descriptionError', '');
                 }
             } catch (error) {
-                setFormMessage('descriptionError', 'Die KI konnte gerade keine Beschreibung erstellen.');
+                setFormMessage(
+                    'descriptionError',
+                    error && error.code === 'RATE_LIMITED'
+                        ? 'KI-Beschreibung ist gerade deaktiviert.'
+                        : 'Die KI konnte gerade keine Beschreibung erstellen.'
+                );
             } finally {
                 button.disabled = false;
                 label.textContent = document.getElementById('ideaDescription').value.trim() ? 'Beschreibung verbessern' : 'Beschreibung mit KI';
@@ -1513,7 +1513,12 @@
                 setSort('newest');
 
             } catch (err) {
-                showToast('Fehler beim Speichern der Idee.', 'error');
+                showToast(
+                    err && err.code === 'RATE_LIMITED'
+                        ? 'Neue Ideen sind gerade deaktiviert. ⚠️'
+                        : 'Fehler beim Speichern der Idee.',
+                    'error'
+                );
             } finally {
                 stopCountdown();
                 resetFormState();
@@ -1645,7 +1650,12 @@
                     showToast(`Kommentar abgelehnt: ${res.reason || 'Unbekannter Grund'}`, 'error');
                 }
             } catch (err) {
-                showToast('Fehler beim Senden des Kommentars.', 'error');
+                showToast(
+                    err && err.code === 'RATE_LIMITED'
+                        ? 'Kommentieren ist gerade deaktiviert. ⚠️'
+                        : 'Fehler beim Senden des Kommentars.',
+                    'error'
+                );
             } finally {
                 setTimeout(() => {
                     commentsSubmitting.delete(ideaId);
@@ -1700,7 +1710,6 @@
           const newWorker = reg.installing;
           newWorker?.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // Nur ein Hinweis – KEIN Reload
               if (typeof showToast === 'function') {
                 showToast('Neue Version verfügbar ✨', 'info');
               }
