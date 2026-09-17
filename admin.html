@@ -51,7 +51,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Notfall-Modus Toggles */
         .toggle-switch {
             position: relative;
             display: inline-block;
@@ -115,6 +114,29 @@
                 <h1 class="font-bold text-sm text-white tracking-tight hidden sm:block">AVH Ideenbox Control Panel</h1>
             </div>
             <div class="flex items-center gap-2">
+                <div class="relative" id="notifWrapper">
+                    <button id="notifBtn" onclick="toggleNotifications(event)"
+                            class="relative flex items-center gap-2 px-3 py-1.5 bg-surface-hover hover:bg-white/10 text-gray-300 text-xs font-semibold rounded-xl border border-white/10 transition-all active:scale-95">
+                        <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+                        <span class="hidden sm:inline">Neu</span>
+                        <span id="notifBadge"
+                              class="hidden absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+                    </button>
+
+                    <div id="notifPanel"
+                         class="hidden absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] glass-panel rounded-2xl border border-surface-border shadow-2xl z-[60] overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
+                            <h3 class="text-xs font-bold text-white flex items-center gap-2">
+                                <i data-lucide="bell" class="w-3.5 h-3.5 text-indigo-400"></i> Neue Kommentare
+                            </h3>
+                            <button onclick="markAllNotificationsRead()"
+                                    class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider">
+                                Alle gelesen
+                            </button>
+                        </div>
+                        <div id="notifList" class="max-h-80 overflow-y-auto"></div>
+                    </div>
+                </div>
                 <button onclick="loadData()" class="flex items-center gap-2 px-3 py-1.5 bg-surface-hover hover:bg-white/10 text-gray-300 text-xs font-semibold rounded-xl border border-white/10 transition-all active:scale-95">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                     <span>Aktualisieren</span>
@@ -407,6 +429,11 @@
         const adminCommentsCache = {};
         const openCommentBoxes = new Set();
 
+        // Benachrichtigungen
+        let unreadComments = [];
+        let notifPanelOpen = false;
+        let notifPollTimer = null;
+
         const STATUS_OPTIONS = {
             'waiting_for_review': 'In Prüfung',
             'in_discussion': 'In Besprechung',
@@ -441,6 +468,7 @@
             if (getAdminPassword()) {
                 gate.classList.add('hidden');
                 loadData();
+                startNotifPolling();
             } else {
                 input.focus();
             }
@@ -475,6 +503,7 @@
                 gate.classList.add('hidden');
                 input.value = '';
                 loadData();
+                startNotifPolling();
             });
 
             document.addEventListener('keydown', (e) => {
@@ -509,7 +538,8 @@
                 loadCommentCounts(),
                 loadVisitorCount(),
                 loadMessages(),
-                loadRateLimits()
+                loadRateLimits(),
+                loadUnreadComments()
             ]);
             updateStats();
             render();
@@ -666,7 +696,7 @@
                 }
 
                 return `
-                <div class="idea-card glass-panel rounded-2xl p-5 space-y-4">
+                <div id="admin-idea-${item.id}" class="idea-card glass-panel rounded-2xl p-5 space-y-4">
 
                     <div class="flex items-center justify-between gap-3 flex-wrap pb-3 border-b border-surface-border">
 
@@ -892,7 +922,24 @@
                     box.innerHTML = '<span class="text-[10px] text-rose-400">Fehler beim Laden</span>';
                     return;
                 }
+
+                // Cache ZUERST aktualisieren …
                 adminCommentsCache[ideaId] = data;
+
+                // … DANN ungelesene Kommentare aus `data` markieren
+                const unreadIds = data
+                    .filter(c => !c.is_official && c.admin_read === false)
+                    .map(c => c.id);
+
+                if (unreadIds.length) {
+                    adminFetch('/api/admin/comments/mark-read', {
+                        method: 'POST',
+                        body: { ids: unreadIds }
+                    }).then(() => {
+                        unreadComments = unreadComments.filter(c => !unreadIds.includes(c.id));
+                        renderNotifications();
+                    }).catch(() => {});
+                }
 
                 if (!data || !data.length) {
                     box.innerHTML = '<span class="text-[10px] text-gray-500 italic block py-1">Keine Kommentare vorhanden</span>';
@@ -1211,6 +1258,135 @@
         function esc(str) {
             if (!str) return '';
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // ============================================================
+        // BENACHRICHTIGUNGEN (neue Kommentare)
+        // ============================================================
+        async function loadUnreadComments() {
+            if (!getAdminPassword()) return;
+            try {
+                const data = await adminFetch('/api/admin/unread-comments');
+                unreadComments = Array.isArray(data) ? data : [];
+                renderNotifications();
+            } catch (e) {
+                if (e.message !== 'Unauthorized') console.warn('Notifications error:', e);
+            }
+        }
+
+        function renderNotifications() {
+            const badge = document.getElementById('notifBadge');
+            const list = document.getElementById('notifList');
+            if (!badge || !list) return;
+
+            const count = unreadComments.length;
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : String(count);
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            if (count === 0) {
+                list.innerHTML = '<div class="p-6 text-center text-xs text-gray-500 italic">Keine neuen Kommentare</div>';
+                return;
+            }
+
+            list.innerHTML = unreadComments.map(c => {
+                const ideaTitle = (c.ideas && c.ideas.title) ? c.ideas.title : '(Idee)';
+                return `
+                    <button onclick="openNotification('${c.id}', '${c.idea_id}')"
+                            class="w-full text-left px-4 py-3 border-b border-surface-border/50 hover:bg-surface-hover transition-colors ${c.is_published ? '' : 'opacity-75'}">
+                        <div class="flex items-start gap-2">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                                <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="text-[10px] font-bold text-gray-400">${esc(c.author_name || 'Schüler')}</span>
+                                    ${!c.is_published ? '<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold uppercase tracking-wider">KI-gefiltert</span>' : ''}
+                                </div>
+                                <p class="text-[11px] text-gray-200 mt-0.5 line-clamp-2">${esc(c.content)}</p>
+                                <p class="text-[10px] text-indigo-400/80 mt-1 truncate"><i class="fa-solid fa-arrow-right mr-1"></i>${esc(ideaTitle)}</p>
+                            </div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toggleNotifications(event) {
+            if (event) event.stopPropagation();
+            const panel = document.getElementById('notifPanel');
+            if (!panel) return;
+            notifPanelOpen = !notifPanelOpen;
+            panel.classList.toggle('hidden', !notifPanelOpen);
+            if (notifPanelOpen) loadUnreadComments();
+        }
+
+        async function openNotification(commentId, ideaId) {
+            // Als gelesen markieren
+            await markNotificationRead(commentId);
+
+            // Panel schließen
+            const panel = document.getElementById('notifPanel');
+            if (panel) panel.classList.add('hidden');
+            notifPanelOpen = false;
+
+            // Zur Idee springen und Kommentare öffnen
+            const card = document.getElementById(`admin-idea-${ideaId}`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                openCommentBoxes.add(ideaId);
+                setTimeout(() => toggleComments(ideaId, true), 350);
+            }
+        }
+
+        async function markNotificationRead(commentId) {
+            unreadComments = unreadComments.filter(c => c.id !== commentId);
+            renderNotifications();
+            try {
+                await adminFetch('/api/admin/comments/mark-read', {
+                    method: 'POST',
+                    body: { ids: [commentId] }
+                });
+            } catch (e) {
+                console.warn('Mark read failed:', e);
+                loadUnreadComments();
+            }
+        }
+
+        async function markAllNotificationsRead() {
+            if (!unreadComments.length) return;
+            const prev = unreadComments.slice();
+            unreadComments = [];
+            renderNotifications();
+            try {
+                await adminFetch('/api/admin/comments/mark-all-read', { method: 'POST' });
+            } catch (e) {
+                alert('Fehler beim Markieren: ' + e.message);
+                unreadComments = prev;
+                renderNotifications();
+            }
+        }
+
+        // Outside-Click schließt Panel
+        document.addEventListener('click', (e) => {
+            if (!notifPanelOpen) return;
+            const wrapper = document.getElementById('notifWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById('notifPanel')?.classList.add('hidden');
+                notifPanelOpen = false;
+            }
+        });
+
+        // Polling: alle 25 Sekunden
+        function startNotifPolling() {
+            if (notifPollTimer) clearInterval(notifPollTimer);
+            loadUnreadComments();
+            notifPollTimer = setInterval(loadUnreadComments, 25000);
         }
     </script>
 </body>
