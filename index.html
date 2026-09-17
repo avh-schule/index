@@ -589,7 +589,7 @@
                 const modal = document.getElementById('ideaModal');
                 if (modal && !modal.classList.contains('hidden')) return;
                 refreshRealtime();
-            }, 300000);
+            }, 60000);
 
             let lastRealtime = 0;
             document.addEventListener('visibilitychange', () => {
