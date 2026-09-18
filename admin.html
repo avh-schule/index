@@ -669,35 +669,29 @@
                 }
             });
 
-            attachIconListener(
-                'timelineIconInput',
-                'timelineIconPreview',
-                'timelineIconSuggesting',
-                () => (
-                    (document.getElementById('timelineTitleInput').value || '') + '\n' +
-                    (document.getElementById('timelineDescInput').value || '')
-                ).trim()
-            );
+attachIconListener(
+    'timelineIconInput',
+    'timelineIconPreview',
+    'timelineIconSuggesting',
+    () => (
+        (document.getElementById('timelineTitleInput').value || '') + '\n' +
+        (document.getElementById('timelineDescInput').value || '')
+    ).trim(),
+    ['timelineTitleInput', 'timelineDescInput']
+);
 
-            attachIconListener(
-                'statusIconInput',
-                'statusIconPreview',
-                'statusIconSuggesting',
-                () => {
-                    const idea = listData.find(i => i.id === document.getElementById('statusModalIdeaId').value);
-                    const txt = document.getElementById('statusModalText').value || '';
-                    return ((idea ? idea.title : '') + '\n' + txt).trim();
-                }
-            );
-
-            ['timelineIconInput','statusIconInput'].forEach(id => {
-                document.getElementById(id).addEventListener('keydown', () => {
-                    if (!iconSuggestFor) iconSuggestFor = {};
-                    iconSuggestFor.manualEdited = true;
-                });
-            });
-        });
-
+attachIconListener(
+    'statusIconInput',
+    'statusIconPreview',
+    'statusIconSuggesting',
+    () => {
+        const idea = listData.find(i => i.id === document.getElementById('statusModalIdeaId').value);
+        const txt = document.getElementById('statusModalText').value || '';
+        return ((idea ? idea.title : '') + '\n' + txt).trim();
+    },
+    ['statusModalText']
+);
+ });  
         function logout() {
             sessionStorage.removeItem('avh_admin_pw');
             location.reload();
@@ -1703,35 +1697,52 @@
             const cls = (value || '').trim() || STATUS_DEFAULT_ICONS.manual;
             el.className = cls;
         }
+function attachIconListener(inputId, previewId, suggestBadgeId, getTextFn, triggerIds = []) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const badge = document.getElementById(suggestBadgeId);
+    if (!input || !preview || !badge) return;
 
-        function attachIconListener(inputId, previewId, suggestBadgeId, getTextFn) {
-            const input = document.getElementById(inputId);
-            const preview = document.getElementById(previewId);
-            const badge = document.getElementById(suggestBadgeId);
+    // Live-Vorschau wenn Icon-Feld manuell geändert wird
+    input.addEventListener('input', () => {
+        updateIconPreview(preview, input.value);
+        if (!iconSuggestFor) iconSuggestFor = {};
+        iconSuggestFor.manualEdited = true;
+    });
 
-            input.addEventListener('input', () => {
-                updateIconPreview(preview, input.value);
-                const text = getTextFn();
-                if (text.length < 30) return;
-                if (iconSuggestFor && iconSuggestFor.manualEdited) return;
-                clearTimeout(iconSuggestDebounce);
-                iconSuggestDebounce = setTimeout(async () => {
-                    badge.classList.remove('hidden');
-                    try {
-                        const parts = getTextFn().split('\n');
-                        const res = await adminFetch('/api/ai/suggest-icon', {
-                            method: 'POST',
-                            body: { title: parts[0] || '', description: parts.slice(1).join('\n') || '' }
-                        });
-                        if (res && res.icon && !(iconSuggestFor && iconSuggestFor.manualEdited)) {
-                            input.value = res.icon;
-                            updateIconPreview(preview, res.icon);
-                        }
-                    } catch (e) { /* ignore */ }
-                    badge.classList.add('hidden');
-                }, 900);
-            });
-        }
+    // KI-Vorschlag bei Eingabe in Titel/Beschreibung
+    const runSuggest = () => {
+        const text = getTextFn();
+        if (text.length < 30) return;
+        if (iconSuggestFor && iconSuggestFor.manualEdited) return;
+
+        clearTimeout(iconSuggestDebounce);
+        iconSuggestDebounce = setTimeout(async () => {
+            badge.classList.remove('hidden');
+            try {
+                const parts = getTextFn().split('\n');
+                const res = await adminFetch('/api/ai/suggest-icon', {
+                    method: 'POST',
+                    body: {
+                        title: parts[0] || '',
+                        description: parts.slice(1).join('\n') || ''
+                    }
+                });
+                if (res && res.icon && !(iconSuggestFor && iconSuggestFor.manualEdited)) {
+                    input.value = res.icon;
+                    updateIconPreview(preview, res.icon);
+                }
+            } catch (e) { /* ignore */ }
+            badge.classList.add('hidden');
+        }, 900);
+    };
+
+    triggerIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', runSuggest);
+    });
+}
+
 
         // ============================================================
         // BENACHRICHTIGUNGEN (neue Kommentare)
