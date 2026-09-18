@@ -1288,20 +1288,7 @@ function updateTimelineButtonVisibility(entries) {
                                 </div>
 
 ${(timelineCountsMap[idea.id] || 0) > 0 ? `
-<div class="mt-3">
-    <button onclick="toggleIdeaTimeline('${idea.id}')"
-            class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-indigo-500/5 hover:bg-indigo-500/10 border border-indigo-500/15 text-[11px] font-bold text-indigo-300 hover:text-white transition-all">
-        <span class="flex items-center gap-1.5">
-            <i data-lucide="history" class="w-3.5 h-3.5"></i>
-            <span>Verlauf & Updates</span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-200">${timelineCountsMap[idea.id]}</span>
-        </span>
-        <i id="idea-timeline-chevron-${idea.id}"
-           class="fa-solid fa-chevron-down text-[10px] text-indigo-300/70"
-           style="transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);"></i>
-    </button>
-    <div id="idea-timeline-${idea.id}" class="hidden mt-2"></div>
-</div>
+<div class="mt-3" id="idea-timeline-${idea.id}">${renderIdeaTimelineHtml(idea.id)}</div>
 ` : ''}
 <div class="flex items-center justify-between text-[11px] text-gray-400 pt-3 border-t border-white/5">
                                     <span class="flex items-center gap-1 font-medium">
@@ -1867,37 +1854,10 @@ ${(timelineCountsMap[idea.id] || 0) > 0 ? `
                 if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 250);
         }
-        function toggleIdeaTimeline(ideaId) {
-    const section = document.getElementById(`idea-timeline-${ideaId}`);
-    const chevron = document.getElementById(`idea-timeline-chevron-${ideaId}`);
-    if (!section) return;
 
-    if (!section.classList.contains('hidden')) {
-        section.classList.add('hidden');
-        if (chevron) chevron.style.transform = 'rotate(0deg)';
-        return;
-    }
-
-    section.classList.remove('hidden');
-    if (chevron) chevron.style.transform = 'rotate(180deg)';
-
-    if (!ideaTimelineCache[ideaId]) {
-        ideaTimelineCache[ideaId] = [];
-    }
-    renderIdeaTimeline(ideaId);
-    if (window.lucide) lucide.createIcons();
-}
-
-function renderIdeaTimeline(ideaId) {
-    const section = document.getElementById(`idea-timeline-${ideaId}`);
-    if (!section) return;
-
+        function renderIdeaTimelineHtml(ideaId) {
     const entries = ideaTimelineCache[ideaId] || [];
-
-    if (!entries.length) {
-        section.innerHTML = '<div class="text-[11px] text-gray-500 italic px-1">Noch keine Updates.</div>';
-        return;
-    }
+    if (!entries.length) return '';
 
     const isExpanded = ideaTimelineExpanded.has(ideaId);
 
@@ -1946,18 +1906,25 @@ function renderIdeaTimeline(ideaId) {
         }
     }
 
-    section.innerHTML = html;
-    if (window.lucide) lucide.createIcons();
+    return html;
 }
 
 function expandIdeaTimeline(ideaId) {
     ideaTimelineExpanded.add(ideaId);
-    renderIdeaTimeline(ideaId);
+    const section = document.getElementById(`idea-timeline-${ideaId}`);
+    if (section) {
+        section.innerHTML = renderIdeaTimelineHtml(ideaId);
+        if (window.lucide) lucide.createIcons();
+    }
 }
 
 function collapseIdeaTimeline(ideaId) {
     ideaTimelineExpanded.delete(ideaId);
-    renderIdeaTimeline(ideaId);
+    const section = document.getElementById(`idea-timeline-${ideaId}`);
+    if (section) {
+        section.innerHTML = renderIdeaTimelineHtml(ideaId);
+        if (window.lucide) lucide.createIcons();
+    }
 }
 
     </script>
