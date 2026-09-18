@@ -1854,7 +1854,7 @@ ${(timelineCountsMap[idea.id] || 0) > 0 ? `
                 if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 250);
         }
-function renderIdeaTimelineHtml(ideaId) {
+        function renderIdeaTimelineHtml(ideaId) {
     const entries = ideaTimelineCache[ideaId] || [];
     if (!entries.length) return '';
 
@@ -1884,40 +1884,45 @@ function renderIdeaTimelineHtml(ideaId) {
     let html = `<div class="rounded-xl bg-darkbg/40 border border-white/5 p-3 space-y-3">`;
 
     if (entries.length <= 2 || isExpanded) {
-        // alles voll sichtbar
+        // ALLES voll sichtbar
         html += entries.map(e => renderEntry(e)).join('');
-    } else {
-        // erste 2 voll
-        html += entries.slice(0, 2).map(e => renderEntry(e)).join('');
 
-        // 3. Eintrag mit Fade-Overlay + Button links
+        // Einklappen-Button INNEN im Block
+        if (entries.length > 2 && isExpanded) {
+            html += `
+<button onclick="collapseIdeaTimeline('${ideaId}')"
+        class="flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white transition-colors">
+                    <i class="fa-solid fa-chevron-up"></i>
+                    <span>Weniger anzeigen</span>
+                </button>`;
+        }
+    } else {
+        // 1. Eintrag voll sichtbar
+        html += renderEntry(entries[0]);
+
+        // 2. Eintrag — nur obere Hälfte + Fade + Button auf der Schnittkante
         html += `
-            <div class="relative">
-                <div>${renderEntry(entries[2])}</div>
-                <div class="absolute inset-0 rounded-lg pointer-events-none"
-                     style="background: linear-gradient(to bottom, transparent 0%, rgba(11,15,23,0.35) 40%, rgba(11,15,23,0.85) 75%, #0b0f17 100%);"></div>
+            <div class="relative" style="max-height: 90px;">
+                <div>${renderEntry(entries[1])}</div>
+                <div class="absolute inset-0 pointer-events-none"
+                     style="background: linear-gradient(to bottom,
+                        transparent 0%,
+                        rgba(11,15,23,0.15) 30%,
+                        rgba(11,15,23,0.55) 65%,
+                        rgba(11,15,23,0.95) 100%);"></div>
                 <button onclick="expandIdeaTimeline('${ideaId}')"
-                        class="absolute bottom-0 left-0 z-10 flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white px-1 py-0.5 transition-colors">
+                        class="absolute bottom-0 left-0 z-10 flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white transition-colors">
                     <i class="fa-solid fa-chevron-down"></i>
-                    <span>Ältere laden</span>
+                    <span>Ältere laden (${entries.length - 1})</span>
                 </button>
             </div>
         `;
     }
 
     html += `</div>`;
-
-    // Einklappen-Button nur bei >2 und aufgeklappt
-    if (entries.length > 2 && isExpanded) {
-        html += `
-            <button onclick="collapseIdeaTimeline('${ideaId}')"
-                    class="flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white pt-2 pl-1 transition-colors">
-                <i class="fa-solid fa-chevron-up"></i>
-                <span>Einklappen</span>
-            </button>`;
-    }
-
     return html;
+
+
 }
 
 function expandIdeaTimeline(ideaId) {
