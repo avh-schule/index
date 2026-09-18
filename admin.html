@@ -264,6 +264,24 @@
             </div>
         </div>
 
+        <!-- TIMELINE / NEWS SECTION -->
+        <div class="glass-panel rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
+                    Timeline / News
+                </h2>
+                <button onclick="openTimelineModalAdmin()"
+                        class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all active:scale-95">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    Neuer Eintrag
+                </button>
+            </div>
+            <div id="timelineAdminList" class="space-y-2">
+                <div class="text-xs text-gray-400 text-center py-3">Lade Timeline...</div>
+            </div>
+        </div>
+
         <!-- IDEAS CONTAINER -->
         <div id="ideasContainer" class="space-y-4">
             <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">
@@ -395,6 +413,115 @@
         </div>
     </div>
 
+    <!-- TIMELINE MODAL (Admin) -->
+    <div id="timelineModalAdmin" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-indigo relative max-h-[90vh] overflow-y-auto">
+            <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
+                <span id="timelineModalHeading">Neuer Timeline-Eintrag</span>
+            </h3>
+            <form onsubmit="saveTimelineEntry(event)" class="space-y-4">
+                <input type="hidden" id="timelineEditId">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Titel</label>
+                    <input type="text" id="timelineTitleInput" required maxlength="120"
+                           class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Beschreibung</label>
+                    <textarea id="timelineDescInput" rows="4" required maxlength="1000"
+                              class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Icon (Font Awesome)</label>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-surface-base border border-surface-border flex items-center justify-center shrink-0">
+                            <i id="timelineIconPreview" class="fa-solid fa-bullhorn text-lg text-indigo-300"></i>
+                        </div>
+                        <div class="flex-1 relative">
+                            <input type="text" id="timelineIconInput" value="fa-solid fa-bullhorn"
+                                   placeholder="fa-solid fa-rocket"
+                                   class="w-full bg-surface-base border border-surface-border rounded-xl p-3 pr-20 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            <span id="timelineIconSuggesting"
+                                  class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-indigo-400">
+                                <i class="fa-solid fa-spinner fa-spin"></i> KI...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Datum & Uhrzeit</label>
+                        <input type="datetime-local" id="timelineDateInput" required
+                               class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Projekt (optional)</label>
+                        <select id="timelineIdeaSelect"
+                                class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            <option value="">— Nur zentral —</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('timelineModalAdmin')" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- STATUS MODAL (Grund/Details bei Statuswechsel) -->
+    <div id="statusModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-indigo relative max-h-[90vh] overflow-y-auto">
+            <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                <i id="statusModalIcon" class="fa-solid fa-hammer text-indigo-400"></i>
+                <span id="statusModalHeading">Status ändern</span>
+            </h3>
+            <p id="statusModalSubtitle" class="text-[11px] text-gray-400 mb-4"></p>
+            <form onsubmit="saveStatusModal(event)" class="space-y-4">
+                <input type="hidden" id="statusModalIdeaId">
+                <input type="hidden" id="statusModalNewStatus">
+                <div>
+                    <label id="statusModalLabel" class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Details</label>
+                    <textarea id="statusModalText" rows="4" required maxlength="1000"
+                              class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Icon</label>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-surface-base border border-surface-border flex items-center justify-center shrink-0">
+                            <i id="statusIconPreview" class="fa-solid fa-bullhorn text-lg text-indigo-300"></i>
+                        </div>
+                        <div class="flex-1 relative">
+                            <input type="text" id="statusIconInput" value="fa-solid fa-bullhorn"
+                                   class="w-full bg-surface-base border border-surface-border rounded-xl p-3 pr-20 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            <span id="statusIconSuggesting"
+                                  class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-indigo-400">
+                                <i class="fa-solid fa-spinner fa-spin"></i> KI...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Datum & Uhrzeit</label>
+                    <input type="datetime-local" id="statusDateInput" required
+                           class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="cancelStatusModal()" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // ============================================================
         // WORKER-KONFIGURATION
@@ -438,6 +565,26 @@
         let unreadComments = [];
         let notifPanelOpen = false;
         let notifPollTimer = null;
+
+        // Timeline
+        const STATUS_LABELS_DE = {
+            reviewing:   'Angenommen',
+            in_progress: 'Wird umgesetzt',
+            done:        'Umgesetzt',
+            rejected:    'Nicht möglich'
+        };
+        const STATUS_DEFAULT_ICONS = {
+            reviewing:   'fa-solid fa-check-circle',
+            in_progress: 'fa-solid fa-hammer',
+            done:        'fa-solid fa-flag-checkered',
+            rejected:    'fa-solid fa-ban',
+            manual:      'fa-solid fa-bullhorn',
+            idea_update: 'fa-solid fa-circle-info'
+        };
+        let timelineAdminData = [];
+        let statusModalPrevStatus = null;
+        let iconSuggestDebounce = null;
+        let iconSuggestFor = null;
 
         const STATUS_OPTIONS = {
             'waiting_for_review': 'In Prüfung',
@@ -517,7 +664,37 @@
                     closeModal('commentModal');
                     closeModal('editCommentModal');
                     closeModal('messageModal');
+                    closeModal('timelineModalAdmin');
+                    closeModal('statusModal');
                 }
+            });
+
+            attachIconListener(
+                'timelineIconInput',
+                'timelineIconPreview',
+                'timelineIconSuggesting',
+                () => (
+                    (document.getElementById('timelineTitleInput').value || '') + '\n' +
+                    (document.getElementById('timelineDescInput').value || '')
+                ).trim()
+            );
+
+            attachIconListener(
+                'statusIconInput',
+                'statusIconPreview',
+                'statusIconSuggesting',
+                () => {
+                    const idea = listData.find(i => i.id === document.getElementById('statusModalIdeaId').value);
+                    const txt = document.getElementById('statusModalText').value || '';
+                    return ((idea ? idea.title : '') + '\n' + txt).trim();
+                }
+            );
+
+            ['timelineIconInput','statusIconInput'].forEach(id => {
+                document.getElementById(id).addEventListener('keydown', () => {
+                    if (!iconSuggestFor) iconSuggestFor = {};
+                    iconSuggestFor.manualEdited = true;
+                });
             });
         });
 
@@ -544,10 +721,12 @@
                 loadVisitorCount(),
                 loadMessages(),
                 loadRateLimits(),
-                loadUnreadComments()
+                loadUnreadComments(),
+                loadTimelineAdmin()
             ]);
             updateStats();
             render();
+            renderTimelineAdmin();
         }
 
         async function loadPinnedComments() {
@@ -717,6 +896,11 @@
                         </div>
 
                         <div class="flex items-center gap-1.5 ml-auto">
+                            <button onclick="openIdeaUpdateModal('${item.id}')" title="Update hinzufügen"
+                                    class="px-2.5 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl border border-indigo-500/30 flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-plus text-[11px]"></i>
+                                <span>Update</span>
+                            </button>
                             <button onclick="openCommentModal('${item.id}')" class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-bold rounded-xl border border-amber-500/30 flex items-center gap-1.5 transition-all">
                                 <i class="fa-solid fa-reply text-[11px]"></i>
                                 <span>Antworten</span>
@@ -782,15 +966,21 @@
         async function changeStatus(id, newStatus) {
             const idx = listData.findIndex(i => i.id === id);
             if (idx === -1) return;
-            const prevStatus = listData[idx].status;
-            const prevPublished = listData[idx].is_published;
-            if (prevStatus === newStatus) return;
+            const currentStatus = listData[idx].status;
+            if (currentStatus === newStatus) return;
 
+            const statusesNeedingModal = ['reviewing', 'in_progress', 'done', 'rejected'];
+            if (statusesNeedingModal.includes(newStatus)) {
+                openStatusModal(id, newStatus);
+                return;
+            }
+
+            const prevStatus = currentStatus;
+            const prevPublished = listData[idx].is_published;
             listData[idx].status = newStatus;
             listData[idx].is_published = newStatus !== 'invisible';
             updateStats();
             render();
-
             try {
                 await adminFetch(`/api/admin/ideas/${encodeURIComponent(id)}`, {
                     method: 'PATCH',
@@ -803,6 +993,91 @@
                 render();
                 alert('Fehler: ' + e.message);
             }
+        }
+
+        function openStatusModal(ideaId, newStatus) {
+            const idea = listData.find(i => i.id === ideaId);
+            if (!idea) return;
+
+            iconSuggestFor = { manualEdited: false };
+            statusModalPrevStatus = idea.status;
+
+            const icon = STATUS_DEFAULT_ICONS[newStatus] || STATUS_DEFAULT_ICONS.manual;
+            document.getElementById('statusModalIdeaId').value = ideaId;
+            document.getElementById('statusModalNewStatus').value = newStatus;
+            document.getElementById('statusModalHeading').textContent = idea.title + ' — ' + STATUS_LABELS_DE[newStatus];
+            document.getElementById('statusModalSubtitle').textContent =
+                newStatus === 'rejected'
+                    ? 'Bitte gib einen Grund an. Er erscheint im Bereich „Nicht möglich" und in der Timeline.'
+                    : 'Diese Details erscheinen in der Timeline des Projekts.';
+            document.getElementById('statusModalLabel').textContent = newStatus === 'rejected' ? 'Grund' : 'Details';
+            document.getElementById('statusModalText').value = '';
+            document.getElementById('statusIconInput').value = icon;
+            document.getElementById('statusDateInput').value = toLocalDatetimeInput(new Date());
+
+            const iconEl = document.getElementById('statusModalIcon');
+            iconEl.className = icon;
+            updateIconPreview(document.getElementById('statusIconPreview'), icon);
+
+            const sel = document.querySelector(`#admin-idea-${ideaId} select`);
+            if (sel) sel.value = statusModalPrevStatus;
+
+            document.getElementById('statusModal').classList.remove('hidden');
+        }
+
+        function cancelStatusModal() {
+            closeModal('statusModal');
+            setTimeout(render, 50);
+        }
+
+        async function saveStatusModal(e) {
+            e.preventDefault();
+            const ideaId = document.getElementById('statusModalIdeaId').value;
+            const newStatus = document.getElementById('statusModalNewStatus').value;
+            const text = document.getElementById('statusModalText').value.trim();
+            const icon = document.getElementById('statusIconInput').value.trim() || STATUS_DEFAULT_ICONS[newStatus] || STATUS_DEFAULT_ICONS.manual;
+            const event_date = new Date(document.getElementById('statusDateInput').value).toISOString();
+
+            if (!text) return;
+
+            const idx = listData.findIndex(i => i.id === ideaId);
+            if (idx === -1) return;
+            const idea = listData[idx];
+            const prevStatus = idea.status;
+            const prevPublished = idea.is_published;
+
+            const timelineTitle = `${idea.title} — ${STATUS_LABELS_DE[newStatus]}`;
+
+            idea.status = newStatus;
+            idea.is_published = newStatus !== 'invisible';
+            updateStats();
+            render();
+
+            try {
+                await adminFetch(`/api/admin/ideas/${encodeURIComponent(ideaId)}`, {
+                    method: 'PATCH',
+                    body: {
+                        status: newStatus,
+                        timeline: {
+                            title: timelineTitle,
+                            description: text,
+                            icon,
+                            event_date
+                        }
+                    }
+                });
+            } catch (err) {
+                idea.status = prevStatus;
+                idea.is_published = prevPublished;
+                updateStats();
+                render();
+                alert('Fehler: ' + err.message);
+                return;
+            }
+
+            closeModal('statusModal');
+            await loadTimelineAdmin();
+            renderTimelineAdmin();
         }
 
         async function toggleIdeaOwnership(id) {
@@ -835,6 +1110,8 @@
             render();
             try {
                 await adminFetch(`/api/admin/ideas/${encodeURIComponent(id)}`, { method: 'DELETE' });
+                await loadTimelineAdmin();
+                renderTimelineAdmin();
             } catch (e) {
                 listData.splice(idx, 0, backup);
                 updateStats();
@@ -928,10 +1205,8 @@
                     return;
                 }
 
-                // Cache ZUERST aktualisieren …
                 adminCommentsCache[ideaId] = data;
 
-                // … DANN ungelesene Kommentare aus `data` markieren
                 const unreadIds = data
                     .filter(c => !c.is_official && c.admin_read === false)
                     .map(c => c.id);
@@ -1266,6 +1541,199 @@
         }
 
         // ============================================================
+        // TIMELINE VERWALTUNG
+        // ============================================================
+        async function loadTimelineAdmin() {
+            try {
+                timelineAdminData = await adminFetch('/api/admin/timeline');
+            } catch (e) {
+                timelineAdminData = [];
+            }
+        }
+
+        function renderTimelineAdmin() {
+            const box = document.getElementById('timelineAdminList');
+            if (!box) return;
+            if (!timelineAdminData.length) {
+                box.innerHTML = '<div class="text-xs text-gray-500 text-center py-3 italic">Noch keine Einträge.</div>';
+                return;
+            }
+            box.innerHTML = timelineAdminData.map(e => {
+                const dt = new Date(e.event_date);
+                const dateStr = dt.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
+                    + ' · ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                const iconClass = e.icon || 'fa-solid fa-bullhorn';
+                const idea = e.idea_id ? (listData.find(i => i.id === e.idea_id) || null) : null;
+                const sourceBadge = e.source !== 'manual'
+                    ? `<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-bold uppercase tracking-wider">Auto</span>`
+                    : '';
+                return `
+                    <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
+                        <div class="flex items-start gap-3">
+                            <div class="shrink-0 w-9 h-9 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center">
+                                <i class="${esc(iconClass)} text-indigo-300 text-xs"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h4 class="font-bold text-xs text-white">${esc(e.title)}</h4>
+                                    ${sourceBadge}
+                                </div>
+                                <div class="text-[10px] text-gray-500 mt-0.5">${dateStr}</div>
+                                ${idea ? `<div class="text-[10px] text-indigo-400 mt-0.5 truncate"><i class="fa-solid fa-link mr-1"></i>${esc(idea.title)}</div>` : ''}
+                                <p class="text-[11px] text-gray-300 mt-1 whitespace-pre-line line-clamp-3">${esc(e.description)}</p>
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button onclick="openTimelineModalAdmin('${e.id}')" class="p-1.5 bg-surface-hover hover:bg-white/10 text-gray-300 rounded-lg border border-white/5">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="deleteTimelineEntry('${e.id}')" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg border border-rose-500/20">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function toLocalDatetimeInput(date) {
+            const d = new Date(date);
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        function populateIdeaSelect(selectedId = '') {
+            const sel = document.getElementById('timelineIdeaSelect');
+            sel.innerHTML = '<option value="">— Nur zentral —</option>' +
+                listData.map(i => `<option value="${esc(i.id)}" ${selectedId === i.id ? 'selected' : ''}>${esc(i.title)}</option>`).join('');
+        }
+
+        function openTimelineModalAdmin(id) {
+            const heading = document.getElementById('timelineModalHeading');
+            const iconInput = document.getElementById('timelineIconInput');
+            const iconPreview = document.getElementById('timelineIconPreview');
+            const dateInput = document.getElementById('timelineDateInput');
+
+            iconSuggestFor = { manualEdited: false };
+
+            if (id) {
+                const e = timelineAdminData.find(x => x.id === id);
+                if (!e) return;
+                heading.textContent = 'Timeline-Eintrag bearbeiten';
+                document.getElementById('timelineEditId').value = e.id;
+                document.getElementById('timelineTitleInput').value = e.title;
+                document.getElementById('timelineDescInput').value = e.description;
+                iconInput.value = e.icon || STATUS_DEFAULT_ICONS.manual;
+                dateInput.value = toLocalDatetimeInput(e.event_date);
+                populateIdeaSelect(e.idea_id || '');
+            } else {
+                heading.textContent = 'Neuer Timeline-Eintrag';
+                document.getElementById('timelineEditId').value = '';
+                document.getElementById('timelineTitleInput').value = '';
+                document.getElementById('timelineDescInput').value = '';
+                iconInput.value = STATUS_DEFAULT_ICONS.manual;
+                dateInput.value = toLocalDatetimeInput(new Date());
+                populateIdeaSelect('');
+            }
+            updateIconPreview(iconPreview, iconInput.value);
+            document.getElementById('timelineModalAdmin').classList.remove('hidden');
+        }
+
+        function openIdeaUpdateModal(ideaId) {
+            const idea = listData.find(i => i.id === ideaId);
+            if (!idea) return;
+            iconSuggestFor = { manualEdited: false };
+
+            document.getElementById('timelineModalHeading').textContent = 'Update zu: ' + idea.title;
+            document.getElementById('timelineEditId').value = '';
+            document.getElementById('timelineTitleInput').value = idea.title + ' — ';
+            document.getElementById('timelineDescInput').value = '';
+            document.getElementById('timelineIconInput').value = STATUS_DEFAULT_ICONS.idea_update;
+            document.getElementById('timelineDateInput').value = toLocalDatetimeInput(new Date());
+            populateIdeaSelect(ideaId);
+            updateIconPreview(document.getElementById('timelineIconPreview'), STATUS_DEFAULT_ICONS.idea_update);
+            document.getElementById('timelineModalAdmin').classList.remove('hidden');
+        }
+
+        async function saveTimelineEntry(e) {
+            e.preventDefault();
+            const id = document.getElementById('timelineEditId').value;
+            const title = document.getElementById('timelineTitleInput').value.trim();
+            const description = document.getElementById('timelineDescInput').value.trim();
+            const icon = document.getElementById('timelineIconInput').value.trim() || STATUS_DEFAULT_ICONS.manual;
+            const event_date = new Date(document.getElementById('timelineDateInput').value).toISOString();
+            const idea_id = document.getElementById('timelineIdeaSelect').value || null;
+
+            const body = {
+                title, description, icon, event_date, idea_id,
+                source: idea_id ? 'idea_update' : 'manual'
+            };
+            try {
+                if (id) {
+                    await adminFetch(`/api/admin/timeline/${encodeURIComponent(id)}`, { method: 'PATCH', body });
+                } else {
+                    await adminFetch('/api/admin/timeline', { method: 'POST', body });
+                }
+            } catch (err) {
+                alert('Fehler: ' + err.message);
+                return;
+            }
+            closeModal('timelineModalAdmin');
+            await loadTimelineAdmin();
+            renderTimelineAdmin();
+        }
+
+        async function deleteTimelineEntry(id) {
+            if (!confirm('Timeline-Eintrag löschen?')) return;
+            try {
+                await adminFetch(`/api/admin/timeline/${encodeURIComponent(id)}`, { method: 'DELETE' });
+            } catch (e) {
+                alert('Fehler: ' + e.message);
+                return;
+            }
+            await loadTimelineAdmin();
+            renderTimelineAdmin();
+        }
+
+        // ============================================================
+        // ICON HANDLING
+        // ============================================================
+        function updateIconPreview(el, value) {
+            const cls = (value || '').trim() || STATUS_DEFAULT_ICONS.manual;
+            el.className = cls;
+        }
+
+        function attachIconListener(inputId, previewId, suggestBadgeId, getTextFn) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            const badge = document.getElementById(suggestBadgeId);
+
+            input.addEventListener('input', () => {
+                updateIconPreview(preview, input.value);
+                const text = getTextFn();
+                if (text.length < 30) return;
+                if (iconSuggestFor && iconSuggestFor.manualEdited) return;
+                clearTimeout(iconSuggestDebounce);
+                iconSuggestDebounce = setTimeout(async () => {
+                    badge.classList.remove('hidden');
+                    try {
+                        const parts = getTextFn().split('\n');
+                        const res = await adminFetch('/api/ai/suggest-icon', {
+                            method: 'POST',
+                            body: { title: parts[0] || '', description: parts.slice(1).join('\n') || '' }
+                        });
+                        if (res && res.icon && !(iconSuggestFor && iconSuggestFor.manualEdited)) {
+                            input.value = res.icon;
+                            updateIconPreview(preview, res.icon);
+                        }
+                    } catch (e) { /* ignore */ }
+                    badge.classList.add('hidden');
+                }, 900);
+            });
+        }
+
+        // ============================================================
         // BENACHRICHTIGUNGEN (neue Kommentare)
         // ============================================================
         async function loadUnreadComments() {
@@ -1332,15 +1800,12 @@
         }
 
         async function openNotification(commentId, ideaId) {
-            // Als gelesen markieren
             await markNotificationRead(commentId);
 
-            // Panel schließen
             const panel = document.getElementById('notifPanel');
             if (panel) panel.classList.add('hidden');
             notifPanelOpen = false;
 
-            // Zur Idee springen und Kommentare öffnen
             const card = document.getElementById(`admin-idea-${ideaId}`);
             if (card) {
                 card.scrollIntoView({ behavior: 'smooth', block: 'start' });
