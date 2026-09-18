@@ -1895,21 +1895,24 @@ ${(timelineCountsMap[idea.id] || 0) > 0 ? `
                     <i class="fa-solid fa-chevron-up"></i>
                     <span>Weniger anzeigen</span>
                 </button>`;
-        }
+        }    
     } else {
         // 1. Eintrag voll sichtbar
         html += renderEntry(entries[0]);
 
-        // 2. Eintrag — nur obere Hälfte + Fade + Button auf der Schnittkante
+        // 2. Eintrag — exakt halb sichtbar, mit Gradient darüber, Button auf der Kante
         html += `
-            <div class="relative" style="max-height: 90px;">
-                <div>${renderEntry(entries[1])}</div>
-                <div class="absolute inset-0 pointer-events-none"
-                     style="background: linear-gradient(to bottom,
-                        transparent 0%,
-                        rgba(11,15,23,0.15) 30%,
-                        rgba(11,15,23,0.55) 65%,
-                        rgba(11,15,23,0.95) 100%);"></div>
+            <div class="relative" data-collapsed-idea="${ideaId}">
+                <div class="timeline-fade-clip relative overflow-hidden">
+                    <div class="timeline-fade-content">${renderEntry(entries[1])}</div>
+                    <div class="absolute inset-0 pointer-events-none"
+                         style="background: linear-gradient(to bottom,
+                            transparent 0%,
+                            rgba(11,15,23,0.10) 25%,
+                            rgba(11,15,23,0.35) 50%,
+                            rgba(11,15,23,0.70) 75%,
+                            #0b0f17 100%);"></div>
+                </div>
                 <button onclick="expandIdeaTimeline('${ideaId}')"
                         class="absolute bottom-0 left-0 z-10 flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white transition-colors">
                     <i class="fa-solid fa-chevron-down"></i>
@@ -1919,10 +1922,8 @@ ${(timelineCountsMap[idea.id] || 0) > 0 ? `
         `;
     }
 
-    html += `</div>`;
-    return html;
-
-
+    html += `</div>`;   // ← schließt den äußeren rounded-xl Container
+    return html;       
 }
 
 function expandIdeaTimeline(ideaId) {
@@ -1931,15 +1932,25 @@ function expandIdeaTimeline(ideaId) {
     if (section) {
         section.innerHTML = renderIdeaTimelineHtml(ideaId);
         if (window.lucide) lucide.createIcons();
+        requestAnimationFrame(fitTimelineFades);
     }
 }
-
+function fitTimelineFades() {
+    document.querySelectorAll('.timeline-fade-clip').forEach(clip => {
+        const content = clip.querySelector('.timeline-fade-content');
+        if (!content) return;
+        clip.style.maxHeight = 'none';               // zurücksetzen
+        const fullH = content.scrollHeight;          // volle natürliche Höhe
+        clip.style.maxHeight = Math.round(fullH / 2) + 'px'; // exakt halb
+    });
+}
 function collapseIdeaTimeline(ideaId) {
     ideaTimelineExpanded.delete(ideaId);
     const section = document.getElementById(`idea-timeline-${ideaId}`);
     if (section) {
         section.innerHTML = renderIdeaTimelineHtml(ideaId);
         if (window.lucide) lucide.createIcons();
+        requestAnimationFrame(fitTimelineFades);
     }
 }
 
