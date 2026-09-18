@@ -566,6 +566,7 @@
         let currentState = { title: '', description: '' };
 
         const openCommentSections = new Set();
+        const timelineCountsMap = {};
 
         const STATUS_CONFIG = {
             'waiting_for_review': { label: '<i class="fa-solid fa-clock mr-1"></i> In Prüfung', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
@@ -1005,7 +1006,21 @@
                 Object.assign(officialCommentsCache, map || {});
             } catch (e) { /* ignore */ }
         }
-
+        async function loadTimelineCounts() {
+    try {
+        const entries = await workerFetch('/api/timeline');
+        Object.keys(timelineCountsMap).forEach(k => delete timelineCountsMap[k]);
+        Object.keys(ideaTimelineCache).forEach(k => delete ideaTimelineCache[k]);
+        (entries || []).forEach(e => {
+            if (!e.idea_id) return;
+            timelineCountsMap[e.idea_id] = (timelineCountsMap[e.idea_id] || 0) + 1;
+            if (!ideaTimelineCache[e.idea_id]) ideaTimelineCache[e.idea_id] = [];
+            ideaTimelineCache[e.idea_id].push(e);
+        });
+    } catch (e) {
+        console.warn('Timeline-Liste konnte nicht geladen werden.', e);
+    }
+}
         function updateStatusHighlights() {
             const rejectedCount = currentIdeas.filter(i => i.status === 'rejected').length;
             const doneCount = currentIdeas.filter(i => i.status === 'done').length;
@@ -1126,7 +1141,10 @@
                 return;
             }
 
-            await loadAllOfficialComments();
+            await Promise.all([
+    loadAllOfficialComments(),
+    loadTimelineCounts()
+]);
 
             document.getElementById('ideaCount').textContent = getVisibleIdeas().length;
             updateStatusHighlights();
@@ -1255,19 +1273,22 @@
                                     ${cachedOfficial ? renderOfficialStatusHtml(cachedOfficial) : ''}
                                 </div>
 
-<div class="mt-3 pt-3 border-t border-white/5">
+${(timelineCountsMap[idea.id] || 0) > 0 ? `
+<div class="mt-3">
     <button onclick="toggleIdeaTimeline('${idea.id}')"
-            class="w-full flex items-center justify-between gap-2 text-[11px] font-bold text-indigo-300 hover:text-white transition-colors">
+            class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-indigo-500/5 hover:bg-indigo-500/10 border border-indigo-500/15 text-[11px] font-bold text-indigo-300 hover:text-white transition-all">
         <span class="flex items-center gap-1.5">
             <i data-lucide="history" class="w-3.5 h-3.5"></i>
             <span>Verlauf & Updates</span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-200">${timelineCountsMap[idea.id]}</span>
         </span>
         <i id="idea-timeline-chevron-${idea.id}"
            class="fa-solid fa-chevron-down text-[10px] text-indigo-300/70"
            style="transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);"></i>
     </button>
-    <div id="idea-timeline-${idea.id}" class="hidden mt-3 space-y-3"></div>
+    <div id="idea-timeline-${idea.id}" class="hidden mt-2"></div>
 </div>
+` : ''}
 <div class="flex items-center justify-between text-[11px] text-gray-400 pt-3 border-t border-white/5">
                                     <span class="flex items-center gap-1 font-medium">
                                         <i data-lucide="user" class="w-3 h-3 text-brand-500"></i>
@@ -1832,31 +1853,22 @@
                 if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 250);
         }
-async function toggleIdeaTimeline(ideaId) {
+        function toggleIdeaTimeline(ideaId) {
     const section = document.getElementById(`idea-timeline-${ideaId}`);
     const chevron = document.getElementById(`idea-timeline-chevron-${ideaId}`);
     if (!section) return;
 
-    // Zuklappen
     if (!section.classList.contains('hidden')) {
         section.classList.add('hidden');
         if (chevron) chevron.style.transform = 'rotate(0deg)';
         return;
     }
 
-    // Aufklappen
     section.classList.remove('hidden');
     if (chevron) chevron.style.transform = 'rotate(180deg)';
 
-    // Daten laden (nur beim ersten Öffnen)
     if (!ideaTimelineCache[ideaId]) {
-        section.innerHTML = '<div class="text-[11px] text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Lade...</div>';
-        try {
-            ideaTimelineCache[ideaId] = await workerFetch(`/api/ideas/${encodeURIComponent(ideaId)}/timeline`);
-        } catch (e) {
-            section.innerHTML = '<div class="text-[11px] text-rose-300">Verlauf konnte nicht geladen werden.</div>';
-            return;
-        }
+        ideaTimelineCache[ideaId] = [];
     }
     renderIdeaTimeline(ideaId);
     if (window.lucide) lucide.createIcons();
@@ -1868,58 +1880,56 @@ function renderIdeaTimeline(ideaId) {
 
     const entries = ideaTimelineCache[ideaId] || [];
 
-    // Keine Einträge
     if (!entries.length) {
-        section.innerHTML = '<div class="text-[11px] text-gray-500 italic">Noch keine Updates.</div>';
+        section.innerHTML = '<div class="text-[11px] text-gray-500 italic px-1">Noch keine Updates.</div>';
         return;
     }
 
     const isExpanded = ideaTimelineExpanded.has(ideaId);
 
-    const renderEntry = (e, opts = {}) => {
+    const renderEntry = (e) => {
         const dt = new Date(e.event_date);
         const dateStr = dt.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
             + ' · ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
         const iconClass = e.icon || 'fa-solid fa-bullhorn';
-        const fadedClass = opts.faded ? 'opacity-50' : '';
         return `
-            <div class="flex gap-2.5 ${fadedClass}">
+            <div class="flex gap-2.5">
                 <div class="shrink-0 w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center">
                     <i class="${escapeHtml(iconClass)} text-[11px] text-indigo-300"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <div class="text-[11px] font-bold text-white leading-snug">${escapeHtml(e.title)}</div>
-                    <div class="text-[10px] text-gray-500 mt-0.5">${dateStr}</div>
+                    <div class="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
+                        <span class="text-[11px] font-bold text-white leading-snug">${escapeHtml(e.title)}</span>
+                        <span class="text-[10px] text-gray-500 whitespace-nowrap">${dateStr}</span>
+                    </div>
                     <p class="text-[11px] text-gray-300 leading-relaxed mt-1 whitespace-pre-line">${escapeHtml(e.description)}</p>
                 </div>
             </div>
         `;
     };
 
-    let html = '';
+    const visibleEntries = isExpanded ? entries : entries.slice(0, 2);
 
-    if (entries.length <= 2) {
-        // 0, 1 oder 2 Einträge → alles voll sichtbar, kein Pfeil
-        html = entries.map(e => renderEntry(e)).join('');
-    } else if (!isExpanded) {
-        // > 2 Einträge, zugeklappt → 2 voll + 3. faded + Pfeil runter
-        html = entries.slice(0, 2).map(e => renderEntry(e)).join('');
-        html += renderEntry(entries[2], { faded: true });
-        html += `
-            <button onclick="expandIdeaTimeline('${ideaId}')"
-                    class="w-full flex items-center justify-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white pt-2 transition-colors">
-                <i class="fa-solid fa-chevron-down"></i>
-                <span>Alle ${entries.length} Updates anzeigen</span>
-            </button>`;
-    } else {
-        // > 2 Einträge, aufgeklappt → alle voll sichtbar + Pfeil hoch
-        html = entries.map(e => renderEntry(e)).join('');
-        html += `
-            <button onclick="collapseIdeaTimeline('${ideaId}')"
-                    class="w-full flex items-center justify-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white pt-2 transition-colors">
-                <i class="fa-solid fa-chevron-up"></i>
-                <span>Weniger anzeigen</span>
-            </button>`;
+    let html = `<div class="rounded-xl bg-darkbg/40 border border-white/5 p-3 space-y-3">`;
+    html += visibleEntries.map(e => renderEntry(e)).join('');
+    html += `</div>`;
+
+    if (entries.length > 2) {
+        if (!isExpanded) {
+            html += `
+                <button onclick="expandIdeaTimeline('${ideaId}')"
+                        class="w-full flex items-center justify-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white pt-2 transition-colors">
+                    <i class="fa-solid fa-chevron-down"></i>
+                    <span>Ältere laden</span>
+                </button>`;
+        } else {
+            html += `
+                <button onclick="collapseIdeaTimeline('${ideaId}')"
+                        class="w-full flex items-center justify-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white pt-2 transition-colors">
+                    <i class="fa-solid fa-chevron-up"></i>
+                    <span>Einklappen</span>
+                </button>`;
+        }
     }
 
     section.innerHTML = html;
