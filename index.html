@@ -262,6 +262,101 @@
         }
         .status-panel-inner.status-panel-rejected { border-color: rgba(244, 63, 94, 0.25); }
         .status-panel-inner.status-panel-done { border-color: rgba(16, 185, 129, 0.25); }
+
+        .idea-timeline-section {
+            overflow: hidden;
+            transition: height 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: height;
+        }
+
+        .timeline-fade-clip {
+            overflow: hidden;
+            transition: max-height 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: max-height;
+            transform: translateZ(0);
+        }
+
+        .timeline-fade-overlay {
+            opacity: 1;
+            transition: opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 10;
+        }
+
+        .timeline-fade-content {
+            will-change: transform, opacity;
+            position: relative;
+            z-index: 1;
+        }
+.timeline-entry-list {
+            position: relative;
+        }
+/* Der Strich, der dynamisch von einem Kreis zum nächsten geht */
+        /* Der Strich, der dynamisch von einem Kreis zum nächsten geht */
+        .timeline-entry:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 0.8125rem; /* 13px - exakte Mitte für eine 4px Linie unter einem 32px (w-8) Kreis */
+            top: 2rem; /* Startet direkt unter dem Kreis */
+            bottom: -1rem; /* Zieht sich durch den Abstand zum nächsten Eintrag */
+            width: 4px;
+            border-radius: 9999px;
+            
+            /* Dein originaler, leuchtender Gradient */
+            background: linear-gradient(180deg,
+                rgba(129, 140, 248, 0.28) 0%,
+                rgba(129, 140, 248, 0.62) 18%,
+                rgba(99, 102, 241, 0.78) 50%,
+                rgba(129, 140, 248, 0.42) 82%,
+                rgba(129, 140, 248, 0.18) 100%);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.22);
+            
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Sorgt dafür, dass die Linie beim Aufklappen sauber mit den Elementen animiert wird */
+        .timeline-older-entry::after {
+            opacity: 0;
+            transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .timeline-box.is-expanded .timeline-older-entry::after {
+            opacity: 1;
+        }
+
+        /* Pfeil-Animation */
+        .timeline-toggle-icon {
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .timeline-box.is-expanded .timeline-toggle-icon {
+            transform: rotate(-180deg);
+        }
+        .timeline-entry > .timeline-entry-dot {
+            position: relative;
+            z-index: 2;
+            width: 2rem;
+            height: 2rem;
+            background: rgba(22, 30, 46, 0.98) !important;
+            border-width: 3px !important;
+            border-color: rgba(129, 140, 248, 0.58) !important;
+            box-shadow: 0 0 0 0 rgba(0,0,0,0), 0 0 12px rgba(99, 102, 241, 0.10);
+        }
+
+        .timeline-older-entry {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            filter: blur(0);
+            transition:
+                opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 0.58s ease;
+            will-change: opacity, transform, filter;
+        }
+
+        .timeline-box.is-collapsed .timeline-older-entry {
+            opacity: 0;
+            transform: translate3d(0, -10px, 0);
+            filter: blur(2px);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-24 md:pb-12">
@@ -1201,6 +1296,8 @@ function updateTimelineButtonVisibility(entries) {
             renderIdeas();
 
             requestAnimationFrame(() => {
+                fitTimelineFades();
+
                 currentIdeas.forEach(idea => {
                     const card = document.getElementById(`idea-card-${idea.id}`);
                     if (!card) return;
@@ -1288,7 +1385,7 @@ function updateTimelineButtonVisibility(entries) {
                                 </div>
 
 ${(timelineCountsMap[idea.id] || 0) > 0 ? `
-<div class="mt-3 mb-4" id="idea-timeline-${idea.id}">${renderIdeaTimelineHtml(idea.id)}</div>
+<div class="mt-3 mb-4 idea-timeline-section" id="idea-timeline-${idea.id}">${renderIdeaTimelineHtml(idea.id)}</div>
 ` : ''}
 <div class="flex items-center justify-between text-[11px] text-gray-400 pt-3 border-t border-white/5">
                                     <span class="flex items-center gap-1 font-medium">
@@ -1854,105 +1951,218 @@ ${(timelineCountsMap[idea.id] || 0) > 0 ? `
                 if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 250);
         }
-        function renderIdeaTimelineHtml(ideaId) {
-    const entries = ideaTimelineCache[ideaId] || [];
-    if (!entries.length) return '';
+    
+function renderIdeaTimelineHtml(ideaId) {
+            const entries = ideaTimelineCache[ideaId] || [];
+            if (!entries.length) return '';
 
-    const isExpanded = ideaTimelineExpanded.has(ideaId);
+            const isExpanded = ideaTimelineExpanded.has(ideaId);
 
-    const renderEntry = (e) => {
-        const dt = new Date(e.event_date);
-        const dateStr = dt.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
-            + ' · ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-        const iconClass = e.icon || 'fa-solid fa-bullhorn';
-        return `
-            <div class="flex gap-2.5">
-                <div class="shrink-0 w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center">
-                    <i class="${escapeHtml(iconClass)} text-[11px] text-indigo-300"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
-                        <span class="text-[11px] font-bold text-white leading-snug">${escapeHtml(e.title)}</span>
-                        <span class="text-[10px] text-gray-500 whitespace-nowrap">${dateStr}</span>
+            const renderEntry = (e, index) => {
+                const dt = new Date(e.event_date);
+                const dateStr = dt.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
+                    + ' · ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                const iconClass = e.icon || 'fa-solid fa-bullhorn';
+                
+                const olderClass = index >= 2 ? ' timeline-older-entry' : '';
+                const transitionDelay = index >= 2 ? `${Math.min(180, (index - 1) * 35)}ms` : '0ms';
+                
+                return `
+                    <div class="timeline-entry flex gap-3 relative${olderClass}" style="transition-delay: ${transitionDelay};">
+                        <div class="timeline-entry-dot shrink-0 w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center z-10 relative">
+                            <i class="${escapeHtml(iconClass)} text-[11px] text-indigo-300"></i>
+                        </div>
+                        <div class="flex-1 min-w-0 pb-1">
+                            <div class="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
+                                <span class="text-[11px] font-bold text-white leading-snug">${escapeHtml(e.title)}</span>
+                                <span class="text-[10px] text-gray-500 whitespace-nowrap">${dateStr}</span>
+                            </div>
+                            <p class="text-[11px] text-gray-300 leading-relaxed mt-1 whitespace-pre-line">${escapeHtml(e.description)}</p>
+                        </div>
                     </div>
-                    <p class="text-[11px] text-gray-300 leading-relaxed mt-1 whitespace-pre-line">${escapeHtml(e.description)}</p>
+                `;
+            };
+
+            const hiddenCount = Math.max(0, entries.length - 2);
+            
+            // Der Pfeil ist immer 'fa-chevron-down', CSS dreht ihn, wenn .is-expanded aktiv ist.
+            const button = entries.length > 2 ? `
+                <button onclick="${isExpanded ? `collapseIdeaTimeline('${ideaId}')` : `expandIdeaTimeline('${ideaId}')`}"
+                        class="timeline-toggle-btn relative z-20 flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white transition-all duration-300 mt-2">
+                    <i class="fa-solid fa-chevron-down timeline-toggle-icon"></i>
+                    <span>${isExpanded ? 'Weniger anzeigen' : `Ältere anzeigen (${hiddenCount})`}</span>
+                </button>` : '';
+
+            return `
+                <div class="timeline-box rounded-xl bg-darkbg/40 border border-white/5 p-3 ${isExpanded ? 'is-expanded' : 'is-collapsed'}">
+                    <div class="timeline-fade-clip relative" data-idea-id="${ideaId}" style="transition: max-height 0.6s cubic-bezier(0.22, 1, 0.36, 1);">
+                        <div class="timeline-fade-content">
+                            <div class="timeline-entry-list space-y-4">
+                                ${entries.map(renderEntry).join('')}
+                            </div>
+                        </div>
+                        ${entries.length > 2 ? `
+                        <div class="timeline-fade-overlay absolute inset-x-0 bottom-0 pointer-events-none"
+                             style="height: 50px; background: linear-gradient(to bottom,
+                                rgba(11,15,23,0) 0%,
+                                rgba(11,15,23,0.3) 30%,
+                                rgba(11,15,23,0.8) 70%,
+                                rgba(11,15,23,1) 100%);
+                             transition: opacity 0.4s ease;
+                             opacity: ${isExpanded ? '0' : '1'};"></div>` : ''}
+                    </div>
+                    ${button}
                 </div>
-            </div>
-        `;
-    };
+            `;
+        }
 
-    let html = `<div class="rounded-xl bg-darkbg/40 border border-white/5 p-3 space-y-3">`;
+        // --- HIER: getTimelineFadeMetrics bleibt gleich wie im vorherigen Schritt --- //
 
-    if (entries.length <= 2 || isExpanded) {
-        // ALLES voll sichtbar
-        html += entries.map(e => renderEntry(e)).join('');
+        function animateIdeaTimelineHeight(section, onDone) {
+            if (!section) return;
 
-        // Einklappen-Button INNEN im Block
-        if (entries.length > 2 && isExpanded) {
-            html += `
-<button onclick="collapseIdeaTimeline('${ideaId}')"
-        class="flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white transition-colors">
-                    <i class="fa-solid fa-chevron-up"></i>
-                    <span>Weniger anzeigen</span>
-                </button>`;
-        }    
-    } else {
-        // 1. Eintrag voll sichtbar
-        html += renderEntry(entries[0]);
+            const clip = section.querySelector('.timeline-fade-clip');
+            if (!clip) return;
 
-        // 2. Eintrag — exakt halb sichtbar, mit Gradient darüber, Button auf der Kante
-        html += `
-            <div class="relative" data-collapsed-idea="${ideaId}">
-                <div class="timeline-fade-clip relative overflow-hidden">
-                    <div class="timeline-fade-content">${renderEntry(entries[1])}</div>
-                    <div class="absolute inset-0 pointer-events-none"
-                         style="background: linear-gradient(to bottom,
-                            transparent 0%,
-                            rgba(11,15,23,0.10) 25%,
-                            rgba(11,15,23,0.35) 50%,
-                            rgba(11,15,23,0.70) 75%,
-                            #0b0f17 100%);"></div>
-                </div>
-                <button onclick="expandIdeaTimeline('${ideaId}')"
-                        class="absolute bottom-0 left-0 z-10 flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white transition-colors">
-                    <i class="fa-solid fa-chevron-down"></i>
-                    <span>Ältere laden (${entries.length - 1})</span>
-                </button>
-            </div>
-        `;
-    }
+            const ideaId = clip.dataset.ideaId;
+            const expanded = ideaTimelineExpanded.has(ideaId);
+            
+            const metrics = getTimelineFadeMetrics(clip);
+            if (!metrics) return;
 
-    html += `</div>`;   // ← schließt den äußeren rounded-xl Container
-    return html;       
-}
+            const targetClipHeight = expanded ? metrics.fullH : metrics.collapsedH;
+            
+            const button = section.querySelector('.timeline-toggle-btn');
+            const buttonLabel = button?.querySelector('span');
 
-function expandIdeaTimeline(ideaId) {
-    ideaTimelineExpanded.add(ideaId);
-    const section = document.getElementById(`idea-timeline-${ideaId}`);
-    if (section) {
-        section.innerHTML = renderIdeaTimelineHtml(ideaId);
-        if (window.lucide) lucide.createIcons();
-        requestAnimationFrame(fitTimelineFades);
-    }
-}
-function fitTimelineFades() {
-    document.querySelectorAll('.timeline-fade-clip').forEach(clip => {
-        const content = clip.querySelector('.timeline-fade-content');
-        if (!content) return;
-        clip.style.maxHeight = 'none';               // zurücksetzen
-        const fullH = content.scrollHeight;          // volle natürliche Höhe
-        clip.style.maxHeight = Math.round(fullH / 2) + 'px'; // exakt halb
-    });
-}
-function collapseIdeaTimeline(ideaId) {
-    ideaTimelineExpanded.delete(ideaId);
-    const section = document.getElementById(`idea-timeline-${ideaId}`);
-    if (section) {
-        section.innerHTML = renderIdeaTimelineHtml(ideaId);
-        if (window.lucide) lucide.createIcons();
-        requestAnimationFrame(fitTimelineFades);
-    }
-}
+            const totalEntries = (ideaTimelineCache[ideaId] || []).length;
+            const hiddenCount = Math.max(0, totalEntries - 2);
+
+            if (button) {
+                button.setAttribute('onclick', expanded
+                    ? `collapseIdeaTimeline('${ideaId}')`
+                    : `expandIdeaTimeline('${ideaId}')`);
+            }
+            
+            // Icon muss nicht mehr getauscht werden, das übernimmt das CSS über .is-expanded
+            if (buttonLabel) {
+                buttonLabel.textContent = expanded ? 'Weniger anzeigen' : `Ältere anzeigen (${hiddenCount})`;
+            }
+
+            const fade = clip.querySelector('.timeline-fade-overlay');
+            if (fade) fade.style.opacity = expanded ? '0' : '1';
+
+            const box = clip.closest('.timeline-box');
+            if (box) {
+                box.classList.toggle('is-expanded', expanded);
+                box.classList.toggle('is-collapsed', !expanded);
+            }
+
+            requestAnimationFrame(() => {
+                clip.style.maxHeight = `${Math.ceil(targetClipHeight)}px`;
+            });
+
+            setTimeout(() => {
+                if (typeof onDone === 'function') onDone();
+            }, 600); 
+        }
+        function getTimelineFadeMetrics(clip) {
+            const content = clip?.querySelector('.timeline-fade-content');
+            if (!content) return null;
+
+            // Kurzzeitig maximale Höhe zulassen, um echte Höhe zu messen
+            const currentMaxH = clip.style.maxHeight;
+            const currentTransition = clip.style.transition;
+            clip.style.transition = 'none';
+            clip.style.maxHeight = 'none';
+            
+            const fullH = content.scrollHeight;
+            const entries = content.querySelectorAll('.timeline-entry');
+            let collapsedH = fullH;
+
+            // Zeige im eingeklappten Zustand bis zu 2 Einträge
+            if (entries.length > 0) {
+                const visibleCount = Math.min(2, entries.length);
+                const lastVisibleEntry = entries[visibleCount - 1];
+                // Berechne den genauen Abstand vom Top des Containers bis zum Ende des 2. Elements
+                const targetBottom = lastVisibleEntry.offsetTop + lastVisibleEntry.offsetHeight;
+
+                if (entries.length > visibleCount) {
+                    // Wir geben etwas Puffer für den Fade-Effekt dazu (z.B. +8px)
+                    collapsedH = Math.min(fullH, targetBottom + 8);
+                } else {
+                    collapsedH = fullH;
+                }
+
+                const overlay = clip.querySelector('.timeline-fade-overlay');
+                if (overlay) {
+                    const overlayTop = Math.max(0, collapsedH - 40);
+                    overlay.style.top = `${Math.round(overlayTop)}px`;
+                }
+            }
+
+            // Zustand wiederherstellen
+            clip.style.transition = currentTransition;
+            clip.style.maxHeight = currentMaxH;
+
+            return { fullH, collapsedH };
+        }
+
+
+
+        function setTimelineFadeState(clip, animateFromHeight = null) {
+            if (!clip) return;
+            const metrics = getTimelineFadeMetrics(clip);
+            if (!metrics) return;
+
+            const ideaId = clip.dataset.ideaId;
+            const expanded = ideaTimelineExpanded.has(ideaId);
+            const targetH = expanded ? metrics.fullH : metrics.collapsedH;
+
+            clip.dataset.fullHeight = String(Math.ceil(metrics.fullH));
+            clip.dataset.collapsedHeight = String(Math.ceil(metrics.collapsedH));
+
+            if (animateFromHeight !== null && Number.isFinite(animateFromHeight)) {
+                clip.style.maxHeight = `${Math.ceil(animateFromHeight)}px`;
+                void clip.offsetHeight;
+                requestAnimationFrame(() => {
+                    clip.style.maxHeight = `${Math.ceil(targetH)}px`;
+                });
+            } else {
+                clip.style.maxHeight = `${Math.ceil(targetH)}px`;
+            }
+
+            const fade = clip.querySelector('.timeline-fade-overlay');
+            if (fade) fade.style.opacity = expanded ? '0' : '1';
+
+            const box = clip.closest('.timeline-box');
+            if (box) box.classList.toggle('is-expanded', expanded);
+            if (box) box.classList.toggle('is-collapsed', !expanded);
+        }
+
+        
+
+        function fitTimelineFades() {
+            document.querySelectorAll('.timeline-fade-clip').forEach(clip => {
+                setTimelineFadeState(clip);
+            });
+        }
+
+        function expandIdeaTimeline(ideaId) {
+            ideaTimelineExpanded.add(ideaId);
+            const section = document.getElementById(`idea-timeline-${ideaId}`);
+            if (!section) return;
+
+            animateIdeaTimelineHeight(section);
+        }
+
+        function collapseIdeaTimeline(ideaId) {
+            ideaTimelineExpanded.delete(ideaId);
+            const section = document.getElementById(`idea-timeline-${ideaId}`);
+            if (!section) return;
+
+            animateIdeaTimelineHeight(section);
+        }
 
     </script>
 <script>
