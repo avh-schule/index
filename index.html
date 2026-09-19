@@ -43,6 +43,7 @@
     <style>
         html {
             overscroll-behavior-y: contain;
+            background-color: #0b0f17;
         }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -50,19 +51,20 @@
             color: #f3f4f6;
             overflow-x: hidden;
             overscroll-behavior-y: contain;
-            animation: pageFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) ease-out;
+            /* Seiten-Animation bei Reload / Erstaufruf */
+            animation: pageFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) ease-out;
         }
 
         @keyframes pageFadeIn {
-            from { opacity: 0; transform: translateY(12px); }
+            from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .tab-content-anim {
-            animation: tabContentFade 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: tabContentFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes tabContentFade {
-            from { opacity: 0; transform: translateY(10px) scale(0.99); }
+            from { opacity: 0; transform: translateY(8px) scale(0.99); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
@@ -80,7 +82,7 @@
         }
 
         #brandBlock {
-            transition: padding-right 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: padding-right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .upvote-btn-active {
@@ -95,7 +97,7 @@
             isolation: isolate;
             overflow: hidden;
             will-change: transform, width, padding, border-radius, top, right;
-            transition: all 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             background-size: 200% 100%;
             animation: cta-shift 4s ease-in-out infinite, cta-glow 3s ease-in-out infinite;
             box-shadow: 0 12px 30px -12px rgba(34, 211, 238, 0.75);
@@ -156,7 +158,7 @@
             align-items: center;
             box-shadow: 0 12px 28px -10px rgba(34, 211, 238, 0.8);
             transform: translateY(0) scale(1);
-            transition: all 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .idea-cta.is-floating:hover {
@@ -186,7 +188,7 @@
         @keyframes tagline-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
 
         .idea-card-anim {
-            transition: transform 0.45s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         ::-webkit-scrollbar { width: 8px; }
@@ -236,7 +238,7 @@
             outline: none;
             cursor: pointer;
             transition: border-color 0.25s ease,
-                        border-radius 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        border-radius 0.3s cubic-bezier(0.16, 1, 0.3, 1),
                         transform 0.2s ease;
         }
         .status-toggle-btn:active { transform: scale(0.995); }
@@ -255,8 +257,8 @@
             max-height: 0;
             overflow: hidden;
             opacity: 0;
-            transition: max-height 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                        opacity 0.28s ease;
+            transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                        opacity 0.25s ease;
         }
         .status-wrapper.is-open > .status-panel {
             max-height: 3000px;
@@ -276,20 +278,20 @@
 
         .idea-timeline-section {
             overflow: hidden;
-            transition: height 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             will-change: height;
         }
 
         .timeline-fade-clip {
             overflow: hidden;
-            transition: max-height 0.82s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             will-change: max-height;
             transform: translateZ(0);
         }
 
         .timeline-fade-overlay {
             opacity: 1;
-            transition: opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 10;
         }
 
@@ -348,14 +350,14 @@
 
         .timeline-older-entry::after {
             opacity: 0;
-            transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .timeline-box.is-expanded .timeline-older-entry::after {
             opacity: 1;
         }
 
         .timeline-toggle-icon {
-            transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) !important;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
         .timeline-box.is-expanded .timeline-toggle-icon {
             transform: rotate(-180deg);
@@ -380,9 +382,9 @@
             transform: translate3d(0, 0, 0);
             filter: blur(0);
             transition:
-                opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.72s cubic-bezier(0.22, 1, 0.36, 1),
-                filter 0.58s ease;
+                opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.45s ease;
             will-change: opacity, transform, filter;
         }
 
@@ -500,17 +502,17 @@
         <!-- FILTER & SORTING TABS -->
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6 w-full">
             <!-- Gemeinsamer Hauptrahmen für Tabs (dehnt sich bis zur Anzahl oder auf 100% aus) -->
-            <div id="tabNavWrapper" class="relative flex items-center bg-cardbg/80 p-1 rounded-2xl border border-white/5 w-full sm:w-auto flex-1 min-w-[280px] overflow-hidden transition-all duration-300">
-                <!-- Gleitendes blaues Element (Slider Indicator) -->
+            <div id="tabNavWrapper" class="relative flex items-center bg-cardbg/80 p-1 rounded-2xl border border-white/5 w-full sm:w-auto flex-1 min-w-[280px] overflow-hidden transition-all duration-200">
+                <!-- Schneller, flüssiger Slider Indicator (180ms) -->
                 <div id="sortIndicator"
-                     class="absolute top-1 bottom-1 rounded-xl bg-brand-600 shadow-md pointer-events-none transition-all duration-300 cubic-bezier(0.22,1,0.36,1) z-0"></div>
+                     class="absolute top-1 bottom-1 rounded-xl bg-brand-600 shadow-md pointer-events-none transition-all duration-200 cubic-bezier(0.16,1,0.3,1) z-0"></div>
 
                 <button id="sortVotesBtn" onclick="setSort('votes')"
-                        class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors duration-200 whitespace-nowrap text-center flex-1">
+                        class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
                     🔥 Beliebteste
                 </button>
                 <button id="sortNewestBtn" onclick="setSort('newest')"
-                        class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center flex-1">
+                        class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
                     ✨ Neueste
                 </button>
 
@@ -519,7 +521,7 @@
 
                 <!-- Updates Button mit Emoji 📣 -->
                 <button id="sortTimelineBtn" onclick="setSort('timeline')"
-                        class="hidden relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center flex-1">
+                        class="hidden relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
                     📣 Updates
                 </button>
             </div>
@@ -730,6 +732,7 @@
 
             setTimeout(() => showPendingMessages(), 1200);
 
+            // Periodische Realtime-Aktualisierung (Lautlos & Blendfrei)
             setInterval(() => {
                 const active = document.activeElement;
                 if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
@@ -750,6 +753,7 @@
             window.addEventListener('resize', updateIndicatorPosition);
         });
 
+        // HINTERGRUND-REFRESH (Geräuschlos, löst keine Seitenanimation aus)
         async function refreshRealtime() {
             try {
                 await loadCommentCounts();
@@ -760,9 +764,11 @@
                 currentIdeas = fresh || [];
                 document.getElementById('ideaCount').textContent = getVisibleIdeas().length;
                 updateStatusHighlights();
+                
+                // Aktualisiere Liste nur, wenn sich tatsächlich Daten verändert haben
                 if (prevSig !== nextSig) {
                     if (currentSort !== 'timeline') {
-                        sortAndRenderIdeas(false);
+                        sortAndRenderIdeas(false); // animate = false verhindert Aufblenden
                     } else {
                         renderCentralTimeline(false);
                     }
@@ -1329,7 +1335,7 @@
             const newestBtn = document.getElementById('sortNewestBtn');
             const timelineBtn = document.getElementById('sortTimelineBtn');
 
-            const baseClass = "relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 whitespace-nowrap text-center flex-1";
+            const baseClass = "relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-150 whitespace-nowrap text-center flex-1";
 
             if (votesBtn) votesBtn.className = `${baseClass} ${type === 'votes' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
             if (newestBtn) newestBtn.className = `${baseClass} ${type === 'newest' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
@@ -1378,7 +1384,7 @@
                             card.style.transform = `translateY(${deltaY}px)`;
 
                             requestAnimationFrame(() => {
-                                card.style.transition = 'transform 0.45s cubic-bezier(0.2, 0, 0, 1)';
+                                card.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
                                 card.style.transform = '';
                             });
                         }
@@ -2064,7 +2070,7 @@
 
             return `
                 <div class="timeline-box rounded-xl bg-darkbg/40 border border-white/5 p-3 ${isExpanded ? 'is-expanded' : 'is-collapsed'}">
-                    <div class="timeline-fade-clip relative" data-idea-id="${ideaId}" style="transition: max-height 0.6s cubic-bezier(0.22, 1, 0.36, 1);">
+                    <div class="timeline-fade-clip relative" data-idea-id="${ideaId}" style="transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
                         <div class="timeline-fade-content">
                             <div class="timeline-entry-list space-y-4">
                                 ${entries.map(renderEntry).join('')}
