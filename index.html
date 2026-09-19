@@ -79,6 +79,10 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
+        #brandBlock {
+            transition: padding-right 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
         .upvote-btn-active {
             background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
             box-shadow: 0 2px 10px rgba(255, 71, 87, 0.3);
@@ -152,14 +156,7 @@
             align-items: center;
             box-shadow: 0 12px 28px -10px rgba(34, 211, 238, 0.8);
             transform: translateY(0) scale(1);
-            transition: width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                padding 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                border-radius 0.42s ease,
-                top 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                right 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.42s ease;
-            transition-property: width, padding, border-radius, top, right, transform, box-shadow;
+            transition: all 0.42s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .idea-cta.is-floating:hover {
@@ -423,7 +420,7 @@
         </div>
 
         <div id="welcomeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-            <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300 relative" id="welcomeContainer">
+            <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300 relative mx-4" id="welcomeContainer">
                 <button id="closeWelcomeIcon" type="button" aria-label="Willkommensfenster schließen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
@@ -432,7 +429,7 @@
                 </div>
                 <p class="text-xs uppercase tracking-[0.18em] text-indigo-300 font-bold">Schülersprecher</p>
                 <h2 class="text-2xl font-extrabold text-white mt-2">Danke für euer Vertrauen! 🎉</h2>
-                <p class="text-sm text-gray-300 leading-relaxed mt-3">Ich sehe eure Ideen, kann Fragen dazu beantworten und euch Rückmeldung geben. Alles bleibt <strong class="font-extrabold text-white">anonym</strong>, damit niemand Angst haben muss, erkannt zu werden.</p>
+                <p class="text-sm text-gray-300 leading-relaxed mt-3 break-words">Ich sehe eure Ideen, kann Fragen dazu beantworten und euch Rückmeldung geben. Alles bleibt <strong class="font-extrabold text-white">anonym</strong>, damit niemand Angst haben muss, erkannt zu werden.</p>
                 <p class="text-sm text-indigo-200 font-semibold mt-4">Trau dich und füge eine Idee hinzu.</p>
                 <div class="flex flex-col sm:flex-row gap-3 mt-6">
                     <button id="welcomeIdeaButton" type="button" class="flex-1 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all">Idee hinzufügen</button>
@@ -443,7 +440,7 @@
 
         <!-- MODAL: ADMIN-NACHRICHT -->
         <div id="messageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-            <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300 relative" id="messageContainer">
+            <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300 relative mx-4" id="messageContainer">
                 <button id="closeMessageIcon" type="button" aria-label="Nachricht schließen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
@@ -451,8 +448,8 @@
                     <i data-lucide="megaphone" class="w-7 h-7 text-indigo-400"></i>
                 </div>
                 <p class="text-xs uppercase tracking-[0.18em] text-indigo-300 font-bold">Mitteilung</p>
-                <h2 id="messageTitle" class="text-2xl font-extrabold text-white mt-2"></h2>
-                <p id="messageBody" class="text-sm text-gray-300 leading-relaxed mt-3 whitespace-pre-line"></p>
+                <h2 id="messageTitle" class="text-2xl font-extrabold text-white mt-2 break-words"></h2>
+                <p id="messageBody" class="text-sm text-gray-300 leading-relaxed mt-3 whitespace-pre-line break-words"></p>
                 <div class="flex mt-6">
                     <button id="messageOkBtn" type="button" class="flex-1 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all">OK</button>
                 </div>
@@ -501,36 +498,33 @@
         </div>
 
         <!-- FILTER & SORTING TABS -->
-        <div class="flex flex-wrap items-center gap-2 mb-6">
-            <!-- Gemeinsamer Hauptrahmen für Tabs -->
-            <div class="flex items-center bg-cardbg/80 p-1 rounded-2xl border border-white/5 grow sm:grow-0">
-                <!-- 2er Schieberegler für Beliebteste & Neueste -->
-                <div id="sortContainer" class="relative grid grid-cols-2 grow sm:grow-0 min-w-[200px]">
-                    <div id="sortIndicator"
-                         class="absolute top-0 bottom-0 left-0 rounded-xl bg-brand-600 shadow-md pointer-events-none"
-                         style="width: 50%; transform: translateX(0); transition: transform 0.32s cubic-bezier(0.22,1,0.36,1), opacity 0.25s ease;"></div>
-                    <button id="sortVotesBtn" onclick="setSort('votes')"
-                            class="relative z-10 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors duration-200 whitespace-nowrap text-center">
-                        🔥 Beliebteste
-                    </button>
-                    <button id="sortNewestBtn" onclick="setSort('newest')"
-                            class="relative z-10 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center">
-                        ✨ Neueste
-                    </button>
-                </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6 w-full">
+            <!-- Gemeinsamer Hauptrahmen für Tabs (dehnt sich bis zur Anzahl oder auf 100% aus) -->
+            <div id="tabNavWrapper" class="relative flex items-center bg-cardbg/80 p-1 rounded-2xl border border-white/5 w-full sm:w-auto flex-1 min-w-[280px] overflow-hidden transition-all duration-300">
+                <!-- Gleitendes blaues Element (Slider Indicator) -->
+                <div id="sortIndicator"
+                     class="absolute top-1 bottom-1 rounded-xl bg-brand-600 shadow-md pointer-events-none transition-all duration-300 cubic-bezier(0.22,1,0.36,1) z-0"></div>
 
-                <!-- Vertikale Trennlinie (wird nur eingeblendet, wenn Updates existieren) -->
-                <div id="timelineDivider" class="hidden h-4 w-[1px] bg-white/10 mx-1.5 shrink-0"></div>
+                <button id="sortVotesBtn" onclick="setSort('votes')"
+                        class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors duration-200 whitespace-nowrap text-center flex-1">
+                    🔥 Beliebteste
+                </button>
+                <button id="sortNewestBtn" onclick="setSort('newest')"
+                        class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center flex-1">
+                    ✨ Neueste
+                </button>
 
-                <!-- Updates Button (wird nur eingeblendet, wenn Updates existieren) -->
+                <!-- Deutliche vertikale Trennlinie -->
+                <div id="timelineDivider" class="hidden h-5 w-[1px] bg-white/20 mx-1 shrink-0 z-10"></div>
+
+                <!-- Updates Button mit Emoji 📣 -->
                 <button id="sortTimelineBtn" onclick="setSort('timeline')"
-                        class="hidden shrink-0 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-gray-400 hover:text-white bg-transparent items-center gap-1.5 whitespace-nowrap">
-                    <i data-lucide="megaphone" class="w-3.5 h-3.5 text-indigo-400"></i>
-                    <span>Updates</span>
+                        class="hidden relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center flex-1">
+                    📣 Updates
                 </button>
             </div>
 
-            <div class="text-xs text-gray-400 font-medium px-2 shrink-0 ml-auto">
+            <div class="text-xs text-gray-400 font-medium px-1 shrink-0 ml-auto sm:ml-0">
                 <span id="ideaCount">0</span> Ideen veröffentlicht
             </div>
         </div>
@@ -547,7 +541,7 @@
 
     <!-- MODAL: NEUE IDEE EINREICHEN -->
     <div id="ideaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="glass-card w-full max-w-lg rounded-3xl p-6 relative shadow-2xl border border-white/10 transform scale-95 transition-transform duration-300" id="modalContainer">
+        <div class="glass-card w-full max-w-lg rounded-3xl p-6 relative shadow-2xl border border-white/10 transform scale-95 transition-transform duration-300 mx-4" id="modalContainer">
 
             <button id="closeModalBtn" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 p-2 rounded-full transition-colors">
                 <i data-lucide="x" class="w-5 h-5"></i>
@@ -622,7 +616,7 @@
 
     <!-- MODAL: DUPLIKATS-MELDUNG -->
     <div id="duplicateModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
-        <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-amber-500/30">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-amber-500/30 mx-4">
             <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="alert-circle" class="w-6 h-6"></i>
             </div>
@@ -630,8 +624,8 @@
             <p class="text-xs text-gray-300 mb-4">Ein sehr ähnlicher Vorschlag existiert bereits:</p>
 
             <div class="bg-darkbg/80 p-4 rounded-2xl border border-white/5 text-left mb-6">
-                <h4 id="dupTitle" class="font-bold text-sm text-brand-300"></h4>
-                <p id="dupDesc" class="text-xs text-gray-400 mt-1 line-clamp-2"></p>
+                <h4 id="dupTitle" class="font-bold text-sm text-brand-300 break-words"></h4>
+                <p id="dupDesc" class="text-xs text-gray-400 mt-1 line-clamp-2 break-words"></p>
             </div>
 
             <div class="flex gap-3">
@@ -645,7 +639,8 @@
         </div>
     </div>
 
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+    <!-- TOAST CONTAINER MIT SICHEREM SEITENABSTAND -->
+    <div id="toastContainer" class="fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 z-50 space-y-2 pointer-events-none flex flex-col items-center sm:items-end"></div>
 
     <script>
         // ==========================================
@@ -751,6 +746,8 @@
                 lastRealtime = now;
                 refreshRealtime();
             });
+
+            window.addEventListener('resize', updateIndicatorPosition);
         });
 
         async function refreshRealtime() {
@@ -1138,11 +1135,12 @@
             }
             if (btn) {
                 btn.classList.toggle('hidden', !hasUpdates);
-                btn.classList.toggle('flex', hasUpdates);
             }
 
             if (!hasUpdates && currentSort === 'timeline') {
                 setSort('votes', false);
+            } else {
+                updateIndicatorPosition();
             }
         }
 
@@ -1310,39 +1308,39 @@
             }
         }
 
+        // BERECHNET UND ANIMIERT DAS BLAUE BILD (SLIDER) ZU JEDEM AKTIVEN TAB
+        function updateIndicatorPosition() {
+            const indicator = document.getElementById('sortIndicator');
+            let activeBtn;
+            if (currentSort === 'votes') activeBtn = document.getElementById('sortVotesBtn');
+            else if (currentSort === 'newest') activeBtn = document.getElementById('sortNewestBtn');
+            else if (currentSort === 'timeline') activeBtn = document.getElementById('sortTimelineBtn');
+
+            if (indicator && activeBtn && !activeBtn.classList.contains('hidden')) {
+                indicator.style.width = `${activeBtn.offsetWidth}px`;
+                indicator.style.left = `${activeBtn.offsetLeft}px`;
+                indicator.style.opacity = '1';
+            }
+        }
+
         function setSort(type, animate = true) {
             currentSort = type;
             const votesBtn = document.getElementById('sortVotesBtn');
             const newestBtn = document.getElementById('sortNewestBtn');
             const timelineBtn = document.getElementById('sortTimelineBtn');
-            const indicator = document.getElementById('sortIndicator');
 
-            if (type === 'votes') {
-                if (votesBtn) votesBtn.className = 'relative z-10 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors duration-200 whitespace-nowrap text-center';
-                if (newestBtn) newestBtn.className = 'relative z-10 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center';
-                if (timelineBtn) timelineBtn.className = 'px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-gray-400 hover:text-white bg-transparent flex items-center gap-1.5 whitespace-nowrap';
-                if (indicator) {
-                    indicator.style.opacity = '1';
-                    indicator.style.transform = 'translateX(0%)';
-                }
-                sortAndRenderIdeas(animate);
-            } else if (type === 'newest') {
-                if (newestBtn) newestBtn.className = 'relative z-10 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors duration-200 whitespace-nowrap text-center';
-                if (votesBtn) votesBtn.className = 'relative z-10 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center';
-                if (timelineBtn) timelineBtn.className = 'px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-gray-400 hover:text-white bg-transparent flex items-center gap-1.5 whitespace-nowrap';
-                if (indicator) {
-                    indicator.style.opacity = '1';
-                    indicator.style.transform = 'translateX(100%)';
-                }
-                sortAndRenderIdeas(animate);
-            } else if (type === 'timeline') {
-                if (votesBtn) votesBtn.className = 'relative z-10 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center';
-                if (newestBtn) newestBtn.className = 'relative z-10 px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap text-center';
-                if (timelineBtn) timelineBtn.className = 'px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 text-white bg-brand-600 shadow-md flex items-center gap-1.5 whitespace-nowrap';
-                if (indicator) {
-                    indicator.style.opacity = '0';
-                }
+            const baseClass = "relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 whitespace-nowrap text-center flex-1";
+
+            if (votesBtn) votesBtn.className = `${baseClass} ${type === 'votes' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
+            if (newestBtn) newestBtn.className = `${baseClass} ${type === 'newest' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
+            if (timelineBtn) timelineBtn.className = `${baseClass} ${type === 'timeline' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
+
+            updateIndicatorPosition();
+
+            if (type === 'timeline') {
                 renderCentralTimeline(animate);
+            } else {
+                sortAndRenderIdeas(animate);
             }
         }
 
@@ -1448,11 +1446,11 @@
                                     <span class="text-[11px] text-gray-500 font-medium">${timeAgo}</span>
                                 </div>
 
-                                <h3 class="text-base font-bold text-white tracking-tight leading-snug mb-1">
+                                <h3 class="text-base font-bold text-white tracking-tight leading-snug mb-1 break-words">
                                     ${escapeHtml(idea.title)}
                                 </h3>
 
-                                <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-line mb-3">
+                                <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-line mb-3 break-words">
                                     ${escapeHtml(idea.description)}
                                 </p>
 
@@ -1514,7 +1512,7 @@
                         </span>
                         <span class="text-amber-500/60 font-medium">${formatTimeAgo(comment.created_at)}</span>
                     </div>
-                    <p class="text-amber-100 text-xs font-medium leading-relaxed">${escapeHtml(comment.content)}</p>
+                    <p class="text-amber-100 text-xs font-medium leading-relaxed break-words">${escapeHtml(comment.content)}</p>
                 </div>
             `;
         }
@@ -1849,7 +1847,7 @@
                         </span>
                         <span>${formatTimeAgo(c.created_at)}</span>
                     </div>
-                    <p class="text-gray-200 text-xs">${escapeHtml(c.content)}</p>
+                    <p class="text-gray-200 text-xs break-words">${escapeHtml(c.content)}</p>
                 </div>
             `).join('') + `
                 <p class="text-gray-400 text-[10px] font-medium text-center pt-1">
@@ -1924,7 +1922,7 @@
             const toast = document.createElement('div');
             const bgClass = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-brand-600';
 
-            toast.className = `${bgClass} text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 transform translate-y-5 opacity-0 transition-all duration-300 pointer-events-auto`;
+            toast.className = `${bgClass} text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2 transform translate-y-5 opacity-0 transition-all duration-300 pointer-events-auto max-w-full break-words`;
             toast.innerHTML = `<span>${message}</span>`;
             container.appendChild(toast);
 
@@ -1980,7 +1978,7 @@
             container.innerHTML = `
                 <div class="glass-card rounded-2xl p-6 border border-white/5 space-y-6">
                     <div class="flex items-center gap-2 border-b border-white/5 pb-4">
-                        <i data-lucide="megaphone" class="w-5 h-5 text-indigo-400"></i>
+                        <span class="text-lg">📣</span>
                         <h3 class="text-base font-extrabold text-white">News & Updates</h3>
                     </div>
                     <div class="space-y-6">
@@ -1998,10 +1996,10 @@
                                     </div>
                                     <div class="flex-1 min-w-0 pb-1">
                                         <div class="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
-                                            <h4 class="text-sm font-bold text-white leading-snug">${escapeHtml(e.title)}</h4>
+                                            <h4 class="text-sm font-bold text-white leading-snug break-words">${escapeHtml(e.title)}</h4>
                                             <span class="text-[10px] text-gray-500 whitespace-nowrap">${dateStr}</span>
                                         </div>
-                                        <p class="text-xs text-gray-300 leading-relaxed mt-1.5 whitespace-pre-line">${escapeHtml(e.description)}</p>${idea ? `
+                                        <p class="text-xs text-gray-300 leading-relaxed mt-1.5 whitespace-pre-line break-words">${escapeHtml(e.description)}</p>${idea ? `
                                             <button onclick="jumpToIdeaFromCentralTimeline('${e.idea_id}')"
                                                     class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-300 hover:text-white bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 px-3 py-1 rounded-full transition-all">
                                                 <i class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -2046,10 +2044,10 @@
                         </div>
                         <div class="flex-1 min-w-0 pb-1">
                             <div class="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
-                                <span class="text-[11px] font-bold text-white leading-snug">${escapeHtml(e.title)}</span>
+                                <span class="text-[11px] font-bold text-white leading-snug break-words">${escapeHtml(e.title)}</span>
                                 <span class="text-[10px] text-gray-500 whitespace-nowrap">${dateStr}</span>
                             </div>
-                            <p class="text-[11px] text-gray-300 leading-relaxed mt-1 whitespace-pre-line">${escapeHtml(e.description)}</p>
+                            <p class="text-[11px] text-gray-300 leading-relaxed mt-1 whitespace-pre-line break-words">${escapeHtml(e.description)}</p>
                         </div>
                     </div>
                 `;
