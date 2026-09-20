@@ -661,10 +661,14 @@
 
         async function workerFetch(path, options = {}) {
             const res = await fetch(`${WORKER_URL}${path}`, {
-                method: options.method || 'GET',
-                headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-                body: options.body ? JSON.stringify(options.body) : undefined
-            });
+        method: options.method || 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Device-Id': (typeof deviceId === 'string' && deviceId) ? deviceId : '',
+            ...(options.headers || {})
+        },
+        body: options.body ? JSON.stringify(options.body) : undefined
+    });
             if (res.status === 429) {
                 let body = null;
                 try { body = await res.json(); } catch (e) {}
@@ -829,13 +833,14 @@
         }
 
         function getOrCreateDeviceId() {
-            let id = localStorage.getItem('avh_device_id');
-            if (!id) {
-                id = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-                localStorage.setItem('avh_device_id', id);
-            }
-            return id;
-        }
+    let id = localStorage.getItem('avh_device_id');
+    if (!id) {
+        id = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+        localStorage.setItem('avh_device_id', id);
+        sessionStorage.setItem('avh_device_is_new', '1');
+    }
+    return id;
+}
 
         function setupModalListeners() {
             const modal = document.getElementById('ideaModal');
@@ -1153,40 +1158,40 @@
         // ==========================================
         // Beim Laden: Server-Votes (IP) mit localStorage mergen.
         // Einmalige Migration: alte localStorage-Votes werden zur IP hochgeladen,
-        // danach ist der Server die Quelle der Wahrheit.
-        async function syncVotesWithServer() {
-            try {
-                const serverData = await workerFetch('/api/ideas/my-votes');
-                const serverVotes = new Set(serverData.voted_idea_ids || []);
-                const localVotes = getVotedIdeasSet();
+        // danach ist der Server die Quelle der Wahrheit.async function 
+async function syncVotesWithServer() {
+    try {
+        const isNew = sessionStorage.getItem('avh_device_is_new') === '1';
+        if (isNew) sessionStorage.removeItem('avh_device_is_new');
 
-                // Einmalige Migration der Legacy-Votes (localStorage → Server)
-                const migrated = localStorage.getItem('avh_votes_migrated_v1') === '1';
-                if (!migrated) {
-                    const toPush = [...localVotes].filter(id => !serverVotes.has(id));
-                    if (toPush.length > 0) {
-                        try {
-                            await workerFetch('/api/ideas/sync-votes', {
-                                method: 'POST',
-                                body: { ideaIds: toPush }
-                            });
-                            toPush.forEach(id => serverVotes.add(id));
-                        } catch (e) {
-                            console.warn('Legacy-Vote-Migration fehlgeschlagen:', e);
-                            return; // Nicht als migriert markieren, damit es beim nächsten Mal erneut versucht wird
-                        }
-                    }
-                    localStorage.setItem('avh_votes_migrated_v1', '1');
+        const url = isNew ? '/api/ideas/my-votes?adopt=1' : '/api/ideas/my-votes';
+        const serverData = await workerFetch(url);
+        const serverVotes = new Set(serverData.voted_idea_ids || []);
+        const localVotes = getVotedIdeasSet();
+
+        const migrated = localStorage.getItem('avh_votes_migrated_v1') === '1';
+        if (!migrated) {
+            const toPush = [...localVotes].filter(id => !serverVotes.has(id));
+            if (toPush.length > 0) {
+                try {
+                    await workerFetch('/api/ideas/sync-votes', {
+                        method: 'POST',
+                        body: { ideaIds: toPush, deviceId }
+                    });
+                    toPush.forEach(id => serverVotes.add(id));
+                } catch (e) {
+                    console.warn('Legacy-Vote-Migration fehlgeschlagen:', e);
+                    return;
                 }
-
-                // Server ist die Wahrheit → localStorage spiegelt den Server-Zustand
-                localStorage.setItem('avh_user_upvotes', JSON.stringify([...serverVotes]));
-            } catch (e) {
-                // Server nicht erreichbar → localStorage bleibt wie es ist (Offline-Fallback)
-                console.warn('Vote-Sync mit Server fehlgeschlagen (Offline-Fallback):', e);
             }
+            localStorage.setItem('avh_votes_migrated_v1', '1');
         }
 
+        localStorage.setItem('avh_user_upvotes', JSON.stringify([...serverVotes]));
+    } catch (e) {
+        console.warn('Vote-Sync mit Server fehlgeschlagen (Offline-Fallback):', e);
+    }
+}
         // ==========================================
         // 4. DATEN LADEN
         // ==========================================
