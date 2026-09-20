@@ -1149,6 +1149,45 @@
         }
 
         // ==========================================
+        // 3b. VOTE-SYNC (IP-basiert ↔ localStorage)
+        // ==========================================
+        // Beim Laden: Server-Votes (IP) mit localStorage mergen.
+        // Einmalige Migration: alte localStorage-Votes werden zur IP hochgeladen,
+        // danach ist der Server die Quelle der Wahrheit.
+        async function syncVotesWithServer() {
+            try {
+                const serverData = await workerFetch('/api/ideas/my-votes');
+                const serverVotes = new Set(serverData.voted_idea_ids || []);
+                const localVotes = getVotedIdeasSet();
+
+                // Einmalige Migration der Legacy-Votes (localStorage → Server)
+                const migrated = localStorage.getItem('avh_votes_migrated_v1') === '1';
+                if (!migrated) {
+                    const toPush = [...localVotes].filter(id => !serverVotes.has(id));
+                    if (toPush.length > 0) {
+                        try {
+                            await workerFetch('/api/ideas/sync-votes', {
+                                method: 'POST',
+                                body: { ideaIds: toPush }
+                            });
+                            toPush.forEach(id => serverVotes.add(id));
+                        } catch (e) {
+                            console.warn('Legacy-Vote-Migration fehlgeschlagen:', e);
+                            return; // Nicht als migriert markieren, damit es beim nächsten Mal erneut versucht wird
+                        }
+                    }
+                    localStorage.setItem('avh_votes_migrated_v1', '1');
+                }
+
+                // Server ist die Wahrheit → localStorage spiegelt den Server-Zustand
+                localStorage.setItem('avh_user_upvotes', JSON.stringify([...serverVotes]));
+            } catch (e) {
+                // Server nicht erreichbar → localStorage bleibt wie es ist (Offline-Fallback)
+                console.warn('Vote-Sync mit Server fehlgeschlagen (Offline-Fallback):', e);
+            }
+        }
+
+        // ==========================================
         // 4. DATEN LADEN
         // ==========================================
         async function loadCommentCounts() {
@@ -1451,6 +1490,10 @@
                 return;
             }
 
+            // Votes mit Server (IP-basiert) synchronisieren.
+            // Legacy-localStorage-Votes werden einmalig zur IP hochgeladen.
+            await syncVotesWithServer();
+
             await Promise.all([
                 loadAllOfficialComments(),
                 loadTimelineCounts()
@@ -1676,7 +1719,7 @@
         }
 
         // ==========================================
-        // 6. VOTEN
+        // 6. VOTEN (IP-basiert, localStorage als Cache)
         // ==========================================
         function getVotedIdeasSet() {
             const votes = JSON.parse(localStorage.getItem('avh_user_upvotes') || '[]');
@@ -1693,6 +1736,7 @@
             const oldCount = Number(idea.upvotes_count) || 0;
             const oldVoted = hasVoted;
 
+            // Optimistisches UI-Update
             if (hasVoted) {
                 votedSet.delete(ideaId);
                 idea.upvotes_count = Math.max(0, oldCount - 1);
@@ -1711,7 +1755,7 @@
             }
 
             try {
-                await workerFetch(`/api/ideas/${ideaId}/vote`, {
+                const res = await workerFetch(`/api/ideas/${ideaId}/vote`, {
                     method: 'POST',
                     body: {
                         action: hasVoted ? 'decrement' : 'increment',
@@ -1719,6 +1763,25 @@
                         currentCount: idea.upvotes_count
                     }
                 });
+
+                // Server ist die Autorität: falls der Server anderer Meinung ist
+                // (z. B. anderer Browser mit gleicher IP hat schon gevotet),
+                // passen wir den lokalen State an den Server an.
+                if (res && typeof res.voted === 'boolean') {
+                    const serverNowVoted = res.voted;
+                    const localNowVoted = votedSet.has(ideaId);
+                    if (serverNowVoted !== localNowVoted) {
+                        if (serverNowVoted) {
+                            votedSet.add(ideaId);
+                        } else {
+                            votedSet.delete(ideaId);
+                        }
+                        localStorage.setItem('avh_user_upvotes', JSON.stringify([...votedSet]));
+                        if (currentSort !== 'timeline') {
+                            sortAndRenderIdeas(false);
+                        }
+                    }
+                }
 
                 showToast(
                     hasVoted
