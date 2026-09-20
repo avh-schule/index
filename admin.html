@@ -30,24 +30,24 @@
         .glow-indigo { box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.25); }
         .glow-amber { box-shadow: 0 0 20px -5px rgba(245, 158, 11, 0.25); }
 
-        .idea-card {
-            transition: border-color 0.25s ease, box-shadow 0.25s ease;
-        }
+        .idea-card { transition: border-color 0.25s ease, box-shadow 0.25s ease; }
         .idea-card:hover { border-color: rgba(255,255,255,0.12); }
 
-        .status-change-flash {
-            animation: statusFlash 0.5s ease;
-        }
+        .status-change-flash { animation: statusFlash 0.5s ease; }
         @keyframes statusFlash {
             0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
             100% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
         }
 
-        .fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-enter { animation: pageEnter 0.28s ease-out; }
+        @keyframes pageEnter {
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -97,6 +97,135 @@
             transition: border-color 0.2s;
         }
         .ip-rl-input:focus { border-color: #6366f1; }
+
+        /* ============ HAMBURGER ============ */
+        .hamburger-btn {
+            width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            flex-shrink: 0;
+        }
+        .hamburger-btn:hover { background: rgba(255,255,255,0.1); }
+        .hamburger-btn:active { transform: scale(0.94); }
+        .hamburger-btn .bars { display: flex; flex-direction: column; gap: 4px; width: 20px; }
+        .hamburger-btn .bars span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background: #d1d5db;
+            border-radius: 2px;
+            transition: transform 0.3s cubic-bezier(0.6, 0, 0.4, 1), opacity 0.2s, background 0.2s;
+            transform-origin: center;
+        }
+        .hamburger-btn.active { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.35); }
+        .hamburger-btn.active .bars span { background: #818cf8; }
+        .hamburger-btn.active .bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .hamburger-btn.active .bars span:nth-child(2) { opacity: 0; transform: scaleX(0.3); }
+        .hamburger-btn.active .bars span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+        /* ============ DRAWER ============ */
+        #drawerOverlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 60;
+        }
+        #drawerOverlay.open { opacity: 1; pointer-events: auto; }
+
+        #drawer {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 300px;
+            max-width: 85vw;
+            background: linear-gradient(180deg, #0d1322 0%, #0a0e1a 100%);
+            border-right: 1px solid rgba(255,255,255,0.07);
+            box-shadow: 20px 0 60px -20px rgba(0,0,0,0.6);
+            transform: translateX(-102%);
+            transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+            z-index: 70;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #drawer.open { transform: translateX(0); }
+
+        .drawer-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            border: 1px solid transparent;
+            width: 100%;
+            text-align: left;
+            position: relative;
+        }
+        .drawer-link:hover { background: rgba(255,255,255,0.05); color: #e5e7eb; }
+        .drawer-link.active {
+            background: rgba(99,102,241,0.14);
+            color: #c7d2fe;
+            border-color: rgba(99,102,241,0.28);
+        }
+        .drawer-link.active::before {
+            content: '';
+            position: absolute;
+            left: -1px; top: 20%; bottom: 20%;
+            width: 3px;
+            background: #6366f1;
+            border-radius: 0 4px 4px 0;
+        }
+        .drawer-link .badge {
+            margin-left: auto;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #9ca3af;
+            font-weight: 700;
+        }
+
+        /* Search input */
+        .search-input {
+            width: 100%;
+            background: rgba(9,13,22,0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 10px 12px 10px 38px;
+            font-size: 12px;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
     </style>
 </head>
 <body class="min-h-screen pb-20 selection:bg-indigo-500 selection:text-white">
@@ -120,214 +249,375 @@
                 </button>
             </form>
         </div>
-    </div><header class="sticky top-0 z-40 glass-panel border-b border-surface-border">
-    <div class="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3.5 flex items-center justify-between gap-2">
-
-        <div class="flex items-center gap-2 min-w-0">
-            <div class="flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 px-2 sm:px-2.5 py-1 rounded-full shrink-0">
-                <span class="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                <span class="text-[10px] sm:text-[11px] font-bold text-indigo-400 tracking-wider uppercase">Admin</span>
-            </div>
-            <h1 class="font-bold text-sm text-white tracking-tight hidden md:block truncate">AVH Ideenbox Control Panel</h1>
-        </div>
-
-        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-
-            <button onclick="loadData()" title="Aktualisieren" aria-label="Aktualisieren"
-                    class="w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 flex items-center justify-center gap-2 bg-surface-hover hover:bg-white/10 text-gray-300 text-xs font-semibold rounded-xl border border-white/10 transition-all active:scale-95">
-                <i data-lucide="refresh-cw" class="w-4 h-4 sm:w-3.5 sm:h-3.5"></i>
-                <span class="hidden sm:inline">Aktualisieren</span>
-            </button>
-
-            <button onclick="logout()" title="Logout" aria-label="Logout"
-                    class="w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 flex items-center justify-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-xl border border-rose-500/20 transition-all active:scale-95">
-                <i data-lucide="log-out" class="w-4 h-4 sm:w-3.5 sm:h-3.5"></i>
-                <span class="hidden sm:inline">Logout</span>
-            </button>
-
-            <div class="relative" id="notifWrapper">
-                <button id="notifBtn" onclick="toggleNotifications(event)"
-                        title="Benachrichtigungen" aria-label="Benachrichtigungen"
-                        class="relative w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 flex items-center justify-center gap-2 bg-surface-hover hover:bg-white/10 text-gray-300 text-xs font-semibold rounded-xl border border-white/10 transition-all active:scale-95">
-                    <i data-lucide="bell" class="w-4 h-4 sm:w-3.5 sm:h-3.5"></i>
-                    <span class="hidden sm:inline">Neu</span>
-                    <span id="notifBadge"
-                          class="hidden absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center shadow-lg shadow-rose-500/40 ring-2 ring-surface-base">0</span>
-                </button>
-
-                <div id="notifPanel"
-                     class="hidden absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-surface-card rounded-2xl border border-surface-border shadow-2xl z-[60] overflow-hidden">
-                    <div class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
-                        <h3 class="text-xs font-bold text-white flex items-center gap-2">
-                            <i data-lucide="bell" class="w-3.5 h-3.5 text-indigo-400"></i> Neue Kommentare
-                        </h3>
-                        <button onclick="markAllNotificationsRead()"
-                                class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider">
-                            Alle gelesen
-                        </button>
-                    </div>
-                    <div id="notifList" class="max-h-[60vh] sm:max-h-80 overflow-y-auto"></div>
-                </div>
-            </div>
-        </div>
     </div>
-</header>
 
-    <main class="max-w-4xl mx-auto px-4 pt-8 space-y-6">
+    <!-- DRAWER OVERLAY -->
+    <div id="drawerOverlay" onclick="closeDrawer()"></div>
 
-        <!-- STATS BAR -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
-                <span class="text-[11px] font-medium text-gray-400">Gesamt</span>
-                <span id="statTotal" class="text-xl font-extrabold text-white mt-1">0</span>
-            </div>
-            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
-                <span class="text-[11px] font-medium text-amber-400"><i class="fa-solid fa-clock mr-1"></i>In Prüfung</span>
-                <span id="statReview" class="text-xl font-extrabold text-amber-400 mt-1">0</span>
-            </div>
-            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
-                <span class="text-[11px] font-medium text-indigo-400"><i class="fa-solid fa-hammer mr-1"></i>Wird umgesetzt</span>
-                <span id="statProgress" class="text-xl font-extrabold text-indigo-400 mt-1">0</span>
-            </div>
-            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
-                <span class="text-[11px] font-medium text-emerald-400"><i class="fa-solid fa-flag-checkered mr-1"></i>Umgesetzt</span>
-                <span id="statDone" class="text-xl font-extrabold text-emerald-400 mt-1">0</span>
-            </div>
-            <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
-                <span class="text-[11px] font-medium text-cyan-400"><i class="fa-solid fa-users mr-1"></i>Besucher</span>
-                <span id="statVisitors" class="text-xl font-extrabold text-cyan-400 mt-1">0</span>
-            </div>
-        </div>
-
-        <!-- NOTFALL-MODUS -->
-        <div class="glass-panel rounded-2xl p-5 space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
-                <h2 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
-                    Notfall-Modus · Feature-Sperre
-                </h2>
-                <div class="flex items-center gap-2">
-                    <span id="rateLimitStatus" class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">Inaktiv</span>
-                    <button onclick="blockAll()" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[10px] font-bold rounded-lg border border-rose-500/30 transition-all">Alles sperren</button>
-                    <button onclick="unblockAll()" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-500/30 transition-all">Alles freigeben</button>
+    <!-- DRAWER / SIDEBAR -->
+    <aside id="drawer" aria-hidden="true">
+        <div class="flex items-center justify-between p-5 border-b border-surface-border shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-xs font-bold text-white truncate">AVH Control</div>
+                    <div class="text-[10px] text-gray-500">Admin Panel</div>
                 </div>
             </div>
-            <p class="text-[11px] text-gray-400 leading-relaxed">
-                Blockiere einzelne Schreibfunktionen sofort, um bei Spam zu reagieren. Lesen ist weiterhin möglich. Änderungen greifen innerhalb weniger Sekunden.
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400 shrink-0"></i>
-                        <div class="min-w-0">
-                            <div class="text-xs font-bold text-white">Neue Ideen</div>
-                            <div class="text-[10px] text-gray-500">Einreichen sperren</div>
-                        </div>
-                    </div>
-                    <input type="checkbox" id="rl_block_new_ideas" class="sr-only toggle-input" onchange="updateRateLimit('block_new_ideas', this.checked)">
-                    <span class="toggle-switch"></span>
-                </label>
-
-                <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400 shrink-0"></i>
-                        <div class="min-w-0">
-                            <div class="text-xs font-bold text-white">KI-Beschreibung</div>
-                            <div class="text-[10px] text-gray-500">Generierung sperren</div>
-                        </div>
-                    </div>
-                    <input type="checkbox" id="rl_block_ai_description" class="sr-only toggle-input" onchange="updateRateLimit('block_ai_description', this.checked)">
-                    <span class="toggle-switch"></span>
-                </label>
-
-                <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <i data-lucide="thumbs-up" class="w-4 h-4 text-cyan-400 shrink-0"></i>
-                        <div class="min-w-0">
-                            <div class="text-xs font-bold text-white">Votes</div>
-                            <div class="text-[10px] text-gray-500">Stimmen sperren</div>
-                        </div>
-                    </div>
-                    <input type="checkbox" id="rl_block_votes" class="sr-only toggle-input" onchange="updateRateLimit('block_votes', this.checked)">
-                    <span class="toggle-switch"></span>
-                </label>
-
-                <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <i data-lucide="message-square" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-                        <div class="min-w-0">
-                            <div class="text-xs font-bold text-white">Kommentare</div>
-                            <div class="text-[10px] text-gray-500">Posten sperren</div>
-                        </div>
-                    </div>
-                    <input type="checkbox" id="rl_block_comments" class="sr-only toggle-input" onchange="updateRateLimit('block_comments', this.checked)">
-                    <span class="toggle-switch"></span>
-                </label>
-            </div>
+            <button onclick="closeDrawer()" class="p-2 rounded-lg hover:bg-white/5 text-gray-400 transition-all">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
         </div>
 
-        <!-- IP-RATE-LIMITS (pro Besucher) -->
-        <div class="glass-panel rounded-2xl p-5 space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
-                <h2 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="timer" class="w-4 h-4 text-cyan-400"></i>
-                    Rate-Limits pro Besucher (IP-basiert)
-                </h2>
-                <div class="flex items-center gap-2">
-                    <button onclick="resetIpRateLimits()" class="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold rounded-lg border border-white/10 transition-all">Standard</button>
-                    <button onclick="saveIpRateLimits()" class="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-[10px] font-bold rounded-lg border border-indigo-500/30 transition-all">Speichern</button>
+        <nav class="p-3 space-y-1 overflow-y-auto flex-1">
+            <div class="px-3 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Übersicht</div>
+            <button class="drawer-link" data-page-link="dashboard" onclick="switchPage('dashboard')">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Dashboard</span>
+            </button>
+
+            <div class="px-3 py-2 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Inhalte</div>
+            <button class="drawer-link" data-page-link="ideas" onclick="switchPage('ideas')">
+                <i data-lucide="lightbulb" class="w-4 h-4"></i>
+                <span>Ideen</span>
+                <span class="badge" id="drawerCountIdeas">0</span>
+            </button>
+            <button class="drawer-link" data-page-link="comments" onclick="switchPage('comments')">
+                <i data-lucide="messages-square" class="w-4 h-4"></i>
+                <span>Kommentare</span>
+                <span class="badge" id="drawerCountComments">0</span>
+            </button>
+            <button class="drawer-link" data-page-link="messages" onclick="switchPage('messages')">
+                <i data-lucide="megaphone" class="w-4 h-4"></i>
+                <span>Nachrichten</span>
+                <span class="badge" id="drawerCountMessages">0</span>
+            </button>
+            <button class="drawer-link" data-page-link="timeline" onclick="switchPage('timeline')">
+                <i data-lucide="git-commit-horizontal" class="w-4 h-4"></i>
+                <span>Timeline / News</span>
+                <span class="badge" id="drawerCountTimeline">0</span>
+            </button>
+
+            <div class="px-3 py-2 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sicherheit</div>
+            <button class="drawer-link" data-page-link="emergency" onclick="switchPage('emergency')">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                <span>Notfall-Modus</span>
+            </button>
+            <button class="drawer-link" data-page-link="ratelimits" onclick="switchPage('ratelimits')">
+                <i data-lucide="timer" class="w-4 h-4"></i>
+                <span>Rate-Limits (IP)</span>
+            </button>
+        </nav>
+
+        <div class="p-3 border-t border-surface-border shrink-0 space-y-2">
+            <button onclick="loadData()" class="drawer-link">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                <span>Daten aktualisieren</span>
+            </button>
+            <button onclick="logout()" class="drawer-link" style="color:#fda4af;">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-surface-border">
+        <div class="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleDrawer()" aria-label="Menü öffnen">
+                    <span class="bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+
+                <div class="min-w-0">
+                    <h1 id="pageTitle" class="font-bold text-sm text-white tracking-tight truncate">Dashboard</h1>
+                    <p id="pageSubtitle" class="text-[10px] text-gray-500 truncate hidden sm:block">Übersicht & Statistiken</p>
                 </div>
             </div>
-            <p class="text-[11px] text-gray-400 leading-relaxed">
-                Lege fest, wie viele Anfragen eine IP-Adresse in welchem Zeitfenster senden darf. Nach Überschreitung wird sie für die angegebene Dauer gesperrt. Alle Werte in Sekunden.
-            </p>
-            <div id="ipRateLimitsList" class="space-y-2">
-                <div class="text-xs text-gray-400 text-center py-3">Lade Rate-Limits...</div>
+
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <div class="relative" id="notifWrapper">
+                    <button id="notifBtn" onclick="toggleNotifications(event)"
+                            title="Benachrichtigungen" aria-label="Benachrichtigungen"
+                            class="relative w-9 h-9 flex items-center justify-center bg-surface-hover hover:bg-white/10 text-gray-300 rounded-xl border border-white/10 transition-all active:scale-95">
+                        <i data-lucide="bell" class="w-4 h-4"></i>
+                        <span id="notifBadge"
+                              class="hidden absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center shadow-lg shadow-rose-500/40 ring-2 ring-surface-base">0</span>
+                    </button>
+
+                    <div id="notifPanel"
+                         class="hidden absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-surface-card rounded-2xl border border-surface-border shadow-2xl z-[60] overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
+                            <h3 class="text-xs font-bold text-white flex items-center gap-2">
+                                <i data-lucide="bell" class="w-3.5 h-3.5 text-indigo-400"></i> Neue Kommentare
+                            </h3>
+                            <button onclick="markAllNotificationsRead()"
+                                    class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider">
+                                Alle gelesen
+                            </button>
+                        </div>
+                        <div id="notifList" class="max-h-[60vh] sm:max-h-80 overflow-y-auto"></div>
+                    </div>
+                </div>
             </div>
         </div>
+    </header>
 
-        <!-- MESSAGES SECTION -->
-        <div class="glass-panel rounded-2xl p-5 space-y-3">
-            <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+    <main class="max-w-5xl mx-auto px-4 pt-6 sm:pt-8 space-y-6">
+
+        <!-- ============================= -->
+        <!-- PAGE: DASHBOARD               -->
+        <!-- ============================= -->
+        <section data-page-content="dashboard" class="space-y-6">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                    <span class="text-[11px] font-medium text-gray-400">Gesamt</span>
+                    <span id="statTotal" class="text-xl font-extrabold text-white mt-1">0</span>
+                </div>
+                <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                    <span class="text-[11px] font-medium text-amber-400"><i class="fa-solid fa-clock mr-1"></i>In Prüfung</span>
+                    <span id="statReview" class="text-xl font-extrabold text-amber-400 mt-1">0</span>
+                </div>
+                <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                    <span class="text-[11px] font-medium text-indigo-400"><i class="fa-solid fa-hammer mr-1"></i>Wird umgesetzt</span>
+                    <span id="statProgress" class="text-xl font-extrabold text-indigo-400 mt-1">0</span>
+                </div>
+                <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
+                    <span class="text-[11px] font-medium text-emerald-400"><i class="fa-solid fa-flag-checkered mr-1"></i>Umgesetzt</span>
+                    <span id="statDone" class="text-xl font-extrabold text-emerald-400 mt-1">0</span>
+                </div>
+                <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between col-span-2 sm:col-span-1">
+                    <span class="text-[11px] font-medium text-cyan-400"><i class="fa-solid fa-users mr-1"></i>Besucher</span>
+                    <span id="statVisitors" class="text-xl font-extrabold text-cyan-400 mt-1">0</span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 space-y-3">
                 <h2 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
-                    Nachrichten an Schüler
+                    <i data-lucide="activity" class="w-4 h-4 text-indigo-400"></i>
+                    Schnellzugriff
                 </h2>
-                <button onclick="openMessageModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all active:scale-95">
-                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                    Neue Nachricht
-                </button>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <button onclick="switchPage('ideas')" class="p-4 rounded-xl bg-surface-base border border-surface-border hover:border-indigo-500/40 transition-all text-left">
+                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400 mb-2"></i>
+                        <div class="text-xs font-bold text-white">Ideen</div>
+                        <div class="text-[10px] text-gray-500">Verwalten</div>
+                    </button>
+                    <button onclick="switchPage('comments')" class="p-4 rounded-xl bg-surface-base border border-surface-border hover:border-indigo-500/40 transition-all text-left">
+                        <i data-lucide="messages-square" class="w-4 h-4 text-emerald-400 mb-2"></i>
+                        <div class="text-xs font-bold text-white">Kommentare</div>
+                        <div class="text-[10px] text-gray-500">Moderieren</div>
+                    </button>
+                    <button onclick="switchPage('messages')" class="p-4 rounded-xl bg-surface-base border border-surface-border hover:border-indigo-500/40 transition-all text-left">
+                        <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400 mb-2"></i>
+                        <div class="text-xs font-bold text-white">Nachrichten</div>
+                        <div class="text-[10px] text-gray-500">An Schüler</div>
+                    </button>
+                    <button onclick="switchPage('emergency')" class="p-4 rounded-xl bg-surface-base border border-surface-border hover:border-rose-500/40 transition-all text-left">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400 mb-2"></i>
+                        <div class="text-xs font-bold text-white">Notfall-Modus</div>
+                        <div class="text-[10px] text-gray-500">Sperren</div>
+                    </button>
+                </div>
             </div>
-            <div id="messagesList" class="space-y-2">
-                <div class="text-xs text-gray-400 text-center py-3">Lade Nachrichten...</div>
-            </div>
-        </div>
+        </section>
 
-        <!-- TIMELINE / NEWS SECTION -->
-        <div class="glass-panel rounded-2xl p-5 space-y-3">
-            <div class="flex items-center justify-between pb-3 border-b border-surface-border">
-                <h2 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
-                    Timeline / News
-                </h2>
-                <button onclick="openTimelineModalAdmin()"
-                        class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all active:scale-95">
-                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                    Neuer Eintrag
-                </button>
+        <!-- ============================= -->
+        <!-- PAGE: IDEEN                   -->
+        <!-- ============================= -->
+        <section data-page-content="ideas" class="space-y-4 hidden">
+            <div class="glass-panel rounded-2xl p-3">
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    <input type="text" id="ideaSearchInput" placeholder="Ideen durchsuchen (Titel, Beschreibung, Autor)..."
+                           oninput="onIdeaSearch(this.value)"
+                           class="search-input">
+                    <button onclick="clearIdeaSearch()" id="ideaSearchClear"
+                            class="hidden absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+                <div id="ideaSearchInfo" class="hidden text-[10px] text-gray-500 mt-2 px-1"></div>
             </div>
-            <div id="timelineAdminList" class="space-y-2">
-                <div class="text-xs text-gray-400 text-center py-3">Lade Timeline...</div>
-            </div>
-        </div>
 
-        <!-- IDEAS CONTAINER -->
-        <div id="ideasContainer" class="space-y-4">
-            <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">
-                <i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400"></i>
-                Lade Daten...
+            <div id="ideasContainer" class="space-y-4">
+                <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400"></i>
+                    Lade Daten...
+                </div>
             </div>
-        </div>
+        </section>
+
+        <!-- ============================= -->
+        <!-- PAGE: KOMMENTARE              -->
+        <!-- ============================= -->
+        <section data-page-content="comments" class="space-y-4 hidden">
+            <div class="glass-panel rounded-2xl p-3">
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    <input type="text" id="commentSearchInput" placeholder="Kommentare durchsuchen (Inhalt, Autor, Idee)..."
+                           oninput="onCommentSearch(this.value)"
+                           class="search-input">
+                    <button onclick="clearCommentSearch()" id="commentSearchClear"
+                            class="hidden absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+                <div id="commentSearchInfo" class="hidden text-[10px] text-gray-500 mt-2 px-1"></div>
+            </div>
+
+            <div id="commentsContainer" class="space-y-2">
+                <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400"></i>
+                    Lade Kommentare...
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================= -->
+        <!-- PAGE: NACHRICHTEN             -->
+        <!-- ============================= -->
+        <section data-page-content="messages" class="space-y-4 hidden">
+            <div class="glass-panel rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i data-lucide="megaphone" class="w-4 h-4 text-indigo-400"></i>
+                        Nachrichten an Schüler
+                    </h2>
+                    <button onclick="openMessageModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all active:scale-95">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        Neue Nachricht
+                    </button>
+                </div>
+                <div id="messagesList" class="space-y-2">
+                    <div class="text-xs text-gray-400 text-center py-3">Lade Nachrichten...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================= -->
+        <!-- PAGE: TIMELINE                -->
+        <!-- ============================= -->
+        <section data-page-content="timeline" class="space-y-4 hidden">
+            <div class="glass-panel rounded-2xl p-5 space-y-3">
+                <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i data-lucide="git-commit-horizontal" class="w-4 h-4 text-indigo-400"></i>
+                        Timeline / News
+                    </h2>
+                    <button onclick="openTimelineModalAdmin()"
+                            class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all active:scale-95">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                        Neuer Eintrag
+                    </button>
+                </div>
+                <div id="timelineAdminList" class="space-y-2">
+                    <div class="text-xs text-gray-400 text-center py-3">Lade Timeline...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================= -->
+        <!-- PAGE: NOTFALL-MODUS           -->
+        <!-- ============================= -->
+        <section data-page-content="emergency" class="space-y-4 hidden">
+            <div class="glass-panel rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+                        Notfall-Modus · Feature-Sperre
+                    </h2>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span id="rateLimitStatus" class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">Inaktiv</span>
+                        <button onclick="blockAll()" class="px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-[10px] font-bold rounded-lg border border-rose-500/30 transition-all">Alles sperren</button>
+                        <button onclick="unblockAll()" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-500/30 transition-all">Alles freigeben</button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    Blockiere einzelne Schreibfunktionen sofort, um bei Spam zu reagieren. Lesen ist weiterhin möglich. Änderungen greifen innerhalb weniger Sekunden.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-white">Neue Ideen</div>
+                                <div class="text-[10px] text-gray-500">Einreichen sperren</div>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="rl_block_new_ideas" class="sr-only toggle-input" onchange="updateRateLimit('block_new_ideas', this.checked)">
+                        <span class="toggle-switch"></span>
+                    </label>
+
+                    <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400 shrink-0"></i>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-white">KI-Beschreibung</div>
+                                <div class="text-[10px] text-gray-500">Generierung sperren</div>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="rl_block_ai_description" class="sr-only toggle-input" onchange="updateRateLimit('block_ai_description', this.checked)">
+                        <span class="toggle-switch"></span>
+                    </label>
+
+                    <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <i data-lucide="thumbs-up" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-white">Votes</div>
+                                <div class="text-[10px] text-gray-500">Stimmen sperren</div>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="rl_block_votes" class="sr-only toggle-input" onchange="updateRateLimit('block_votes', this.checked)">
+                        <span class="toggle-switch"></span>
+                    </label>
+
+                    <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <i data-lucide="message-square" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-white">Kommentare</div>
+                                <div class="text-[10px] text-gray-500">Posten sperren</div>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="rl_block_comments" class="sr-only toggle-input" onchange="updateRateLimit('block_comments', this.checked)">
+                        <span class="toggle-switch"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================= -->
+        <!-- PAGE: RATE-LIMITS             -->
+        <!-- ============================= -->
+        <section data-page-content="ratelimits" class="space-y-4 hidden">
+            <div class="glass-panel rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i data-lucide="timer" class="w-4 h-4 text-cyan-400"></i>
+                        Rate-Limits pro Besucher (IP-basiert)
+                    </h2>
+                    <div class="flex items-center gap-2">
+                        <button onclick="resetIpRateLimits()" class="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold rounded-lg border border-white/10 transition-all">Standard</button>
+                        <button onclick="saveIpRateLimits()" class="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-[10px] font-bold rounded-lg border border-indigo-500/30 transition-all">Speichern</button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    Lege fest, wie viele Anfragen eine IP-Adresse in welchem Zeitfenster senden darf. Nach Überschreitung wird sie für die angegebene Dauer gesperrt. Alle Werte in Sekunden.
+                </p>
+                <div id="ipRateLimitsList" class="space-y-2">
+                    <div class="text-xs text-gray-400 text-center py-3">Lade Rate-Limits...</div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- EDIT IDEA MODAL -->
@@ -412,7 +702,7 @@
         </div>
     </div>
 
-    <!-- MESSAGE MODAL (Admin) -->
+    <!-- MESSAGE MODAL -->
     <div id="messageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
         <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-indigo relative">
             <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
@@ -452,7 +742,7 @@
         </div>
     </div>
 
-    <!-- TIMELINE MODAL (Admin) -->
+    <!-- TIMELINE MODAL -->
     <div id="timelineModalAdmin" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
         <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-indigo relative max-h-[90vh] overflow-y-auto">
             <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
@@ -513,7 +803,7 @@
         </div>
     </div>
 
-    <!-- STATUS MODAL (Grund/Details bei Statuswechsel) -->
+    <!-- STATUS MODAL -->
     <div id="statusModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
         <div class="glass-panel w-full max-w-lg rounded-2xl p-6 glow-indigo relative max-h-[90vh] overflow-y-auto">
             <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
@@ -595,15 +885,36 @@
         }
 
         let listData = [];
+        let filteredListData = null;
         let commentCountsMap = {};
         let pinnedCommentsMap = {};
         const adminCommentsCache = {};
         const openCommentBoxes = new Set();
 
+        // Suche
+        let ideaSearchQuery = '';
+        let commentSearchQuery = '';
+
+        // Kommentare (Seite)
+        let allCommentsCache = null;
+        let commentsLoading = false;
+
         // Benachrichtigungen
         let unreadComments = [];
         let notifPanelOpen = false;
         let notifPollTimer = null;
+
+        // Seiten-Navigation
+        const PAGE_META = {
+            dashboard:  { title: 'Dashboard',       subtitle: 'Übersicht & Statistiken' },
+            ideas:      { title: 'Ideen',           subtitle: 'Ideen verwalten und moderieren' },
+            comments:   { title: 'Kommentare',      subtitle: 'Alle Kommentare durchsuchen' },
+            messages:   { title: 'Nachrichten',     subtitle: 'Nachrichten an Schüler' },
+            timeline:   { title: 'Timeline / News', subtitle: 'Verlauf & Updates' },
+            emergency:  { title: 'Notfall-Modus',   subtitle: 'Schreibfunktionen sperren' },
+            ratelimits: { title: 'Rate-Limits',     subtitle: 'IP-basierte Limits konfigurieren' }
+        };
+        let currentPage = 'dashboard';
 
         // Timeline
         const STATUS_LABELS_DE = {
@@ -727,6 +1038,7 @@
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
+                    closeDrawer();
                     closeModal('editModal');
                     closeModal('commentModal');
                     closeModal('editCommentModal');
@@ -736,32 +1048,107 @@
                 }
             });
 
-attachIconListener(
-    'timelineIconInput',
-    'timelineIconPreview',
-    'timelineIconSuggesting',
-    () => (
-        (document.getElementById('timelineTitleInput').value || '') + '\n' +
-        (document.getElementById('timelineDescInput').value || '')
-    ).trim(),
-    ['timelineTitleInput', 'timelineDescInput']
-);
+            attachIconListener(
+                'timelineIconInput',
+                'timelineIconPreview',
+                'timelineIconSuggesting',
+                () => (
+                    (document.getElementById('timelineTitleInput').value || '') + '\n' +
+                    (document.getElementById('timelineDescInput').value || '')
+                ).trim(),
+                ['timelineTitleInput', 'timelineDescInput']
+            );
 
-attachIconListener(
-    'statusIconInput',
-    'statusIconPreview',
-    'statusIconSuggesting',
-    () => {
-        const idea = listData.find(i => i.id === document.getElementById('statusModalIdeaId').value);
-        const txt = document.getElementById('statusModalText').value || '';
-        return ((idea ? idea.title : '') + '\n' + txt).trim();
-    },
-    ['statusModalText']
-);
- });  
+            attachIconListener(
+                'statusIconInput',
+                'statusIconPreview',
+                'statusIconSuggesting',
+                () => {
+                    const idea = listData.find(i => i.id === document.getElementById('statusModalIdeaId').value);
+                    const txt = document.getElementById('statusModalText').value || '';
+                    return ((idea ? idea.title : '') + '\n' + txt).trim();
+                },
+                ['statusModalText']
+            );
+
+            // Standardseite aktivieren
+            switchPage('dashboard', true);
+        });
+
         function logout() {
             sessionStorage.removeItem('avh_admin_pw');
             location.reload();
+        }
+
+        // ============================================================
+        // DRAWER / SEITEN-NAVIGATION
+        // ============================================================
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawerOverlay');
+            const btn = document.getElementById('hamburgerBtn');
+            const isOpen = drawer.classList.contains('open');
+            if (isOpen) {
+                drawer.classList.remove('open');
+                overlay.classList.remove('open');
+                btn.classList.remove('active');
+                drawer.setAttribute('aria-hidden', 'true');
+            } else {
+                drawer.classList.add('open');
+                overlay.classList.add('open');
+                btn.classList.add('active');
+                drawer.setAttribute('aria-hidden', 'false');
+            }
+        }
+
+        function closeDrawer() {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('drawerOverlay');
+            const btn = document.getElementById('hamburgerBtn');
+            if (!drawer.classList.contains('open')) return;
+            drawer.classList.remove('open');
+            overlay.classList.remove('open');
+            btn.classList.remove('active');
+            drawer.setAttribute('aria-hidden', 'true');
+        }
+
+        function switchPage(page, skipAnimation = false) {
+            if (!PAGE_META[page]) page = 'dashboard';
+            currentPage = page;
+
+            document.querySelectorAll('[data-page-content]').forEach(el => {
+                const isMatch = el.dataset.pageContent === page;
+                if (isMatch) {
+                    el.classList.remove('hidden');
+                    if (!skipAnimation) {
+                        el.classList.remove('page-enter');
+                        void el.offsetWidth;
+                        el.classList.add('page-enter');
+                    }
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            document.querySelectorAll('[data-page-link]').forEach(el => {
+                el.classList.toggle('active', el.dataset.pageLink === page);
+            });
+
+            const meta = PAGE_META[page];
+            const titleEl = document.getElementById('pageTitle');
+            const subEl = document.getElementById('pageSubtitle');
+            if (titleEl) titleEl.textContent = meta.title;
+            if (subEl) subEl.textContent = meta.subtitle;
+
+            closeDrawer();
+
+            if (page === 'comments') {
+                loadCommentsPage();
+            }
+
+            if (!skipAnimation) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         // ============================================================
@@ -776,6 +1163,7 @@ attachIconListener(
                 }
                 return;
             }
+            allCommentsCache = null; // Cache invalidieren
             await Promise.all([
                 loadPinnedComments(),
                 loadCommentCounts(),
@@ -789,6 +1177,19 @@ attachIconListener(
             updateStats();
             render();
             renderTimelineAdmin();
+            updateDrawerCounts();
+        }
+
+        function updateDrawerCounts() {
+            const setCount = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            };
+            setCount('drawerCountIdeas', listData.length);
+            const totalComments = Object.values(commentCountsMap).reduce((a, b) => a + (b || 0), 0);
+            setCount('drawerCountComments', totalComments);
+            setCount('drawerCountMessages', messagesData.length);
+            setCount('drawerCountTimeline', timelineAdminData.length);
         }
 
         async function loadPinnedComments() {
@@ -913,7 +1314,7 @@ attachIconListener(
         }
 
         // ============================================================
-        // IP-RATE-LIMITS (admin-konfigurierbar)
+        // IP-RATE-LIMITS
         // ============================================================
         async function loadIpRateLimits() {
             try {
@@ -998,16 +1399,274 @@ attachIconListener(
         }
 
         // ============================================================
-        // RENDER
+        // SUCHE: IDEEN
+        // ============================================================
+        function onIdeaSearch(val) {
+            ideaSearchQuery = (val || '').toLowerCase().trim();
+            const clearBtn = document.getElementById('ideaSearchClear');
+            if (clearBtn) clearBtn.classList.toggle('hidden', !ideaSearchQuery);
+            render();
+        }
+
+        function clearIdeaSearch() {
+            const input = document.getElementById('ideaSearchInput');
+            if (input) input.value = '';
+            onIdeaSearch('');
+        }
+
+        function matchesIdeaSearch(item, q) {
+            if (!q) return true;
+            const haystack = [
+                item.title,
+                item.description,
+                item.author_name,
+                STATUS_OPTIONS[item.status]
+            ].filter(Boolean).join(' ').toLowerCase();
+            return haystack.includes(q);
+        }
+
+        // ============================================================
+        // SUCHE: KOMMENTARE
+        // ============================================================
+        function onCommentSearch(val) {
+            commentSearchQuery = (val || '').toLowerCase().trim();
+            const clearBtn = document.getElementById('commentSearchClear');
+            if (clearBtn) clearBtn.classList.toggle('hidden', !commentSearchQuery);
+            renderCommentsPage();
+        }
+
+        function clearCommentSearch() {
+            const input = document.getElementById('commentSearchInput');
+            if (input) input.value = '';
+            onCommentSearch('');
+        }
+
+        async function loadCommentsPage() {
+            if (allCommentsCache || commentsLoading) {
+                renderCommentsPage();
+                return;
+            }
+            commentsLoading = true;
+            const box = document.getElementById('commentsContainer');
+            if (box) {
+                box.innerHTML = '<div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400"></i>Lade Kommentare...</div>';
+                if (window.lucide) lucide.createIcons();
+            }
+
+            const results = await Promise.all(
+                listData.map(async idea => {
+                    try {
+                        const comments = await adminFetch(`/api/admin/ideas/${encodeURIComponent(idea.id)}/comments`);
+                        return (comments || []).map(c => ({
+                            ...c,
+                            _idea_title: idea.title,
+                            _idea_id: idea.id,
+                            _idea_status: idea.status
+                        }));
+                    } catch (e) {
+                        return [];
+                    }
+                })
+            );
+            allCommentsCache = results.flat();
+            // nach Datum absteigend
+            allCommentsCache.sort((a, b) => {
+                const da = new Date(a.created_at || 0).getTime();
+                const db = new Date(b.created_at || 0).getTime();
+                return db - da;
+            });
+            commentsLoading = false;
+            renderCommentsPage();
+        }
+
+        function matchesCommentSearch(c, q) {
+            if (!q) return true;
+            const haystack = [
+                c.content,
+                c.author_name,
+                c._idea_title
+            ].filter(Boolean).join(' ').toLowerCase();
+            return haystack.includes(q);
+        }
+
+        function renderCommentsPage() {
+            const box = document.getElementById('commentsContainer');
+            if (!box) return;
+
+            if (!allCommentsCache) {
+                box.innerHTML = '<div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400"></i>Lade Kommentare...</div>';
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            const q = commentSearchQuery;
+            const filtered = allCommentsCache.filter(c => matchesCommentSearch(c, q));
+
+            const info = document.getElementById('commentSearchInfo');
+            if (info) {
+                if (q) {
+                    info.textContent = `${filtered.length} von ${allCommentsCache.length} Kommentaren`;
+                    info.classList.remove('hidden');
+                } else {
+                    info.textContent = `${allCommentsCache.length} Kommentare gesamt`;
+                    info.classList.remove('hidden');
+                }
+            }
+
+            if (!filtered.length) {
+                box.innerHTML = `<div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">
+                    <i data-lucide="search-x" class="w-6 h-6 mx-auto mb-2 text-gray-500"></i>
+                    ${q ? 'Keine Kommentare gefunden.' : 'Noch keine Kommentare vorhanden.'}
+                </div>`;
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            box.innerHTML = filtered.map(c => {
+                const dt = c.created_at ? new Date(c.created_at) : null;
+                const dateStr = dt ? dt.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '';
+
+                let cardClass = 'bg-surface-base border-surface-border';
+                let authorColor = 'text-gray-400';
+                let iconPrefix = '';
+                if (!c.is_published) {
+                    cardClass = 'bg-rose-500/15 border-rose-500/50 ring-1 ring-rose-500/30';
+                    authorColor = 'text-rose-400';
+                    iconPrefix = '<i class="fa-solid fa-ban text-[10px]"></i> ';
+                } else if (c.is_pinned) {
+                    cardClass = 'bg-amber-500/15 border-amber-400 ring-1 ring-amber-400/30';
+                    authorColor = 'text-amber-400';
+                    iconPrefix = '<i class="fa-solid fa-thumbtack text-[10px]"></i> ';
+                } else if (c.is_official) {
+                    cardClass = 'bg-amber-500/10 border-amber-500/30';
+                    authorColor = 'text-amber-400';
+                    iconPrefix = '<i class="fa-solid fa-user-shield text-[10px]"></i> ';
+                }
+
+                return `
+                    <div class="glass-panel rounded-2xl p-3 border ${cardClass}">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap text-[10px] font-bold">
+                                    <span class="${authorColor} flex items-center gap-1">${iconPrefix}${esc(c.author_name || 'Anonym')}</span>
+                                    ${!c.is_published ? '<span class="px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[9px] uppercase tracking-wider">KI-gefiltert</span>' : ''}
+                                    <span class="text-gray-500">·</span>
+                                    <button onclick="jumpToIdea('${c._idea_id}')" class="text-indigo-400 hover:text-indigo-300 truncate max-w-[200px] sm:max-w-none">
+                                        <i class="fa-solid fa-arrow-right mr-1"></i>${esc(c._idea_title)}
+                                    </button>
+                                    ${dateStr ? `<span class="text-gray-500 ml-auto hidden sm:inline">${dateStr}</span>` : ''}
+                                </div>
+                                <p class="text-xs text-gray-200 mt-1.5 whitespace-pre-line ${!c.is_published ? 'italic text-rose-100/80' : ''}">${esc(c.content)}</p>
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                ${!c.is_published ? `
+                                    <button onclick="publishCommentFromPage('${c.id}', '${c._idea_id}')"
+                                            class="text-emerald-400 hover:text-emerald-300 p-1"
+                                            title="Wieder sichtbar machen">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                ` : ''}
+                                <button onclick="openEditCommentModal('${c.id}', '${c._idea_id}')"
+                                        class="text-indigo-400 hover:text-indigo-300 p-1"
+                                        title="Bearbeiten">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button onclick="deleteCommentFromPage('${c.id}', '${c._idea_id}')"
+                                        class="text-rose-400 hover:text-rose-300 p-1"
+                                        title="Löschen">
+                                    <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function jumpToIdea(ideaId) {
+            switchPage('ideas');
+            setTimeout(() => {
+                const card = document.getElementById(`admin-idea-${ideaId}`);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 250);
+        }
+
+        async function publishCommentFromPage(commentId, ideaId) {
+            if (!confirm('Diesen Kommentar für alle Schüler sichtbar machen?')) return;
+            try {
+                await adminFetch(`/api/admin/comments/${encodeURIComponent(commentId)}`, {
+                    method: 'PATCH',
+                    body: { is_published: true }
+                });
+            } catch (e) {
+                alert('Fehler: ' + e.message);
+                return;
+            }
+            const c = allCommentsCache ? allCommentsCache.find(x => x.id === commentId) : null;
+            if (c) c.is_published = true;
+            renderCommentsPage();
+            await loadCommentCounts();
+        }
+
+        async function deleteCommentFromPage(commentId, ideaId) {
+            if (!confirm('Kommentar löschen?')) return;
+            try {
+                await adminFetch(`/api/admin/comments/${encodeURIComponent(commentId)}`, { method: 'DELETE' });
+            } catch (e) {
+                alert('Fehler: ' + e.message);
+                return;
+            }
+            if (allCommentsCache) {
+                const idx = allCommentsCache.findIndex(x => x.id === commentId);
+                if (idx !== -1) allCommentsCache.splice(idx, 1);
+            }
+            renderCommentsPage();
+            await loadCommentCounts();
+            await loadPinnedComments();
+            updateDrawerCounts();
+        }
+
+        // ============================================================
+        // RENDER IDEEN
         // ============================================================
         function render() {
             const c = document.getElementById('ideasContainer');
+            if (!c) return;
+
+            const q = ideaSearchQuery;
+            const items = q ? listData.filter(i => matchesIdeaSearch(i, q)) : listData;
+
+            const info = document.getElementById('ideaSearchInfo');
+            if (info) {
+                if (q) {
+                    info.textContent = `${items.length} von ${listData.length} Ideen passen zur Suche`;
+                    info.classList.remove('hidden');
+                } else if (listData.length) {
+                    info.textContent = `${listData.length} Ideen gesamt`;
+                    info.classList.remove('hidden');
+                } else {
+                    info.classList.add('hidden');
+                }
+            }
+
             if (!listData.length) {
                 c.innerHTML = '<div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">Keine Ideen vorhanden.</div>';
                 return;
             }
 
-            c.innerHTML = listData.map(item => {
+            if (!items.length) {
+                c.innerHTML = `<div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">
+                    <i data-lucide="search-x" class="w-6 h-6 mx-auto mb-2 text-gray-500"></i>
+                    Keine Ideen passen zur Suche "<span class="text-white font-bold">${esc(q)}</span>".
+                </div>`;
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            c.innerHTML = items.map(item => {
                 const curStatusStyle = STATUS_STYLES[item.status] || STATUS_STYLES['waiting_for_review'];
                 const commentCount = commentCountsMap[item.id] || 0;
 
@@ -1225,6 +1884,7 @@ attachIconListener(
             closeModal('statusModal');
             await loadTimelineAdmin();
             renderTimelineAdmin();
+            updateDrawerCounts();
         }
 
         async function toggleIdeaOwnership(id) {
@@ -1253,16 +1913,22 @@ attachIconListener(
             const backup = listData[idx];
             listData.splice(idx, 1);
             openCommentBoxes.delete(id);
+            if (allCommentsCache) {
+                allCommentsCache = allCommentsCache.filter(c => c._idea_id !== id);
+            }
             updateStats();
             render();
+            updateDrawerCounts();
             try {
                 await adminFetch(`/api/admin/ideas/${encodeURIComponent(id)}`, { method: 'DELETE' });
                 await loadTimelineAdmin();
                 renderTimelineAdmin();
+                updateDrawerCounts();
             } catch (e) {
                 listData.splice(idx, 0, backup);
                 updateStats();
                 render();
+                updateDrawerCounts();
                 alert('Fehler: ' + e.message);
             }
         }
@@ -1331,7 +1997,9 @@ attachIconListener(
             closeModal('commentModal');
             await loadCommentCounts();
             await loadPinnedComments();
+            allCommentsCache = null;
             render();
+            updateDrawerCounts();
             openCommentBoxes.add(idea_id);
             toggleComments(idea_id, true);
         }
@@ -1428,8 +2096,19 @@ attachIconListener(
         }
 
         function openEditCommentModal(commentId, ideaId) {
-            const comment = (adminCommentsCache[ideaId] || []).find(c => c.id === commentId);
-            if (!comment) return;
+            let comment = (adminCommentsCache[ideaId] || []).find(c => c.id === commentId);
+            if (!comment && allCommentsCache) {
+                comment = allCommentsCache.find(c => c.id === commentId);
+            }
+            if (!comment) {
+                // Lazy-load comments for that idea
+                adminFetch(`/api/admin/ideas/${encodeURIComponent(ideaId)}/comments`).then(data => {
+                    adminCommentsCache[ideaId] = data;
+                    const found = (data || []).find(c => c.id === commentId);
+                    if (found) openEditCommentModal(commentId, ideaId);
+                }).catch(() => {});
+                return;
+            }
             document.getElementById('editCommentId').value = comment.id;
             document.getElementById('editCommentIdeaId').value = ideaId;
             document.getElementById('editCommentAuthor').value = comment.author_name || '';
@@ -1470,11 +2149,17 @@ attachIconListener(
                 alert('Fehler: ' + err.message);
                 return;
             }
+            allCommentsCache = null;
             await loadCommentCounts();
             await loadPinnedComments();
             render();
-            openCommentBoxes.add(ideaId);
-            toggleComments(ideaId, true);
+            updateDrawerCounts();
+            if (currentPage === 'comments') {
+                loadCommentsPage();
+            } else {
+                openCommentBoxes.add(ideaId);
+                toggleComments(ideaId, true);
+            }
         }
 
         async function deleteComment(commentId, ideaId) {
@@ -1498,9 +2183,14 @@ attachIconListener(
                 alert('Fehler: ' + e.message);
                 return;
             }
+            if (allCommentsCache) {
+                const i2 = allCommentsCache.findIndex(x => x.id === commentId);
+                if (i2 !== -1) allCommentsCache.splice(i2, 1);
+            }
             await loadCommentCounts();
             await loadPinnedComments();
             render();
+            updateDrawerCounts();
             openCommentBoxes.add(ideaId);
             toggleComments(ideaId, true);
         }
@@ -1525,8 +2215,14 @@ attachIconListener(
                 return;
             }
 
+            if (allCommentsCache) {
+                const c2 = allCommentsCache.find(x => x.id === commentId);
+                if (c2) c2.is_published = true;
+            }
+
             await loadCommentCounts();
             render();
+            updateDrawerCounts();
             openCommentBoxes.add(ideaId);
             toggleComments(ideaId, true);
         }
@@ -1541,7 +2237,7 @@ attachIconListener(
             try {
                 messagesData = await adminFetch('/api/admin/messages');
             } catch (e) {
-                box.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Fehler beim Laden</div>';
+                if (box) box.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Fehler beim Laden</div>';
                 return;
             }
             renderMessages();
@@ -1549,8 +2245,10 @@ attachIconListener(
 
         function renderMessages() {
             const box = document.getElementById('messagesList');
+            if (!box) return;
             if (!messagesData.length) {
                 box.innerHTML = '<div class="text-xs text-gray-500 text-center py-3 italic">Noch keine Nachrichten erstellt.</div>';
+                updateDrawerCounts();
                 return;
             }
             box.innerHTML = messagesData.map(m => `
@@ -1581,6 +2279,7 @@ attachIconListener(
                 </div>
             `).join('');
             lucide.createIcons();
+            updateDrawerCounts();
         }
 
         function openMessageModal(id) {
@@ -1679,12 +2378,13 @@ attachIconListener(
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+            const el = document.getElementById(modalId);
+            if (el) el.classList.add('hidden');
         }
 
         function esc(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         // ============================================================
@@ -1703,6 +2403,7 @@ attachIconListener(
             if (!box) return;
             if (!timelineAdminData.length) {
                 box.innerHTML = '<div class="text-xs text-gray-500 text-center py-3 italic">Noch keine Einträge.</div>';
+                updateDrawerCounts();
                 return;
             }
             box.innerHTML = timelineAdminData.map(e => {
@@ -1742,6 +2443,7 @@ attachIconListener(
                 `;
             }).join('');
             if (window.lucide) lucide.createIcons();
+            updateDrawerCounts();
         }
 
         function toLocalDatetimeInput(date) {
@@ -1847,58 +2549,57 @@ attachIconListener(
         // ICON HANDLING
         // ============================================================
         function updateIconPreview(el, value) {
+            if (!el) return;
             const cls = (value || '').trim() || STATUS_DEFAULT_ICONS.manual;
             el.className = cls;
         }
-function attachIconListener(inputId, previewId, suggestBadgeId, getTextFn, triggerIds = []) {
-    const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-    const badge = document.getElementById(suggestBadgeId);
-    if (!input || !preview || !badge) return;
 
-    // Live-Vorschau wenn Icon-Feld manuell geändert wird
-    input.addEventListener('input', () => {
-        updateIconPreview(preview, input.value);
-        if (!iconSuggestFor) iconSuggestFor = {};
-        iconSuggestFor.manualEdited = true;
-    });
+        function attachIconListener(inputId, previewId, suggestBadgeId, getTextFn, triggerIds = []) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            const badge = document.getElementById(suggestBadgeId);
+            if (!input || !preview || !badge) return;
 
-    // KI-Vorschlag bei Eingabe in Titel/Beschreibung
-    const runSuggest = () => {
-        const text = getTextFn();
-        if (text.length < 30) return;
-        if (iconSuggestFor && iconSuggestFor.manualEdited) return;
+            input.addEventListener('input', () => {
+                updateIconPreview(preview, input.value);
+                if (!iconSuggestFor) iconSuggestFor = {};
+                iconSuggestFor.manualEdited = true;
+            });
 
-        clearTimeout(iconSuggestDebounce);
-        iconSuggestDebounce = setTimeout(async () => {
-            badge.classList.remove('hidden');
-            try {
-                const parts = getTextFn().split('\n');
-                const res = await adminFetch('/api/ai/suggest-icon', {
-                    method: 'POST',
-                    body: {
-                        title: parts[0] || '',
-                        description: parts.slice(1).join('\n') || ''
-                    }
-                });
-                if (res && res.icon && !(iconSuggestFor && iconSuggestFor.manualEdited)) {
-                    input.value = res.icon;
-                    updateIconPreview(preview, res.icon);
-                }
-            } catch (e) { /* ignore */ }
-            badge.classList.add('hidden');
-        }, 900);
-    };
+            const runSuggest = () => {
+                const text = getTextFn();
+                if (text.length < 30) return;
+                if (iconSuggestFor && iconSuggestFor.manualEdited) return;
 
-    triggerIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('input', runSuggest);
-    });
-}
+                clearTimeout(iconSuggestDebounce);
+                iconSuggestDebounce = setTimeout(async () => {
+                    badge.classList.remove('hidden');
+                    try {
+                        const parts = getTextFn().split('\n');
+                        const res = await adminFetch('/api/ai/suggest-icon', {
+                            method: 'POST',
+                            body: {
+                                title: parts[0] || '',
+                                description: parts.slice(1).join('\n') || ''
+                            }
+                        });
+                        if (res && res.icon && !(iconSuggestFor && iconSuggestFor.manualEdited)) {
+                            input.value = res.icon;
+                            updateIconPreview(preview, res.icon);
+                        }
+                    } catch (e) { /* ignore */ }
+                    badge.classList.add('hidden');
+                }, 900);
+            };
 
+            triggerIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', runSuggest);
+            });
+        }
 
         // ============================================================
-        // BENACHRICHTIGUNGEN (neue Kommentare)
+        // BENACHRICHTIGUNGEN
         // ============================================================
         async function loadUnreadComments() {
             if (!getAdminPassword()) return;
@@ -1970,12 +2671,16 @@ function attachIconListener(inputId, previewId, suggestBadgeId, getTextFn, trigg
             if (panel) panel.classList.add('hidden');
             notifPanelOpen = false;
 
-            const card = document.getElementById(`admin-idea-${ideaId}`);
-            if (card) {
-                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                openCommentBoxes.add(ideaId);
-                setTimeout(() => toggleComments(ideaId, true), 350);
-            }
+            // Auf Ideen-Seite springen und Kommentare öffnen
+            switchPage('ideas');
+            setTimeout(() => {
+                const card = document.getElementById(`admin-idea-${ideaId}`);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    openCommentBoxes.add(ideaId);
+                    setTimeout(() => toggleComments(ideaId, true), 350);
+                }
+            }, 250);
         }
 
         async function markNotificationRead(commentId) {
