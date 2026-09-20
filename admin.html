@@ -25,6 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        :root { --header-h: 60px; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #090d16; color: #f3f4f6; }
         .glass-panel { background: rgba(18, 24, 38, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.07); }
         .glow-indigo { box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.25); }
@@ -33,10 +34,10 @@
         .idea-card { transition: border-color 0.25s ease, box-shadow 0.25s ease; }
         .idea-card:hover { border-color: rgba(255,255,255,0.12); }
 
-        .status-change-flash { animation: statusFlash 0.5s ease; }
+        .status-change-flash { animation: statusFlash 0.9s ease; }
         @keyframes statusFlash {
-            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-            100% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5); }
+            100% { box-shadow: 0 0 0 14px rgba(99, 102, 241, 0); }
         }
 
         .fade-in { animation: fadeIn 0.3s ease-out; }
@@ -121,7 +122,7 @@
             transition: transform 0.3s cubic-bezier(0.6, 0, 0.4, 1), opacity 0.2s, background 0.2s;
             transform-origin: center;
         }
-        .hamburger-btn.active { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.35); }
+        .hamburger-btn.active { background: rgba(99,102,241,0.18); border-color: rgba(99,102,241,0.45); }
         .hamburger-btn.active .bars span { background: #818cf8; }
         .hamburger-btn.active .bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
         .hamburger-btn.active .bars span:nth-child(2) { opacity: 0; transform: scaleX(0.3); }
@@ -129,19 +130,20 @@
 
         /* ============ DRAWER ============ */
         #drawerOverlay {
-            position: fixed; inset: 0;
+            position: fixed;
+            top: var(--header-h); left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.65);
             backdrop-filter: blur(4px);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
-            z-index: 60;
+            z-index: 45;
         }
         #drawerOverlay.open { opacity: 1; pointer-events: auto; }
 
         #drawer {
             position: fixed;
-            top: 0; left: 0; bottom: 0;
+            top: var(--header-h); left: 0; bottom: 0;
             width: 300px;
             max-width: 85vw;
             background: linear-gradient(180deg, #0d1322 0%, #0a0e1a 100%);
@@ -149,12 +151,14 @@
             box-shadow: 20px 0 60px -20px rgba(0,0,0,0.6);
             transform: translateX(-102%);
             transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-            z-index: 70;
+            z-index: 50;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
         #drawer.open { transform: translateX(0); }
+
+        header.sticky { z-index: 55 !important; }
 
         .drawer-link {
             display: flex; align-items: center; gap: 12px;
@@ -194,20 +198,32 @@
             color: #9ca3af;
             font-weight: 700;
         }
+        .drawer-link .badge.alert {
+            background: rgba(244,63,94,0.2);
+            border-color: rgba(244,63,94,0.4);
+            color: #fda4af;
+        }
 
-        /* Search input */
         .search-input {
             width: 100%;
             background: rgba(9,13,22,0.7);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 12px;
-            padding: 10px 12px 10px 38px;
+            padding: 10px 38px 10px 38px;
             font-size: 12px;
             color: #fff;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+
+        mark.search-hit {
+            background: rgba(245, 158, 11, 0.5);
+            color: #fff;
+            border-radius: 3px;
+            padding: 0 2px;
+            font-weight: 700;
+        }
 
         .line-clamp-2 {
             display: -webkit-box;
@@ -266,9 +282,6 @@
                     <div class="text-[10px] text-gray-500">Admin Panel</div>
                 </div>
             </div>
-            <button onclick="closeDrawer()" class="p-2 rounded-lg hover:bg-white/5 text-gray-400 transition-all">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
         </div>
 
         <nav class="p-3 space-y-1 overflow-y-auto flex-1">
@@ -289,6 +302,11 @@
                 <span>Kommentare</span>
                 <span class="badge" id="drawerCountComments">0</span>
             </button>
+            <button class="drawer-link" data-page-link="votes" onclick="switchPage('votes')">
+    <i data-lucide="vote" class="w-4 h-4"></i>
+    <span>Abstimmungen</span>
+    <span class="badge" id="drawerCountVotes">0</span>
+</button>
             <button class="drawer-link" data-page-link="messages" onclick="switchPage('messages')">
                 <i data-lucide="megaphone" class="w-4 h-4"></i>
                 <span>Nachrichten</span>
@@ -309,6 +327,12 @@
                 <i data-lucide="timer" class="w-4 h-4"></i>
                 <span>Rate-Limits (IP)</span>
             </button>
+
+            <div class="px-3 py-2 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Konto</div>
+            <button class="drawer-link" onclick="openModal('passwordModal')">
+                <i data-lucide="key-round" class="w-4 h-4"></i>
+                <span>Passwort ändern</span>
+            </button>
         </nav>
 
         <div class="p-3 border-t border-surface-border shrink-0 space-y-2">
@@ -324,7 +348,7 @@
     </aside>
 
     <!-- HEADER -->
-    <header class="sticky top-0 z-40 glass-panel border-b border-surface-border">
+    <header class="sticky top-0 glass-panel border-b border-surface-border">
         <div class="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
 
             <div class="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -356,7 +380,7 @@
                          class="hidden absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-surface-card rounded-2xl border border-surface-border shadow-2xl z-[60] overflow-hidden">
                         <div class="flex items-center justify-between px-4 py-3 border-b border-surface-border">
                             <h3 class="text-xs font-bold text-white flex items-center gap-2">
-                                <i data-lucide="bell" class="w-3.5 h-3.5 text-indigo-400"></i> Neue Kommentare
+                                <i data-lucide="bell" class="w-3.5 h-3.5 text-indigo-400"></i> Benachrichtigungen
                             </h3>
                             <button onclick="markAllNotificationsRead()"
                                     class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider">
@@ -372,9 +396,7 @@
 
     <main class="max-w-5xl mx-auto px-4 pt-6 sm:pt-8 space-y-6">
 
-        <!-- ============================= -->
-        <!-- PAGE: DASHBOARD               -->
-        <!-- ============================= -->
+        <!-- PAGE: DASHBOARD -->
         <section data-page-content="dashboard" class="space-y-6">
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div class="glass-panel p-3.5 rounded-2xl flex flex-col justify-between">
@@ -397,6 +419,25 @@
                     <span class="text-[11px] font-medium text-cyan-400"><i class="fa-solid fa-users mr-1"></i>Besucher</span>
                     <span id="statVisitors" class="text-xl font-extrabold text-cyan-400 mt-1">0</span>
                 </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 space-y-3">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i data-lucide="search" class="w-4 h-4 text-indigo-400"></i>
+                    Globale Suche
+                </h2>
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    <input type="text" id="globalSearchInput" placeholder="Durchsuche Ideen, Kommentare, Nachrichten und Timeline..."
+                           oninput="onGlobalSearch(this.value)"
+                           class="search-input">
+                    <button onclick="clearGlobalSearch()" id="globalSearchClear"
+                            class="hidden absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+                <div id="globalSearchInfo" class="hidden text-[10px] text-gray-500 px-1"></div>
+                <div id="globalSearchResults" class="space-y-2"></div>
             </div>
 
             <div class="glass-panel rounded-2xl p-5 space-y-3">
@@ -429,9 +470,7 @@
             </div>
         </section>
 
-        <!-- ============================= -->
-        <!-- PAGE: IDEEN                   -->
-        <!-- ============================= -->
+        <!-- PAGE: IDEEN -->
         <section data-page-content="ideas" class="space-y-4 hidden">
             <div class="glass-panel rounded-2xl p-3">
                 <div class="relative">
@@ -455,9 +494,7 @@
             </div>
         </section>
 
-        <!-- ============================= -->
-        <!-- PAGE: KOMMENTARE              -->
-        <!-- ============================= -->
+        <!-- PAGE: KOMMENTARE -->
         <section data-page-content="comments" class="space-y-4 hidden">
             <div class="glass-panel rounded-2xl p-3">
                 <div class="relative">
@@ -480,10 +517,54 @@
                 </div>
             </div>
         </section>
+        <!-- PAGE: ABSTIMMUNGEN -->
+        <section data-page-content="votes" class="space-y-4 hidden">
+            <div class="glass-panel rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i data-lucide="vote" class="w-4 h-4 text-cyan-400"></i>
+                        Abstimmungs-Übersicht
+                    </h2>
+                    <button onclick="loadVoteAudit()" class="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold rounded-lg border border-white/10 transition-all">
+                        <i data-lucide="refresh-cw" class="w-3 h-3 inline"></i> Aktualisieren
+                    </button>
+                </div>
 
-        <!-- ============================= -->
-        <!-- PAGE: NACHRICHTEN             -->
-        <!-- ============================= -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
+                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Stimmen</div>
+                        <div id="voteAuditTotalVotes" class="text-xl font-extrabold text-white mt-1">—</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
+                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">Geräte</div>
+                        <div id="voteAuditTotalDevices" class="text-xl font-extrabold text-cyan-300 mt-1">—</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
+                        <div class="text-[10px] text-gray-500 uppercase tracking-wider">IPs</div>
+                        <div id="voteAuditTotalIps" class="text-xl font-extrabold text-indigo-300 mt-1">—</div>
+                    </div>
+                </div>
+
+                <div id="voteAuditWarning" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200"></div>
+
+                <div class="flex items-center gap-1 p-1 rounded-xl bg-surface-base border border-surface-border">
+                    <button id="voteTabDevices" onclick="setVoteTab('devices')" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-500/20 text-white border border-indigo-500/30 transition-all">
+                        <i data-lucide="smartphone" class="w-3.5 h-3.5 inline mr-1"></i> Geräte
+                    </button>
+                    <button id="voteTabIps" onclick="setVoteTab('ips')" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition-all">
+                        <i data-lucide="globe" class="w-3.5 h-3.5 inline mr-1"></i> IPs
+                    </button>
+                    <button id="voteTabIdeas" onclick="setVoteTab('ideas')" class="flex-1 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition-all">
+                        <i data-lucide="lightbulb" class="w-3.5 h-3.5 inline mr-1"></i> Ideen
+                    </button>
+                </div>
+
+                <div id="voteAuditContent" class="space-y-2">
+                    <div class="text-xs text-gray-400 text-center py-3">Klicke auf "Aktualisieren" zum Laden.</div>
+                </div>
+            </div>
+        </section>
+        <!-- PAGE: NACHRICHTEN -->
         <section data-page-content="messages" class="space-y-4 hidden">
             <div class="glass-panel rounded-2xl p-5 space-y-3">
                 <div class="flex items-center justify-between pb-3 border-b border-surface-border">
@@ -502,9 +583,7 @@
             </div>
         </section>
 
-        <!-- ============================= -->
-        <!-- PAGE: TIMELINE                -->
-        <!-- ============================= -->
+        <!-- PAGE: TIMELINE -->
         <section data-page-content="timeline" class="space-y-4 hidden">
             <div class="glass-panel rounded-2xl p-5 space-y-3">
                 <div class="flex items-center justify-between pb-3 border-b border-surface-border">
@@ -524,9 +603,7 @@
             </div>
         </section>
 
-        <!-- ============================= -->
-        <!-- PAGE: NOTFALL-MODUS           -->
-        <!-- ============================= -->
+        <!-- PAGE: NOTFALL-MODUS -->
         <section data-page-content="emergency" class="space-y-4 hidden">
             <div class="glass-panel rounded-2xl p-5 space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
@@ -595,9 +672,7 @@
             </div>
         </section>
 
-        <!-- ============================= -->
-        <!-- PAGE: RATE-LIMITS             -->
-        <!-- ============================= -->
+        <!-- PAGE: RATE-LIMITS -->
         <section data-page-content="ratelimits" class="space-y-4 hidden">
             <div class="glass-panel rounded-2xl p-5 space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
@@ -851,6 +926,38 @@
         </div>
     </div>
 
+    <!-- PASSWORD CHANGE MODAL -->
+    <div id="passwordModal" class="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 glow-indigo relative">
+            <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                <i data-lucide="key-round" class="w-4 h-4 text-indigo-400"></i> Admin-Passwort ändern
+            </h3>
+            <p class="text-[11px] text-gray-400 mb-4">Neues Passwort wird sicher im Worker gespeichert.</p>
+            <form onsubmit="changePassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Aktuelles Passwort</label>
+                    <input type="password" id="pwCurrent" required autocomplete="current-password"
+                           class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Neues Passwort (min. 6 Zeichen)</label>
+                    <input type="password" id="pwNew" required minlength="6" autocomplete="new-password"
+                           class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Neues Passwort wiederholen</label>
+                    <input type="password" id="pwConfirm" required minlength="6" autocomplete="new-password"
+                           class="w-full bg-surface-base border border-surface-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <p id="pwError" class="hidden text-[11px] text-rose-400"></p>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('passwordModal')" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Abbrechen</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all">Passwort ändern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // ============================================================
         // WORKER-KONFIGURATION
@@ -885,7 +992,6 @@
         }
 
         let listData = [];
-        let filteredListData = null;
         let commentCountsMap = {};
         let pinnedCommentsMap = {};
         const adminCommentsCache = {};
@@ -901,6 +1007,7 @@
 
         // Benachrichtigungen
         let unreadComments = [];
+        let unreadIdeas = [];
         let notifPanelOpen = false;
         let notifPollTimer = null;
 
@@ -908,7 +1015,8 @@
         const PAGE_META = {
             dashboard:  { title: 'Dashboard',       subtitle: 'Übersicht & Statistiken' },
             ideas:      { title: 'Ideen',           subtitle: 'Ideen verwalten und moderieren' },
-            comments:   { title: 'Kommentare',      subtitle: 'Alle Kommentare durchsuchen' },
+                comments:   { title: 'Kommentare',      subtitle: 'Alle Kommentare durchsuchen' },
+    votes:      { title: 'Abstimmungen',    subtitle: 'Geräte, IPs und abgegebene Stimmen' },
             messages:   { title: 'Nachrichten',     subtitle: 'Nachrichten an Schüler' },
             timeline:   { title: 'Timeline / News', subtitle: 'Verlauf & Updates' },
             emergency:  { title: 'Notfall-Modus',   subtitle: 'Schreibfunktionen sperren' },
@@ -985,10 +1093,47 @@
         let ipRateLimitsDraft = null;
 
         // ============================================================
+        // HEADER-HÖHE TRACKING
+        // ============================================================
+        function updateHeaderHeight() {
+            const h = document.querySelector('header');
+            if (!h) return;
+            const height = Math.ceil(h.getBoundingClientRect().height);
+            document.documentElement.style.setProperty('--header-h', height + 'px');
+        }
+        window.addEventListener('resize', updateHeaderHeight);
+        window.addEventListener('scroll', updateHeaderHeight, { passive: true });
+
+        // ============================================================
+        // HIGHLIGHT
+        // ============================================================
+        function highlight(text, query) {
+            const t = String(text == null ? '' : text);
+            if (!query || !query.trim()) return esc(t);
+            const q = query.trim();
+            const lower = t.toLowerCase();
+            const lq = q.toLowerCase();
+            const parts = [];
+            let i = 0;
+            while (i < t.length) {
+                const idx = lower.indexOf(lq, i);
+                if (idx === -1) {
+                    parts.push(esc(t.slice(i)));
+                    break;
+                }
+                if (idx > i) parts.push(esc(t.slice(i, idx)));
+                parts.push('<mark class="search-hit">' + esc(t.slice(idx, idx + q.length)) + '</mark>');
+                i = idx + q.length;
+            }
+            return parts.join('');
+        }
+
+        // ============================================================
         // INITIALISIERUNG + LOGIN
         // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            updateHeaderHeight();
 
             const gate = document.getElementById('loginGate');
             const form = document.getElementById('loginForm');
@@ -1032,6 +1177,9 @@
                 sessionStorage.setItem('avh_admin_pw', pw);
                 gate.classList.add('hidden');
                 input.value = '';
+                if (!localStorage.getItem('avh_admin_ideas_seen_at')) {
+                    localStorage.setItem('avh_admin_ideas_seen_at', new Date().toISOString());
+                }
                 loadData();
                 startNotifPolling();
             });
@@ -1045,6 +1193,7 @@
                     closeModal('messageModal');
                     closeModal('timelineModalAdmin');
                     closeModal('statusModal');
+                    closeModal('passwordModal');
                 }
             });
 
@@ -1071,8 +1220,8 @@
                 ['statusModalText']
             );
 
-            // Standardseite aktivieren
             switchPage('dashboard', true);
+            setTimeout(updateHeaderHeight, 100);
         });
 
         function logout() {
@@ -1088,17 +1237,12 @@
             const overlay = document.getElementById('drawerOverlay');
             const btn = document.getElementById('hamburgerBtn');
             const isOpen = drawer.classList.contains('open');
-            if (isOpen) {
-                drawer.classList.remove('open');
-                overlay.classList.remove('open');
-                btn.classList.remove('active');
-                drawer.setAttribute('aria-hidden', 'true');
-            } else {
-                drawer.classList.add('open');
-                overlay.classList.add('open');
-                btn.classList.add('active');
-                drawer.setAttribute('aria-hidden', 'false');
-            }
+            if (isOpen) { closeDrawer(); return; }
+            updateHeaderHeight();
+            drawer.classList.add('open');
+            overlay.classList.add('open');
+            btn.classList.add('active');
+            drawer.setAttribute('aria-hidden', 'false');
         }
 
         function closeDrawer() {
@@ -1142,8 +1286,12 @@
 
             closeDrawer();
 
-            if (page === 'comments') {
+                        if (page === 'comments') {
                 loadCommentsPage();
+            }
+
+            if (page === 'votes') {
+                loadVoteAudit();
             }
 
             if (!skipAnimation) {
@@ -1163,7 +1311,7 @@
                 }
                 return;
             }
-            allCommentsCache = null; // Cache invalidieren
+            allCommentsCache = null;
             await Promise.all([
                 loadPinnedComments(),
                 loadCommentCounts(),
@@ -1171,9 +1319,11 @@
                 loadMessages(),
                 loadRateLimits(),
                 loadIpRateLimits(),
-                loadUnreadComments(),
-                loadTimelineAdmin()
+                                loadUnreadComments(),
+                loadTimelineAdmin(),
+                loadVoteAudit()
             ]);
+            loadUnreadIdeas();
             updateStats();
             render();
             renderTimelineAdmin();
@@ -1181,15 +1331,19 @@
         }
 
         function updateDrawerCounts() {
-            const setCount = (id, val) => {
+            const setCount = (id, val, alert = false) => {
                 const el = document.getElementById(id);
-                if (el) el.textContent = val;
+                if (!el) return;
+                el.textContent = val;
+                el.classList.toggle('alert', !!alert);
             };
-            setCount('drawerCountIdeas', listData.length);
+            setCount('drawerCountIdeas', listData.length, unreadIdeas.length > 0);
             const totalComments = Object.values(commentCountsMap).reduce((a, b) => a + (b || 0), 0);
-            setCount('drawerCountComments', totalComments);
+            setCount('drawerCountComments', totalComments, unreadComments.length > 0);
             setCount('drawerCountMessages', messagesData.length);
-            setCount('drawerCountTimeline', timelineAdminData.length);
+                        setCount('drawerCountTimeline', timelineAdminData.length);
+            const voteBadge = document.getElementById('drawerCountVotes');
+            if (voteBadge && voteAuditData) voteBadge.textContent = voteAuditData.total_votes || 0;
         }
 
         async function loadPinnedComments() {
@@ -1223,7 +1377,134 @@
         }
 
         // ============================================================
-        // NOTFALL-MODUS / RATE LIMITS (Feature-Toggles)
+        // BENACHRICHTIGUNGEN FÜR IDEEN
+        // ============================================================
+        function loadUnreadIdeas() {
+            const seenAt = localStorage.getItem('avh_admin_ideas_seen_at');
+            const seenTime = seenAt ? new Date(seenAt).getTime() : 0;
+            unreadIdeas = listData.filter(i => {
+                if (!i.created_at) return false;
+                return new Date(i.created_at).getTime() > seenTime;
+            }).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            renderNotifications();
+            updateDrawerCounts();
+        }
+
+        // ============================================================
+        // GLOBALE SUCHE
+        // ============================================================
+        async function onGlobalSearch(val) {
+            const q = (val || '').trim();
+            const clearBtn = document.getElementById('globalSearchClear');
+            if (clearBtn) clearBtn.classList.toggle('hidden', !q);
+            const box = document.getElementById('globalSearchResults');
+            const info = document.getElementById('globalSearchInfo');
+
+            if (!q) {
+                box.innerHTML = '';
+                if (info) info.classList.add('hidden');
+                return;
+            }
+
+            if (!allCommentsCache && !commentsLoading) {
+                box.innerHTML = '<div class="text-xs text-gray-400 py-3 flex items-center gap-2"><i data-lucide="loader-2" class="w-4 h-4 animate-spin text-indigo-400"></i> Lade Kommentare...</div>';
+                if (window.lucide) lucide.createIcons();
+                await loadCommentsPage();
+            }
+
+            renderGlobalSearchResults(q);
+        }
+
+        function clearGlobalSearch() {
+            const input = document.getElementById('globalSearchInput');
+            if (input) input.value = '';
+            onGlobalSearch('');
+        }
+
+        function renderGlobalSearchResults(q) {
+            const box = document.getElementById('globalSearchResults');
+            const info = document.getElementById('globalSearchInfo');
+            if (!box) return;
+
+            const lq = q.toLowerCase();
+            const match = (text) => (text || '').toLowerCase().includes(lq);
+
+            const ideas = listData.filter(i => match(i.title) || match(i.description) || match(i.author_name));
+            const comments = (allCommentsCache || []).filter(c =>
+                match(c.content) || match(c.author_name) || match(c._idea_title)
+            );
+            const messages = messagesData.filter(m => match(m.title) || match(m.description));
+            const timeline = timelineAdminData.filter(t => match(t.title) || match(t.description));
+
+            const total = ideas.length + comments.length + messages.length + timeline.length;
+            if (info) {
+                info.textContent = `${total} Treffer — Ideen: ${ideas.length}, Kommentare: ${comments.length}, Nachrichten: ${messages.length}, Timeline: ${timeline.length}`;
+                info.classList.remove('hidden');
+            }
+
+            if (total === 0) {
+                box.innerHTML = '<div class="text-xs text-gray-500 italic py-3 text-center">Keine Treffer.</div>';
+                return;
+            }
+
+            const html = [];
+            const maxShow = 8;
+
+            if (ideas.length) {
+                html.push(`<div class="text-[10px] font-bold uppercase tracking-wider text-amber-400 mt-3 mb-1 flex items-center gap-1"><i data-lucide="lightbulb" class="w-3 h-3"></i> Ideen (${ideas.length})</div>`);
+                ideas.slice(0, maxShow).forEach(i => {
+                    html.push(`
+                        <button onclick="jumpToIdea('${i.id}', '${esc(q).replace(/'/g,'')}', true)" class="w-full text-left p-3 rounded-xl bg-surface-base border border-surface-border hover:border-amber-500/40 transition-all">
+                            <div class="font-bold text-xs text-white">${highlight(i.title, q)}</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 line-clamp-2">${highlight(i.description, q)}</div>
+                            <div class="text-[10px] text-gray-500 mt-1">von ${highlight(i.author_name || 'Anonym', q)}</div>
+                        </button>
+                    `);
+                });
+            }
+
+            if (comments.length) {
+                html.push(`<div class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 mt-3 mb-1 flex items-center gap-1"><i data-lucide="messages-square" class="w-3 h-3"></i> Kommentare (${comments.length})</div>`);
+                comments.slice(0, maxShow).forEach(c => {
+                    html.push(`
+                        <button onclick="jumpToIdea('${c._idea_id}', '', false, '${esc(q).replace(/'/g,'')}')" class="w-full text-left p-3 rounded-xl bg-surface-base border border-surface-border hover:border-emerald-500/40 transition-all">
+                            <div class="text-[11px] text-gray-200">${highlight(c.content, q)}</div>
+                            <div class="text-[10px] text-gray-500 mt-1">${highlight(c.author_name || 'Anonym', q)} · <span class="text-indigo-400">${highlight(c._idea_title, q)}</span></div>
+                        </button>
+                    `);
+                });
+            }
+
+            if (messages.length) {
+                html.push(`<div class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 mt-3 mb-1 flex items-center gap-1"><i data-lucide="megaphone" class="w-3 h-3"></i> Nachrichten (${messages.length})</div>`);
+                messages.slice(0, maxShow).forEach(m => {
+                    html.push(`
+                        <button onclick="switchPage('messages')" class="w-full text-left p-3 rounded-xl bg-surface-base border border-surface-border hover:border-indigo-500/40 transition-all">
+                            <div class="font-bold text-xs text-white">${highlight(m.title, q)}</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 line-clamp-2">${highlight(m.description, q)}</div>
+                        </button>
+                    `);
+                });
+            }
+
+            if (timeline.length) {
+                html.push(`<div class="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mt-3 mb-1 flex items-center gap-1"><i data-lucide="git-commit-horizontal" class="w-3 h-3"></i> Timeline (${timeline.length})</div>`);
+                timeline.slice(0, maxShow).forEach(t => {
+                    html.push(`
+                        <button onclick="switchPage('timeline')" class="w-full text-left p-3 rounded-xl bg-surface-base border border-surface-border hover:border-cyan-500/40 transition-all">
+                            <div class="font-bold text-xs text-white">${highlight(t.title, q)}</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 line-clamp-2">${highlight(t.description, q)}</div>
+                        </button>
+                    `);
+                });
+            }
+
+            box.innerHTML = html.join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // ============================================================
+        // NOTFALL-MODUS / RATE LIMITS
         // ============================================================
         let rateLimitsCache = null;
         const RL_IDS = ['block_new_ideas', 'block_ai_description', 'block_votes', 'block_comments'];
@@ -1440,6 +1721,178 @@
             if (input) input.value = '';
             onCommentSearch('');
         }
+        // ============================================================
+        // ABSTIMMUNGS-AUDIT (Geräte / IPs / Ideen)
+        // ============================================================
+        let voteAuditData = null;
+        let voteAuditTab = 'devices';
+
+        async function loadVoteAudit() {
+            const box = document.getElementById('voteAuditContent');
+            if (!box) return;
+            box.innerHTML = '<div class="text-xs text-gray-400 text-center py-3"><i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> Lade Abstimmungen...</div>';
+            if (window.lucide) lucide.createIcons();
+            try {
+                voteAuditData = await adminFetch('/api/admin/vote-audit');
+            } catch (e) {
+                box.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Fehler: ' + esc(e.message) + '</div>';
+                return;
+            }
+            const elV = document.getElementById('voteAuditTotalVotes');
+            const elD = document.getElementById('voteAuditTotalDevices');
+            const elI = document.getElementById('voteAuditTotalIps');
+            if (elV) elV.textContent = voteAuditData.total_votes || 0;
+            if (elD) elD.textContent = voteAuditData.total_devices || 0;
+            if (elI) elI.textContent = voteAuditData.total_ips || 0;
+
+            const warn = document.getElementById('voteAuditWarning');
+            const sd = voteAuditData.suspicious_devices || [];
+            const si = voteAuditData.suspicious_ips || [];
+            if (warn) {
+                if (sd.length || si.length) {
+                    warn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>' +
+                        '<strong>Verdächtige Aktivität:</strong> ' +
+                        (sd.length ? `${sd.length} Gerät(e) mit mehr als 2 IPs. ` : '') +
+                        (si.length ? `${si.length} IP(s) mit mehr als 3 Geräten.` : '');
+                    warn.classList.remove('hidden');
+                } else {
+                    warn.classList.add('hidden');
+                }
+            }
+
+            const badge = document.getElementById('drawerCountVotes');
+            if (badge) badge.textContent = voteAuditData.total_votes || 0;
+
+            renderVoteAudit();
+        }
+
+        function setVoteTab(tab) {
+            voteAuditTab = tab;
+            const base = "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all";
+            const activeCls = "bg-indigo-500/20 text-white border border-indigo-500/30";
+            const idleCls = "text-gray-400 hover:text-white";
+            const ids = { devices: 'voteTabDevices', ips: 'voteTabIps', ideas: 'voteTabIdeas' };
+            Object.entries(ids).forEach(([key, id]) => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                btn.className = `${base} ${key === tab ? activeCls : idleCls}`;
+            });
+            renderVoteAudit();
+        }
+
+        function renderVoteAudit() {
+            const box = document.getElementById('voteAuditContent');
+            if (!box || !voteAuditData) return;
+            if (!voteAuditData.table_ok) {
+                box.innerHTML = '<div class="text-xs text-amber-400 text-center py-3">Die Tabelle <code>idea_votes</code> ist nicht erreichbar.</div>';
+                return;
+            }
+            if (voteAuditTab === 'devices')      renderVoteAuditDevices(box);
+            else if (voteAuditTab === 'ips')     renderVoteAuditIps(box);
+            else                                 renderVoteAuditIdeas(box);
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function shortDevice(did) {
+            if (!did) return '—';
+            if (did.length <= 18) return did;
+            return did.slice(0, 10) + '…' + did.slice(-4);
+        }
+
+        function renderVoteAuditDevices(box) {
+            const devices = voteAuditData.devices || [];
+            if (!devices.length) {
+                box.innerHTML = '<div class="text-xs text-gray-500 text-center py-3 italic">Keine Abstimmungen vorhanden.</div>';
+                return;
+            }
+            box.innerHTML = devices.map(d => {
+                const suspicious = d.ips.length > 2;
+                const votesHtml = d.votes.slice(0, 8).map(v => {
+                    const idea = listData.find(i => i.id === v.idea_id);
+                    return `<div class="truncate">→ ${esc(idea ? idea.title : v.idea_id)}</div>`;
+                }).join('');
+                const moreHtml = d.votes.length > 8
+                    ? `<div class="text-gray-500 italic">… und ${d.votes.length - 8} weitere</div>` : '';
+                return `
+                    <div class="p-3 rounded-xl border ${suspicious ? 'bg-amber-500/5 border-amber-500/30' : 'bg-surface-base border-surface-border'}">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-[11px] font-bold text-white font-mono" title="${esc(d.device_id)}">${esc(shortDevice(d.device_id))}</span>
+                                ${suspicious ? `<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold uppercase">${d.ips.length} IPs</span>` : ''}
+                            </div>
+                            <div class="text-[10px] text-gray-500 mt-1">
+                                ${d.ips.map(ip => `<span class="font-mono text-indigo-300">${esc(ip || '—')}</span>`).join(', ')}
+                            </div>
+                            <div class="text-[10px] text-cyan-300 mt-1">
+                                <i class="fa-solid fa-thumbs-up mr-1"></i>${d.vote_count} ${d.vote_count === 1 ? 'Stimme' : 'Stimmen'}
+                            </div>
+                            ${d.votes.length ? `<div class="text-[10px] text-gray-400 mt-1.5 space-y-0.5">${votesHtml}${moreHtml}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderVoteAuditIps(box) {
+            const ips = voteAuditData.ips || [];
+            if (!ips.length) {
+                box.innerHTML = '<div class="text-xs text-gray-500 text-center py-3 italic">Keine IP-Daten vorhanden.</div>';
+                return;
+            }
+            box.innerHTML = ips.map(i => {
+                const suspicious = i.device_count > 3;
+                const devicesHtml = i.devices.slice(0, 6).map(d => `<div>🔹 ${esc(shortDevice(d))}</div>`).join('');
+                const moreHtml = i.devices.length > 6
+                    ? `<div class="text-gray-500 italic">… und ${i.devices.length - 6} weitere</div>` : '';
+                return `
+                    <div class="p-3 rounded-xl border ${suspicious ? 'bg-rose-500/5 border-rose-500/30' : 'bg-surface-base border-surface-border'}">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-[11px] font-bold text-white font-mono">${esc(i.ip)}</span>
+                                ${suspicious ? `<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold uppercase">${i.device_count} Geräte</span>` : ''}
+                            </div>
+                            <div class="text-[10px] text-gray-500 mt-1">
+                                ${i.device_count} ${i.device_count === 1 ? 'Gerät' : 'Geräte'} · ${i.vote_count} ${i.vote_count === 1 ? 'Stimme' : 'Stimmen'}
+                            </div>
+                            <div class="text-[10px] text-gray-400 mt-1.5 font-mono space-y-0.5">${devicesHtml}${moreHtml}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderVoteAuditIdeas(box) {
+            const ideas = voteAuditData.ideas || [];
+            if (!ideas.length) {
+                box.innerHTML = '<div class="text-xs text-gray-500 text-center py-3 italic">Keine Votes vorhanden.</div>';
+                return;
+            }
+            box.innerHTML = ideas.map((iv, idx) => {
+                const votersHtml = iv.voters.slice(0, 10).map(v =>
+                    `<div>🔹 ${esc(shortDevice(v.device_id))} · <span class="text-indigo-300">${esc(v.ip || '—')}</span></div>`
+                ).join('');
+                const moreHtml = iv.voters.length > 10
+                    ? `<div class="text-gray-500 italic">… und ${iv.voters.length - 10} weitere</div>` : '';
+                const counterLine = iv.upvotes_count !== null ? ` · Zähler: ${iv.upvotes_count}` : '';
+                return `
+                    <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-[10px] font-bold text-gray-500">#${idx + 1}</span>
+                                    <button onclick="jumpToIdea('${iv.idea_id}')" class="text-[12px] font-bold text-white hover:text-indigo-300 truncate text-left">${esc(iv.idea_title)}</button>
+                                </div>
+                                <div class="text-[11px] text-cyan-300 mt-1">
+                                    <i class="fa-solid fa-thumbs-up mr-1"></i>${iv.vote_count} ${iv.vote_count === 1 ? 'Stimme' : 'Stimmen'}${counterLine}
+                                </div>
+                                <div class="text-[10px] text-gray-500 mt-1.5 space-y-0.5 font-mono">${votersHtml}${moreHtml}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
 
         async function loadCommentsPage() {
             if (allCommentsCache || commentsLoading) {
@@ -1469,7 +1922,6 @@
                 })
             );
             allCommentsCache = results.flat();
-            // nach Datum absteigend
             allCommentsCache.sort((a, b) => {
                 const da = new Date(a.created_at || 0).getTime();
                 const db = new Date(b.created_at || 0).getTime();
@@ -1477,6 +1929,10 @@
             });
             commentsLoading = false;
             renderCommentsPage();
+            const gInput = document.getElementById('globalSearchInput');
+            if (gInput && gInput.value.trim()) {
+                renderGlobalSearchResults(gInput.value.trim());
+            }
         }
 
         function matchesCommentSearch(c, q) {
@@ -1506,11 +1962,10 @@
             if (info) {
                 if (q) {
                     info.textContent = `${filtered.length} von ${allCommentsCache.length} Kommentaren`;
-                    info.classList.remove('hidden');
                 } else {
                     info.textContent = `${allCommentsCache.length} Kommentare gesamt`;
-                    info.classList.remove('hidden');
                 }
+                info.classList.remove('hidden');
             }
 
             if (!filtered.length) {
@@ -1548,15 +2003,15 @@
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-2 flex-wrap text-[10px] font-bold">
-                                    <span class="${authorColor} flex items-center gap-1">${iconPrefix}${esc(c.author_name || 'Anonym')}</span>
+                                    <span class="${authorColor} flex items-center gap-1">${iconPrefix}${highlight(c.author_name || 'Anonym', q)}</span>
                                     ${!c.is_published ? '<span class="px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[9px] uppercase tracking-wider">KI-gefiltert</span>' : ''}
                                     <span class="text-gray-500">·</span>
-                                    <button onclick="jumpToIdea('${c._idea_id}')" class="text-indigo-400 hover:text-indigo-300 truncate max-w-[200px] sm:max-w-none">
-                                        <i class="fa-solid fa-arrow-right mr-1"></i>${esc(c._idea_title)}
+                                    <button onclick="jumpToIdea('${c._idea_id}', '', false, '${esc(q).replace(/'/g,'')}')" class="text-indigo-400 hover:text-indigo-300 truncate max-w-[200px] sm:max-w-none">
+                                        <i class="fa-solid fa-arrow-right mr-1"></i>${highlight(c._idea_title, q)}
                                     </button>
                                     ${dateStr ? `<span class="text-gray-500 ml-auto hidden sm:inline">${dateStr}</span>` : ''}
                                 </div>
-                                <p class="text-xs text-gray-200 mt-1.5 whitespace-pre-line ${!c.is_published ? 'italic text-rose-100/80' : ''}">${esc(c.content)}</p>
+                                <p class="text-xs text-gray-200 mt-1.5 whitespace-pre-line ${!c.is_published ? 'italic text-rose-100/80' : ''}">${highlight(c.content, q)}</p>
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
                                 ${!c.is_published ? `
@@ -1584,14 +2039,44 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        function jumpToIdea(ideaId) {
+        // ============================================================
+        // JUMP TO IDEA (mit Kommentar-Highlight)
+        // ============================================================
+        function jumpToIdea(ideaId, highlightQuery = '', keepIdeaSearch = false, commentHighlight = '') {
             switchPage('ideas');
+
+            // Für Kommentar-Markierung in der aufklappenden Box merken
+            window.__pendingCommentHighlight = commentHighlight || '';
+
+            const input = document.getElementById('ideaSearchInput');
+            if (keepIdeaSearch && highlightQuery) {
+                // Ideen-Treffer: Suchfeld behalten, damit Treffer markiert bleibt
+                if (input) input.value = highlightQuery;
+                onIdeaSearch(highlightQuery);
+            } else {
+                // Kommentar-Treffer o.ä.: Suchfeld leeren, damit die Idee sicher sichtbar ist
+                if (input) input.value = '';
+                onIdeaSearch('');
+            }
+
+            // Wenn ein Kommentar-Highlight gesetzt ist, Kommentarbox automatisch öffnen
+            if (commentHighlight) {
+                openCommentBoxes.add(ideaId);
+            }
+
             setTimeout(() => {
                 const card = document.getElementById(`admin-idea-${ideaId}`);
                 if (card) {
                     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    card.classList.add('status-change-flash');
+                    setTimeout(() => card.classList.remove('status-change-flash'), 1000);
+
+                    // Kommentarbox direkt aufklappen, falls gewünscht
+                    if (commentHighlight) {
+                        setTimeout(() => toggleComments(ideaId, true), 200);
+                    }
                 }
-            }, 250);
+            }, 300);
         }
 
         async function publishCommentFromPage(commentId, ideaId) {
@@ -1609,6 +2094,7 @@
             if (c) c.is_published = true;
             renderCommentsPage();
             await loadCommentCounts();
+            updateDrawerCounts();
         }
 
         async function deleteCommentFromPage(commentId, ideaId) {
@@ -1723,8 +2209,8 @@
                     ${statusBanner}
 
                     <div class="space-y-1.5">
-                        <h4 class="font-bold text-sm text-white leading-snug">${esc(item.title)}</h4>
-                        <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-line">${esc(item.description)}</p>
+                        <h4 class="font-bold text-sm text-white leading-snug">${highlight(item.title, q)}</h4>
+                        <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-line">${highlight(item.description, q)}</p>
                     </div>
 
                     ${pinnedCommentsMap[item.id] ? `
@@ -1733,12 +2219,12 @@
                                 <i class="fa-solid fa-thumbtack"></i>
                                 Angeheftet · ${esc(pinnedCommentsMap[item.id].author_name || 'Schülersprecher')}
                             </div>
-                            <p class="text-xs text-amber-100 leading-relaxed">${esc(pinnedCommentsMap[item.id].content)}</p>
+                            <p class="text-xs text-amber-100 leading-relaxed">${highlight(pinnedCommentsMap[item.id].content, q)}</p>
                         </div>
                     ` : ''}
 
                     <div class="flex items-center justify-between text-[11px] text-gray-400 pt-1">
-                        <span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3 text-gray-500"></i> ${esc(item.author_name || 'Anonym')}</span>
+                        <span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3 text-gray-500"></i> ${highlight(item.author_name || 'Anonym', q)}</span>
                         <div class="flex items-center gap-2">
                             <button onclick="toggleIdeaOwnership('${item.id}')" class="px-2 py-1 rounded-lg border text-[10px] font-bold transition-all ${item.is_my_idea ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300' : 'bg-amber-500/10 border-amber-500/30 text-amber-300'}">
                                 ${item.is_my_idea ? 'Meine Idee' : 'Schüleridee'}
@@ -1828,7 +2314,7 @@
             const sel = document.querySelector(`#admin-idea-${ideaId} select`);
             if (sel) sel.value = statusModalPrevStatus;
 
-            document.getElementById('statusModal').classList.remove('hidden');
+            openModal('statusModal');
         }
 
         function cancelStatusModal() {
@@ -1939,7 +2425,7 @@
             document.getElementById('editId').value = item.id;
             document.getElementById('editTitle').value = item.title;
             document.getElementById('editDesc').value = item.description;
-            document.getElementById('editModal').classList.remove('hidden');
+            openModal('editModal');
         }
 
         async function saveEdit(e) {
@@ -1974,7 +2460,7 @@
         function openCommentModal(id) {
             document.getElementById('commentIdeaId').value = id;
             document.getElementById('commentPinned').checked = true;
-            document.getElementById('commentModal').classList.remove('hidden');
+            openModal('commentModal');
         }
 
         async function saveOfficialComment(e) {
@@ -1995,9 +2481,9 @@
             }
             document.getElementById('commentText').value = '';
             closeModal('commentModal');
+            allCommentsCache = null;
             await loadCommentCounts();
             await loadPinnedComments();
-            allCommentsCache = null;
             render();
             updateDrawerCounts();
             openCommentBoxes.add(idea_id);
@@ -2033,6 +2519,7 @@
                     }).then(() => {
                         unreadComments = unreadComments.filter(c => !unreadIds.includes(c.id));
                         renderNotifications();
+                        updateDrawerCounts();
                     }).catch(() => {});
                 }
 
@@ -2041,6 +2528,8 @@
                     return;
                 }
 
+                // Pending comment highlight bevorzugen, sonst Ideen-Suchbegriff
+                const q = window.__pendingCommentHighlight || ideaSearchQuery;
                 box.innerHTML = data.map(c => `
                     <div class="p-3 rounded-xl text-xs flex items-center justify-between border transition-all ${
                         !c.is_published
@@ -2060,12 +2549,12 @@
                                 ${!c.is_published ? '<i class="fa-solid fa-ban text-[10px]"></i> ' : ''}
                                 ${c.is_official && c.is_pinned && c.is_published ? '<i class="fa-solid fa-thumbtack text-[10px]"></i> ' : ''}
                                 ${c.is_official && !c.is_pinned && c.is_published ? '<i class="fa-solid fa-user-shield text-[10px]"></i> ' : ''}
-                                ${esc(c.author_name || 'Schülersprecher')}
+                                ${highlight(c.author_name || 'Schülersprecher', q)}
                                 ${!c.is_published
                                     ? '<span class="ml-1 px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[9px] font-bold uppercase tracking-wider">KI-gefiltert</span>'
                                     : ''}
                             </span>
-                            <p class="${!c.is_published ? 'text-rose-100/80 italic' : 'text-gray-200'}">${esc(c.content)}</p>
+                            <p class="${!c.is_published ? 'text-rose-100/80 italic' : 'text-gray-200'}">${highlight(c.content, q)}</p>
                         </div>
                         <div class="flex items-center gap-1 shrink-0 ml-2">
                             ${!c.is_published ? `
@@ -2089,6 +2578,11 @@
                     </div>
                 `).join('');
                 lucide.createIcons();
+
+                // Pending comment highlight nach kurzer Zeit zurücksetzen
+                if (window.__pendingCommentHighlight) {
+                    setTimeout(() => { window.__pendingCommentHighlight = ''; }, 500);
+                }
             } else {
                 box.classList.add('hidden');
                 openCommentBoxes.delete(ideaId);
@@ -2101,7 +2595,6 @@
                 comment = allCommentsCache.find(c => c.id === commentId);
             }
             if (!comment) {
-                // Lazy-load comments for that idea
                 adminFetch(`/api/admin/ideas/${encodeURIComponent(ideaId)}/comments`).then(data => {
                     adminCommentsCache[ideaId] = data;
                     const found = (data || []).find(c => c.id === commentId);
@@ -2114,7 +2607,7 @@
             document.getElementById('editCommentAuthor').value = comment.author_name || '';
             document.getElementById('editCommentText').value = comment.content || '';
             document.getElementById('editCommentPinned').checked = !!comment.is_pinned;
-            document.getElementById('editCommentModal').classList.remove('hidden');
+            openModal('editCommentModal');
         }
 
         async function saveEditComment(e) {
@@ -2301,7 +2794,7 @@
                 document.getElementById('messageDisplayCount').value = '2';
                 document.getElementById('messageActive').checked = true;
             }
-            document.getElementById('messageModal').classList.remove('hidden');
+            openModal('messageModal');
         }
 
         async function saveMessage(e) {
@@ -2381,10 +2874,74 @@
             const el = document.getElementById(modalId);
             if (el) el.classList.add('hidden');
         }
+        function openModal(modalId) {
+            const el = document.getElementById(modalId);
+            if (el) el.classList.remove('hidden');
+        }
 
         function esc(str) {
             if (str === null || str === undefined) return '';
             return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // ============================================================
+        // PASSWORT ÄNDERN
+        // ============================================================
+        async function changePassword(e) {
+            e.preventDefault();
+            const cur = document.getElementById('pwCurrent').value;
+            const nw = document.getElementById('pwNew').value;
+            const cf = document.getElementById('pwConfirm').value;
+            const errEl = document.getElementById('pwError');
+            errEl.classList.add('hidden');
+
+            if (nw !== cf) {
+                errEl.textContent = 'Neue Passwörter stimmen nicht überein.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (nw.length < 6) {
+                errEl.textContent = 'Neues Passwort muss mindestens 6 Zeichen haben.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            if (nw === cur) {
+                errEl.textContent = 'Neues Passwort muss sich vom alten unterscheiden.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${WORKER_URL}/api/admin/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Password': getAdminPassword()
+                    },
+                    body: JSON.stringify({ current: cur, new: nw })
+                });
+                if (res.status === 401) {
+                    errEl.textContent = 'Aktuelles Passwort ist falsch.';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                if (!res.ok) {
+                    let t = '';
+                    try { t = await res.text(); } catch(_){}
+                    errEl.textContent = 'Fehler: ' + (t || ('HTTP ' + res.status));
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                sessionStorage.setItem('avh_admin_pw', nw);
+                closeModal('passwordModal');
+                document.getElementById('pwCurrent').value = '';
+                document.getElementById('pwNew').value = '';
+                document.getElementById('pwConfirm').value = '';
+                alert('Passwort erfolgreich geändert.');
+            } catch (err) {
+                errEl.textContent = 'Verbindungsfehler: ' + err.message;
+                errEl.classList.remove('hidden');
+            }
         }
 
         // ============================================================
@@ -2486,7 +3043,7 @@
                 populateIdeaSelect('');
             }
             updateIconPreview(iconPreview, iconInput.value);
-            document.getElementById('timelineModalAdmin').classList.remove('hidden');
+            openModal('timelineModalAdmin');
         }
 
         function openIdeaUpdateModal(ideaId) {
@@ -2502,7 +3059,7 @@
             document.getElementById('timelineDateInput').value = toLocalDatetimeInput(new Date());
             populateIdeaSelect(ideaId);
             updateIconPreview(document.getElementById('timelineIconPreview'), STATUS_DEFAULT_ICONS.idea_update);
-            document.getElementById('timelineModalAdmin').classList.remove('hidden');
+            openModal('timelineModalAdmin');
         }
 
         async function saveTimelineEntry(e) {
@@ -2607,6 +3164,7 @@
                 const data = await adminFetch('/api/admin/unread-comments');
                 unreadComments = Array.isArray(data) ? data : [];
                 renderNotifications();
+                updateDrawerCounts();
             } catch (e) {
                 if (e.message !== 'Unauthorized') console.warn('Notifications error:', e);
             }
@@ -2617,39 +3175,68 @@
             const list = document.getElementById('notifList');
             if (!badge || !list) return;
 
-            const count = unreadComments.length;
-            if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : String(count);
+            const total = unreadComments.length + unreadIdeas.length;
+            if (total > 0) {
+                badge.textContent = total > 99 ? '99+' : String(total);
                 badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');
             }
 
-            if (count === 0) {
-                list.innerHTML = '<div class="p-6 text-center text-xs text-gray-500 italic">Keine neuen Kommentare</div>';
+            if (total === 0) {
+                list.innerHTML = '<div class="p-6 text-center text-xs text-gray-500 italic">Keine neuen Benachrichtigungen</div>';
                 return;
             }
 
-            list.innerHTML = unreadComments.map(c => {
-                const ideaTitle = (c.ideas && c.ideas.title) ? c.ideas.title : '(Idee)';
-                return `
-                    <button onclick="openNotification('${c.id}', '${c.idea_id}')"
-                            class="w-full text-left px-4 py-3 border-b border-surface-border/50 hover:bg-surface-hover transition-colors ${c.is_published ? '' : 'opacity-75'}">
-                        <div class="flex items-start gap-2">
-                            <div class="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                                <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400"></i>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="text-[10px] font-bold text-gray-400">${esc(c.author_name || 'Schüler')}</span>
-                                    ${!c.is_published ? '<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold uppercase tracking-wider">KI-gefiltert</span>' : ''}
+            const items = [
+                ...unreadIdeas.map(i => ({ type: 'idea', date: new Date(i.created_at || 0).getTime(), data: i })),
+                ...unreadComments.map(c => ({ type: 'comment', date: new Date(c.created_at || 0).getTime(), data: c }))
+            ].sort((a, b) => b.date - a.date);
+
+            list.innerHTML = items.map(item => {
+                if (item.type === 'idea') {
+                    const i = item.data;
+                    const dt = i.created_at ? new Date(i.created_at) : null;
+                    const timeStr = dt ? dt.toLocaleString('de-DE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+                    return `
+                        <button onclick="openIdeaNotification('${i.id}')" class="w-full text-left px-4 py-3 border-b border-surface-border/50 hover:bg-surface-hover transition-colors">
+                            <div class="flex items-start gap-2">
+                                <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                                    <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i>
                                 </div>
-                                <p class="text-[11px] text-gray-200 mt-0.5 line-clamp-2">${esc(c.content)}</p>
-                                <p class="text-[10px] text-indigo-400/80 mt-1 truncate"><i class="fa-solid fa-arrow-right mr-1"></i>${esc(ideaTitle)}</p>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[10px] font-bold text-amber-400">Neue Idee</span>
+                                        <span class="text-[9px] text-gray-500">${timeStr}</span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-200 mt-0.5 font-semibold line-clamp-2">${esc(i.title)}</p>
+                                    <p class="text-[10px] text-gray-500 mt-0.5 truncate">von ${esc(i.author_name || 'Anonym')}</p>
+                                </div>
                             </div>
-                        </div>
-                    </button>
-                `;
+                        </button>
+                    `;
+                } else {
+                    const c = item.data;
+                    const ideaTitle = (c.ideas && c.ideas.title) ? c.ideas.title : '(Idee)';
+                    return `
+                        <button onclick="openNotification('${c.id}', '${c.idea_id}')"
+                                class="w-full text-left px-4 py-3 border-b border-surface-border/50 hover:bg-surface-hover transition-colors ${c.is_published ? '' : 'opacity-75'}">
+                            <div class="flex items-start gap-2">
+                                <div class="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                                    <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[10px] font-bold text-gray-400">${esc(c.author_name || 'Schüler')}</span>
+                                        ${!c.is_published ? '<span class="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold uppercase tracking-wider">KI-gefiltert</span>' : ''}
+                                    </div>
+                                    <p class="text-[11px] text-gray-200 mt-0.5 line-clamp-2">${esc(c.content)}</p>
+                                    <p class="text-[10px] text-indigo-400/80 mt-1 truncate"><i class="fa-solid fa-arrow-right mr-1"></i>${esc(ideaTitle)}</p>
+                                </div>
+                            </div>
+                        </button>
+                    `;
+                }
             }).join('');
 
             if (window.lucide) lucide.createIcons();
@@ -2664,19 +3251,25 @@
             if (notifPanelOpen) loadUnreadComments();
         }
 
-        async function openNotification(commentId, ideaId) {
-            await markNotificationRead(commentId);
-
+        function openIdeaNotification(ideaId) {
             const panel = document.getElementById('notifPanel');
             if (panel) panel.classList.add('hidden');
             notifPanelOpen = false;
+            jumpToIdea(ideaId);
+        }
 
-            // Auf Ideen-Seite springen und Kommentare öffnen
+        async function openNotification(commentId, ideaId) {
+            await markNotificationRead(commentId);
+            const panel = document.getElementById('notifPanel');
+            if (panel) panel.classList.add('hidden');
+            notifPanelOpen = false;
             switchPage('ideas');
             setTimeout(() => {
                 const card = document.getElementById(`admin-idea-${ideaId}`);
                 if (card) {
                     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    card.classList.add('status-change-flash');
+                    setTimeout(() => card.classList.remove('status-change-flash'), 1000);
                     openCommentBoxes.add(ideaId);
                     setTimeout(() => toggleComments(ideaId, true), 350);
                 }
@@ -2686,6 +3279,7 @@
         async function markNotificationRead(commentId) {
             unreadComments = unreadComments.filter(c => c.id !== commentId);
             renderNotifications();
+            updateDrawerCounts();
             try {
                 await adminFetch('/api/admin/comments/mark-read', {
                     method: 'POST',
@@ -2698,20 +3292,30 @@
         }
 
         async function markAllNotificationsRead() {
-            if (!unreadComments.length) return;
-            const prev = unreadComments.slice();
+            if (!unreadComments.length && !unreadIdeas.length) return;
+
+            if (unreadIdeas.length) {
+                localStorage.setItem('avh_admin_ideas_seen_at', new Date().toISOString());
+                unreadIdeas = [];
+            }
+
+            const prevComments = unreadComments.slice();
             unreadComments = [];
             renderNotifications();
-            try {
-                await adminFetch('/api/admin/comments/mark-all-read', { method: 'POST' });
-            } catch (e) {
-                alert('Fehler beim Markieren: ' + e.message);
-                unreadComments = prev;
-                renderNotifications();
+            updateDrawerCounts();
+
+            if (prevComments.length) {
+                try {
+                    await adminFetch('/api/admin/comments/mark-all-read', { method: 'POST' });
+                } catch (e) {
+                    alert('Fehler beim Markieren: ' + e.message);
+                    unreadComments = prevComments;
+                    renderNotifications();
+                    updateDrawerCounts();
+                }
             }
         }
 
-        // Outside-Click schließt Panel
         document.addEventListener('click', (e) => {
             if (!notifPanelOpen) return;
             const wrapper = document.getElementById('notifWrapper');
@@ -2721,7 +3325,6 @@
             }
         });
 
-        // Polling: alle 25 Sekunden
         function startNotifPolling() {
             if (notifPollTimer) clearInterval(notifPollTimer);
             loadUnreadComments();
