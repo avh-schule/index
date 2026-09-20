@@ -231,9 +231,8 @@
         }
 
         .status-toggle-btn {
-            background: rgba(22, 30, 46, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(22, 30, 46, 0.88);
+            /* Bewusst kein backdrop-filter: verhindert Flackern beim Einblenden */
             border: 1px solid rgba(255, 255, 255, 0.06);
             outline: none;
             cursor: pointer;
@@ -253,18 +252,28 @@
             border-bottom-color: transparent;
         }
 
+        /* Sanftes Einblenden beim ersten Erscheinen – ohne Flackern */
+        @keyframes statusFadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .status-wrapper.status-enter {
+            animation: statusFadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+            will-change: opacity, transform;
+        }
+
+        /* Höhen-Animation der Panels (zuverlässig in allen Browsern) */
         .status-panel {
-            max-height: 0;
             overflow: hidden;
-            opacity: 0;
-            transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                        opacity 0.25s ease;
+            height: 0;
+            will-change: height;
+            transition: height 0.42s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .status-wrapper.is-open > .status-panel {
-            max-height: 3000px;
             opacity: 1;
         }
         .status-panel-inner {
+            min-height: 0;
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-top: none;
             border-radius: 0 0 1rem 1rem;
@@ -657,8 +666,13 @@
                 body: options.body ? JSON.stringify(options.body) : undefined
             });
             if (res.status === 429) {
+                let body = null;
+                try { body = await res.json(); } catch (e) {}
                 const err = new Error('RATE_LIMITED');
                 err.code = 'RATE_LIMITED';
+                err.serverCode = body ? body.code : null;      // 'RATE_LIMITED' (IP) oder 'FEATURE_BLOCKED'
+                err.serverReason = body ? body.reason : null;  // 'ip_rate_limit' oder 'feature_toggle'
+                err.retryAfter = body ? body.retryAfter : null;
                 throw err;
             }
             if (!res.ok) {
@@ -667,6 +681,26 @@
                 throw new Error(msg);
             }
             return res.json();
+        }
+
+        // Klare, deutliche Rate-Limit-Meldung
+        function rateLimitMessage(err, context) {
+            const isIpLimit = err && err.serverReason === 'ip_rate_limit';
+            const retry = err && err.retryAfter ? ` Bitte warte ca. ${formatRetryTime(err.retryAfter)}.` : '';
+            if (isIpLimit) {
+                return `🚦 Rate-Limit erreicht: Zu viele ${context} in kurzer Zeit.${retry}`;
+            }
+            return `🚦 Rate-Limit aktiv: ${context} sind vorübergehend gesperrt (Schutz vor Spam).${retry}`;
+        }
+
+        function formatRetryTime(seconds) {
+            const s = parseInt(seconds, 10);
+            if (!Number.isFinite(s) || s <= 0) return 'kurz';
+            if (s < 60) return `${s} Sek.`;
+            const m = Math.ceil(s / 60);
+            if (m < 60) return `${m} Min.`;
+            const h = Math.ceil(m / 60);
+            return `${h} Std.`;
         }
 
         let currentIdeas = [];
@@ -687,6 +721,9 @@
 
         const openCommentSections = new Set();
         const timelineCountsMap = {};
+
+        // Merkt sich, ob die Status-Boxen schon eingeblendet wurden
+        const statusEntered = { rejected: false, done: false };
 
         const STATUS_CONFIG = {
             'waiting_for_review': { label: '<i class="fa-solid fa-clock mr-1"></i> In Prüfung', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
@@ -1174,6 +1211,89 @@
             }
         }
 
+        // ==========================================
+        // STATUS-BOXEN: Einblenden + Panel-Animation
+        // ==========================================
+        function animateStatusWrapperIn(wrapper, delay = 0) {
+            if (!wrapper) return;
+            wrapper.classList.remove('status-enter');
+            void wrapper.offsetWidth; // Reflow -> Animation startet sauber neu
+            wrapper.style.animationDelay = `${Math.max(0, delay)}ms`;
+            wrapper.classList.add('status-enter');
+
+            const cleanup = () => {
+                wrapper.classList.remove('status-enter');
+                wrapper.style.animationDelay = '';
+                wrapper.removeEventListener('animationend', cleanup);
+            };
+            wrapper.addEventListener('animationend', cleanup);
+        }
+
+        function resetStatusPanel(wrapper) {
+            const panel = wrapper ? wrapper.querySelector('.status-panel') : null;
+            if (!panel) return;
+            panel.style.transition = 'none';
+            panel.style.height = '0px';
+            void panel.offsetHeight;
+            panel.style.transition = '';
+        }
+
+        /* --- KORRIGIERTE OPEN / CLOSE LOGIK ---
+           Öffnet und schließt die Panels flüssig per Höhen-Animation.
+           Setzt direkt ein synchrones Höhen-Reset, damit die Animation
+           sofort (ohne Verzögerung) startet und nicht flackert. */
+        function openStatusPanel(wrapper) {
+            const panel = wrapper ? wrapper.querySelector('.status-panel') : null;
+            if (!panel) return;
+            const inner = panel.firstElementChild;
+            if (!inner) return;
+
+            // Ausgangszustand ohne Transition auf 0 setzen (verhindert Sprünge)
+            panel.style.transition = 'none';
+            panel.style.height = '0px';
+            void panel.offsetHeight;
+
+            // Transition wieder aktivieren und Zielhöhe ermitteln
+            panel.style.transition = '';
+
+            wrapper.classList.add('is-open');
+            updateStatusChevrons();
+
+            const target = Math.ceil(inner.getBoundingClientRect().height);
+
+            requestAnimationFrame(() => {
+                panel.style.height = `${target}px`;
+            });
+
+            const onEnd = (e) => {
+                if (e.target !== panel || e.propertyName !== 'height') return;
+                panel.removeEventListener('transitionend', onEnd);
+                if (wrapper.classList.contains('is-open')) {
+                    panel.style.height = 'auto';
+                }
+            };
+            panel.addEventListener('transitionend', onEnd);
+        }
+
+        function closeStatusPanel(wrapper) {
+            const panel = wrapper ? wrapper.querySelector('.status-panel') : null;
+            if (!panel) return;
+
+            // Aktuelle Höhe fixieren und anschließend auf 0 animieren
+            const current = panel.getBoundingClientRect().height;
+            panel.style.transition = 'none';
+            panel.style.height = `${Math.ceil(current)}px`;
+            void panel.offsetHeight;
+            panel.style.transition = '';
+
+            wrapper.classList.remove('is-open');
+            updateStatusChevrons();
+
+            requestAnimationFrame(() => {
+                panel.style.height = '0px';
+            });
+        }
+
         function updateStatusHighlights() {
             const rejectedCount = currentIdeas.filter(i => i.status === 'rejected').length;
             const doneCount = currentIdeas.filter(i => i.status === 'done').length;
@@ -1183,11 +1303,27 @@
             document.getElementById('statusRejectedCount').textContent = rejectedCount;
             document.getElementById('statusDoneCount').textContent = doneCount;
 
-            rejectedWrapper.classList.toggle('hidden', rejectedCount === 0);
-            doneWrapper.classList.toggle('hidden', doneCount === 0);
+            const apply = (wrapper, count, key, delay) => {
+                if (count === 0) {
+                    if (!wrapper.classList.contains('hidden')) {
+                        wrapper.classList.remove('is-open');
+                        resetStatusPanel(wrapper);
+                        wrapper.classList.add('hidden');
+                    }
+                    statusEntered[key] = false;
+                } else {
+                    if (wrapper.classList.contains('hidden')) {
+                        wrapper.classList.remove('hidden');
+                        if (!statusEntered[key]) {
+                            statusEntered[key] = true;
+                            animateStatusWrapperIn(wrapper, delay);
+                        }
+                    }
+                }
+            };
 
-            if (rejectedCount === 0) rejectedWrapper.classList.remove('is-open');
-            if (doneCount === 0) doneWrapper.classList.remove('is-open');
+            apply(rejectedWrapper, rejectedCount, 'rejected', 0);
+            apply(doneWrapper, doneCount, 'done', 120);
 
             updateStatusChevrons();
         }
@@ -1202,6 +1338,11 @@
         }
 
         async function getOfficialStatusReason(ideaId) {
+            // Prüfung aus dem bereits geladenen Timeline-Cache, für schnelles Rendern
+            if (ideaTimelineCache[ideaId]) {
+                const statusEntry = ideaTimelineCache[ideaId].find(e => e.source === 'status_change');
+                if (statusEntry) return statusEntry.description;
+            }
             try {
                 const entries = await workerFetch(`/api/ideas/${encodeURIComponent(ideaId)}/timeline`);
                 if (!entries || !entries.length) return 'Kein offizieller Hinweis hinterlegt.';
@@ -1217,11 +1358,14 @@
             const wrapper = document.getElementById(isRejected ? 'statusRejectedWrapper' : 'statusDoneWrapper');
             const otherWrapper = document.getElementById(isRejected ? 'statusDoneWrapper' : 'statusRejectedWrapper');
 
-            otherWrapper.classList.remove('is-open');
+            // Andere Box ggf. sanft schließen
+            if (otherWrapper.classList.contains('is-open')) {
+                closeStatusPanel(otherWrapper);
+            }
 
+            // Gleiche Box -> sanft schließen
             if (wrapper.classList.contains('is-open')) {
-                wrapper.classList.remove('is-open');
-                updateStatusChevrons();
+                closeStatusPanel(wrapper);
                 return;
             }
 
@@ -1229,10 +1373,8 @@
             if (!matchingIdeas.length) return;
 
             const listEl = document.getElementById(isRejected ? 'statusRejectedList' : 'statusDoneList');
-            listEl.innerHTML = '<div class="text-xs text-gray-400 text-center py-2"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Lade...</div>';
-            wrapper.classList.add('is-open');
-            updateStatusChevrons();
 
+            // Datenstruktur aufbauen, BEVOR die Höhen-Animation startet.
             const entries = await Promise.all(matchingIdeas.map(async idea => {
                 const reason = await getOfficialStatusReason(idea.id);
                 return `
@@ -1258,6 +1400,9 @@
             }));
 
             listEl.innerHTML = entries.join('');
+
+            // Sanft öffnen
+            openStatusPanel(wrapper);
         }
 
         function jumpToIdea(ideaId) {
@@ -1267,9 +1412,10 @@
             setTimeout(() => {
                 const card = document.getElementById(`idea-card-${ideaId}`);
                 if (card) {
-                    document.getElementById('statusRejectedWrapper')?.classList.remove('is-open');
-                    document.getElementById('statusDoneWrapper')?.classList.remove('is-open');
-                    updateStatusChevrons();
+                    const rw = document.getElementById('statusRejectedWrapper');
+                    const dw = document.getElementById('statusDoneWrapper');
+                    if (rw && rw.classList.contains('is-open')) closeStatusPanel(rw);
+                    if (dw && dw.classList.contains('is-open')) closeStatusPanel(dw);
                     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }, 150);
@@ -1286,6 +1432,12 @@
             } else {
                 el.classList.add('hidden');
                 if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+            // Panel-Höhe nachziehen (falls bereits voll geöffnet -> auto)
+            const wrapper = el.closest('.status-wrapper');
+            const panel = wrapper ? wrapper.querySelector('.status-panel') : null;
+            if (panel && wrapper.classList.contains('is-open')) {
+                panel.style.height = 'auto';
             }
         }
 
@@ -1595,12 +1747,10 @@
                     sortAndRenderIdeas(false);
                 }
 
-                showToast(
-                    e && e.code === 'RATE_LIMITED'
-                        ? 'Abstimmen ist gerade deaktiviert. ⚠️'
-                        : 'Der Server ist gerade nicht erreichbar. Deine Änderung wurde nicht übernommen. ⚠️',
-                    'error'
-                );
+                const msg = (e && e.code === 'RATE_LIMITED')
+                    ? rateLimitMessage(e, 'Votes')
+                    : 'Der Server ist gerade nicht erreichbar. Deine Änderung wurde nicht übernommen. ⚠️';
+                showToast(msg, 'error');
             }
         }
 
@@ -1697,12 +1847,10 @@
                     setFormMessage('descriptionError', '');
                 }
             } catch (error) {
-                setFormMessage(
-                    'descriptionError',
-                    error && error.code === 'RATE_LIMITED'
-                        ? 'KI-Beschreibung ist gerade deaktiviert.'
-                        : 'Die KI konnte gerade keine Beschreibung erstellen.'
-                );
+                const msg = (error && error.code === 'RATE_LIMITED')
+                    ? rateLimitMessage(error, 'KI-Beschreibungen')
+                    : 'Die KI konnte gerade keine Beschreibung erstellen.';
+                setFormMessage('descriptionError', msg);
             } finally {
                 button.disabled = false;
                 label.textContent = document.getElementById('ideaDescription').value.trim() ? 'Beschreibung verbessern' : 'Beschreibung mit KI';
@@ -1772,12 +1920,10 @@
                 setSort('newest', true);
 
             } catch (err) {
-                showToast(
-                    err && err.code === 'RATE_LIMITED'
-                        ? 'Neue Ideen sind gerade deaktiviert. ⚠️'
-                        : 'Fehler beim Speichern der Idee.',
-                    'error'
-                );
+                const msg = (err && err.code === 'RATE_LIMITED')
+                    ? rateLimitMessage(err, 'neue Ideen')
+                    : 'Fehler beim Speichern der Idee.';
+                showToast(msg, 'error');
             } finally {
                 stopCountdown();
                 resetFormState();
@@ -1906,12 +2052,10 @@
                     showToast(`Kommentar abgelehnt: ${res.reason || 'Unbekannter Grund'}`, 'error');
                 }
             } catch (err) {
-                showToast(
-                    err && err.code === 'RATE_LIMITED'
-                        ? 'Kommentieren ist gerade deaktiviert. ⚠️'
-                        : 'Fehler beim Senden des Kommentars.',
-                    'error'
-                );
+                const msg = (err && err.code === 'RATE_LIMITED')
+                    ? rateLimitMessage(err, 'Kommentare')
+                    : 'Fehler beim Senden des Kommentars.';
+                showToast(msg, 'error');
             } finally {
                 setTimeout(() => {
                     commentsSubmitting.delete(ideaId);
