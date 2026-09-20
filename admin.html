@@ -78,6 +78,25 @@
             border-color: rgba(244, 63, 94, 0.4);
             background: rgba(244, 63, 94, 0.06);
         }
+
+        .ip-rl-row input[type="number"]::-webkit-outer-spin-button,
+        .ip-rl-row input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+        .ip-rl-row input[type="number"] { -moz-appearance: textfield; }
+        .ip-rl-input {
+            width: 100%;
+            margin-top: 2px;
+            background: rgba(9, 13, 22, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 6px 8px;
+            font-size: 11px;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .ip-rl-input:focus { border-color: #6366f1; }
     </style>
 </head>
 <body class="min-h-screen pb-20 selection:bg-indigo-500 selection:text-white">
@@ -185,7 +204,7 @@
             <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
                 <h2 class="text-sm font-bold text-white flex items-center gap-2">
                     <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
-                    Notfall-Modus · Spam-Schutz
+                    Notfall-Modus · Feature-Sperre
                 </h2>
                 <div class="flex items-center gap-2">
                     <span id="rateLimitStatus" class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">Inaktiv</span>
@@ -194,7 +213,7 @@
                 </div>
             </div>
             <p class="text-[11px] text-gray-400 leading-relaxed">
-                Blockiere einzelne Schreibfunktionen, um bei Spam sofort zu reagieren. Lesen ist weiterhin möglich. Änderungen greifen innerhalb weniger Sekunden.
+                Blockiere einzelne Schreibfunktionen sofort, um bei Spam zu reagieren. Lesen ist weiterhin möglich. Änderungen greifen innerhalb weniger Sekunden.
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
@@ -244,6 +263,26 @@
                     <input type="checkbox" id="rl_block_comments" class="sr-only toggle-input" onchange="updateRateLimit('block_comments', this.checked)">
                     <span class="toggle-switch"></span>
                 </label>
+            </div>
+        </div>
+
+        <!-- IP-RATE-LIMITS (pro Besucher) -->
+        <div class="glass-panel rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-surface-border flex-wrap gap-2">
+                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i data-lucide="timer" class="w-4 h-4 text-cyan-400"></i>
+                    Rate-Limits pro Besucher (IP-basiert)
+                </h2>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetIpRateLimits()" class="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold rounded-lg border border-white/10 transition-all">Standard</button>
+                    <button onclick="saveIpRateLimits()" class="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-[10px] font-bold rounded-lg border border-indigo-500/30 transition-all">Speichern</button>
+                </div>
+            </div>
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                Lege fest, wie viele Anfragen eine IP-Adresse in welchem Zeitfenster senden darf. Nach Überschreitung wird sie für die angegebene Dauer gesperrt. Alle Werte in Sekunden.
+            </p>
+            <div id="ipRateLimitsList" class="space-y-2">
+                <div class="text-xs text-gray-400 text-center py-3">Lade Rate-Limits...</div>
             </div>
         </div>
 
@@ -607,6 +646,34 @@
         };
 
         // ============================================================
+        // IP-RATE-LIMITS: KATEGORIEN
+        // ============================================================
+        const IP_RL_CATEGORIES = [
+            { key: 'create_idea', label: 'Neue Ideen einreichen',   icon: 'lightbulb',     color: 'text-amber-400' },
+            { key: 'ai_generate', label: 'KI-Beschreibung',         icon: 'sparkles',      color: 'text-indigo-400' },
+            { key: 'ai_icon',     label: 'KI-Icon-Vorschlag',       icon: 'wand-2',        color: 'text-indigo-400' },
+            { key: 'comment',     label: 'Kommentare',              icon: 'message-square',color: 'text-emerald-400' },
+            { key: 'vote',        label: 'Votes',                   icon: 'thumbs-up',     color: 'text-cyan-400' },
+            { key: 'visitor',     label: 'Besucher-Registrierung',  icon: 'user-check',    color: 'text-sky-400' },
+            { key: 'read',        label: 'Lese-Anfragen',           icon: 'book-open',     color: 'text-gray-400' },
+            { key: 'general',     label: 'Sonstige Anfragen',       icon: 'activity',      color: 'text-gray-400' }
+        ];
+
+        const IP_RL_STANDARD = {
+            create_idea: { windowSec: 3600, max: 5,   blockSec: 1800 },
+            ai_generate: { windowSec: 3600, max: 25,  blockSec: 900  },
+            ai_icon:     { windowSec: 3600, max: 25,  blockSec: 900  },
+            comment:     { windowSec: 300,  max: 6,   blockSec: 600  },
+            vote:        { windowSec: 60,   max: 30,  blockSec: 300  },
+            visitor:     { windowSec: 300,  max: 30,  blockSec: 60   },
+            read:        { windowSec: 60,   max: 300, blockSec: 60   },
+            general:     { windowSec: 60,   max: 240, blockSec: 60   }
+        };
+
+        let ipRateLimitsCache = null;
+        let ipRateLimitsDraft = null;
+
+        // ============================================================
         // INITIALISIERUNG + LOGIN
         // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
@@ -715,6 +782,7 @@ attachIconListener(
                 loadVisitorCount(),
                 loadMessages(),
                 loadRateLimits(),
+                loadIpRateLimits(),
                 loadUnreadComments(),
                 loadTimelineAdmin()
             ]);
@@ -754,7 +822,7 @@ attachIconListener(
         }
 
         // ============================================================
-        // NOTFALL-MODUS / RATE LIMITS
+        // NOTFALL-MODUS / RATE LIMITS (Feature-Toggles)
         // ============================================================
         let rateLimitsCache = null;
         const RL_IDS = ['block_new_ideas', 'block_ai_description', 'block_votes', 'block_comments'];
@@ -783,7 +851,7 @@ attachIconListener(
             const statusEl = document.getElementById('rateLimitStatus');
             if (!statusEl) return;
             if (anyActive) {
-                statusEl.textContent = 'Aktiv';
+                statusEl.textContent = 'Rate-Limit aktiv';
                 statusEl.className = 'text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300';
             } else {
                 statusEl.textContent = 'Inaktiv';
@@ -842,6 +910,91 @@ attachIconListener(
             } catch (e) {
                 alert('Fehler: ' + e.message);
             }
+        }
+
+        // ============================================================
+        // IP-RATE-LIMITS (admin-konfigurierbar)
+        // ============================================================
+        async function loadIpRateLimits() {
+            try {
+                ipRateLimitsCache = await adminFetch('/api/admin/ip-rate-limits');
+                ipRateLimitsDraft = JSON.parse(JSON.stringify(ipRateLimitsCache));
+            } catch (e) {
+                ipRateLimitsCache = JSON.parse(JSON.stringify(IP_RL_STANDARD));
+                ipRateLimitsDraft = JSON.parse(JSON.stringify(IP_RL_STANDARD));
+            }
+            renderIpRateLimits();
+        }
+
+        function renderIpRateLimits() {
+            const box = document.getElementById('ipRateLimitsList');
+            if (!box) return;
+            const draft = ipRateLimitsDraft;
+            if (!draft) {
+                box.innerHTML = '<div class="text-xs text-rose-400 text-center py-3">Konfiguration konnte nicht geladen werden.</div>';
+                return;
+            }
+            box.innerHTML = IP_RL_CATEGORIES.map(cat => {
+                const cfg = draft[cat.key] || { windowSec: 60, max: 60, blockSec: 60 };
+                return `
+                    <div class="ip-rl-row grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1fr_1fr] gap-2 items-center p-3 rounded-xl bg-surface-base border border-surface-border">
+                        <div class="flex items-center gap-2 text-xs font-bold text-white">
+                            <i data-lucide="${cat.icon}" class="w-3.5 h-3.5 ${cat.color} shrink-0"></i>
+                            <span class="truncate">${cat.label}</span>
+                        </div>
+                        <label class="block text-[10px] text-gray-400 font-medium">
+                            Zeitfenster (s)
+                            <input type="number" min="1" max="86400" value="${cfg.windowSec}"
+                                   onchange="updateIpRateLimitDraft('${cat.key}', 'windowSec', this.value)"
+                                   class="ip-rl-input">
+                        </label>
+                        <label class="block text-[10px] text-gray-400 font-medium">
+                            Max. Anfragen
+                            <input type="number" min="1" max="100000" value="${cfg.max}"
+                                   onchange="updateIpRateLimitDraft('${cat.key}', 'max', this.value)"
+                                   class="ip-rl-input">
+                        </label>
+                        <label class="block text-[10px] text-gray-400 font-medium">
+                            Sperre (s)
+                            <input type="number" min="1" max="86400" value="${cfg.blockSec}"
+                                   onchange="updateIpRateLimitDraft('${cat.key}', 'blockSec', this.value)"
+                                   class="ip-rl-input">
+                        </label>
+                    </div>
+                `;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function updateIpRateLimitDraft(category, field, value) {
+            if (!ipRateLimitsDraft) return;
+            const n = parseInt(value, 10);
+            if (!Number.isFinite(n) || n < 1) return;
+            if (!ipRateLimitsDraft[category]) {
+                ipRateLimitsDraft[category] = { ...IP_RL_STANDARD[category] };
+            }
+            ipRateLimitsDraft[category][field] = n;
+        }
+
+        async function saveIpRateLimits() {
+            if (!ipRateLimitsDraft) return;
+            try {
+                ipRateLimitsCache = await adminFetch('/api/admin/ip-rate-limits', {
+                    method: 'PATCH',
+                    body: ipRateLimitsDraft
+                });
+                ipRateLimitsDraft = JSON.parse(JSON.stringify(ipRateLimitsCache));
+                renderIpRateLimits();
+                alert('Rate-Limits gespeichert.');
+            } catch (e) {
+                alert('Fehler beim Speichern: ' + e.message);
+            }
+        }
+
+        function resetIpRateLimits() {
+            if (!confirm('Rate-Limits auf Standardwerte zurücksetzen? (Noch nicht gespeichert!)')) return;
+            ipRateLimitsDraft = JSON.parse(JSON.stringify(IP_RL_STANDARD));
+            renderIpRateLimits();
         }
 
         // ============================================================
