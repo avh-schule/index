@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="avh.png">
-    <title>SchÃ¼ler-Ideenplattform | AVH</title>
+    <title>Schüler-Ideenplattform | AVH</title>
     <!-- PWA Manifest -->
     <link rel="manifest" href="/index/manifest.json">
     <meta name="theme-color" content="#0b0f17">
@@ -252,7 +252,7 @@
             border-bottom-color: transparent;
         }
 
-        /* Sanftes Einblenden beim ersten Erscheinen â€“ ohne Flackern */
+        /* Sanftes Einblenden beim ersten Erscheinen – ohne Flackern */
         @keyframes statusFadeIn {
             from { opacity: 0; transform: translateY(-8px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -262,7 +262,7 @@
             will-change: opacity, transform;
         }
 
-        /* HÃ¶hen-Animation der Panels (zuverlÃ¤ssig in allen Browsern) */
+        /* Höhen-Animation der Panels (zuverlässig in allen Browsern) */
         .status-panel {
             overflow: hidden;
             height: 0;
@@ -413,7 +413,7 @@
                 <img src="avh.png" alt="AVH Logo" class="h-10 w-auto object-contain hover:scale-105 transition-transform duration-200" onerror="this.src='https://placehold.co/100x100/6366f1/ffffff?text=AVH'">
                 <div>
                     <h1 class="font-extrabold text-lg leading-none bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">AVH IDEENBOX</h1>
-                    <p class="text-[10px] text-gray-400 font-medium">Deine Stimme fÃ¼r unsere Schule</p>
+                    <p class="text-[10px] text-gray-400 font-medium">Deine Stimme für unsere Schule</p>
                 </div>
             </div>
         </div>
@@ -426,25 +426,25 @@
             <p class="idea-tagline text-base md:text-lg mb-4">Deine Idee ist mein Programm!</p>
             <button id="mainIdeaButton" class="idea-cta group w-full bg-gradient-to-r from-brand-600 via-indigo-500 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white text-base font-extrabold py-4 px-8 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/25 active:scale-[0.99] transition-all duration-300">
                 <i data-lucide="lightbulb" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
-                <span>Idee hinzufÃ¼gen</span>
+                <span>Idee hinzufügen</span>
             </button>
         </div>
 
         <div id="welcomeModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
             <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300 relative mx-4" id="welcomeContainer">
-                <button id="closeWelcomeIcon" type="button" aria-label="Willkommensfenster schlieÃŸen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
+                <button id="closeWelcomeIcon" type="button" aria-label="Willkommensfenster schließen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
                 <div class="w-40 h-40 md:w-52 md:h-52 mx-auto rounded-3xl overflow-hidden border-2 border-indigo-500/40 shadow-xl mb-4">
-                    <img src="ich.png" alt="SchÃ¼lersprecher" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300/4f46e5/ffffff?text=SV'">
+                    <img src="ich.png" alt="Schülersprecher" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300/4f46e5/ffffff?text=SV'">
                 </div>
-                <p class="text-xs uppercase tracking-[0.18em] text-indigo-300 font-bold">SchÃ¼lersprecher</p>
-                <h2 class="text-2xl font-extrabold text-white mt-2">Danke fÃ¼r euer Vertrauen! ðŸŽ‰</h2>
-                <p class="text-sm text-gray-300 leading-relaxed mt-3 break-words">Ich sehe eure Ideen, kann Fragen dazu beantworten und euch RÃ¼ckmeldung geben. Alles bleibt <strong class="font-extrabold text-white">anonym</strong>, damit niemand Angst haben muss, erkannt zu werden.</p>
-                <p class="text-sm text-indigo-200 font-semibold mt-4">Trau dich und fÃ¼ge eine Idee hinzu.</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-indigo-300 font-bold">Schülersprecher</p>
+                <h2 class="text-2xl font-extrabold text-white mt-2">Danke für euer Vertrauen! 🎉</h2>
+                <p class="text-sm text-gray-300 leading-relaxed mt-3 break-words">Ich sehe eure Ideen, kann Fragen dazu beantworten und euch Rückmeldung geben. Alles bleibt <strong class="font-extrabold text-white">anonym</strong>, damit niemand Angst haben muss, erkannt zu werden.</p>
+                <p class="text-sm text-indigo-200 font-semibold mt-4">Trau dich und füge eine Idee hinzu.</p>
                 <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                    <button id="welcomeIdeaButton" type="button" class="flex-1 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all">Idee hinzufÃ¼gen</button>
-                    <button id="closeWelcomeBtn" type="button" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-xl transition-all">SpÃ¤ter</button>
+                    <button id="welcomeIdeaButton" type="button" class="flex-1 bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all">Idee hinzufügen</button>
+                    <button id="closeWelcomeBtn" type="button" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-xl transition-all">Später</button>
                 </div>
             </div>
         </div>
@@ -452,7 +452,7 @@
         <!-- MODAL: ADMIN-NACHRICHT -->
         <div id="messageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
             <div class="glass-card w-full max-w-md rounded-3xl p-6 text-center border border-indigo-500/30 shadow-2xl transform scale-95 transition-transform duration-300 relative mx-4" id="messageContainer">
-                <button id="closeMessageIcon" type="button" aria-label="Nachricht schlieÃŸen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
+                <button id="closeMessageIcon" type="button" aria-label="Nachricht schließen" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors flex items-center justify-center">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
                 <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center mb-4">
@@ -469,10 +469,10 @@
 
         <!-- STATUS SECTIONS -->
         <div class="mb-6 space-y-3">
-            <!-- NICHT MÃ–GLICH -->
+            <!-- NICHT MÖGLICH -->
             <div id="statusRejectedWrapper" class="status-wrapper hidden">
                 <button id="statusRejectedBtn" type="button" class="status-toggle-btn status-toggle-rejected w-full rounded-2xl p-3 text-left">
-                    <div class="text-[10px] uppercase tracking-[0.18em] text-rose-300/80 font-bold">Nicht mÃ¶glich</div>
+                    <div class="text-[10px] uppercase tracking-[0.18em] text-rose-300/80 font-bold">Nicht möglich</div>
                     <div class="mt-2 flex items-center justify-between">
                         <span id="statusRejectedCount" class="text-2xl font-extrabold text-white">0</span>
                         <div class="flex items-center gap-2">
@@ -510,33 +510,33 @@
 
         <!-- FILTER & SORTING TABS -->
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6 w-full">
-            <!-- Gemeinsamer Hauptrahmen fÃ¼r Tabs (dehnt sich bis zur Anzahl oder auf 100% aus) -->
+            <!-- Gemeinsamer Hauptrahmen für Tabs (dehnt sich bis zur Anzahl oder auf 100% aus) -->
             <div id="tabNavWrapper" class="relative flex items-center bg-cardbg/80 p-1 rounded-2xl border border-white/5 w-full sm:w-auto flex-1 min-w-[280px] overflow-hidden transition-all duration-200">
-                <!-- Schneller, flÃ¼ssiger Slider Indicator (180ms) -->
+                <!-- Schneller, flüssiger Slider Indicator (180ms) -->
                 <div id="sortIndicator"
                      class="absolute top-1 bottom-1 rounded-xl bg-brand-600 shadow-md pointer-events-none transition-all duration-200 cubic-bezier(0.16,1,0.3,1) z-0"></div>
 
                 <button id="sortVotesBtn" onclick="setSort('votes')"
                         class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
-                    ðŸ”¥ Beliebteste
+                    🔥 Beliebteste
                 </button>
                 <button id="sortNewestBtn" onclick="setSort('newest')"
                         class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
-                    âœ¨ Neueste
+                    ✨ Neueste
                 </button>
 
                 <!-- Deutliche vertikale Trennlinie -->
                 <div id="timelineDivider" class="hidden h-5 w-[1px] bg-white/20 mx-1 shrink-0 z-10"></div>
 
-                <!-- Updates Button mit Emoji ðŸ“£ -->
+                <!-- Updates Button mit Emoji 📣 -->
                 <button id="sortTimelineBtn" onclick="setSort('timeline')"
                         class="hidden relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
-                    ðŸ“£ Updates
+                    📣 Updates
                 </button>
             </div>
 
             <div class="text-xs text-gray-400 font-medium px-1 shrink-0 ml-auto sm:ml-0">
-                <span id="ideaCount">0</span> Ideen verÃ¶ffentlicht
+                <span id="ideaCount">0</span> Ideen veröffentlicht
             </div>
         </div>
 
@@ -560,15 +560,15 @@
 
             <div class="mb-6">
                 <h3 class="text-xl font-extrabold text-white flex items-center gap-2">
-                    <span>ðŸš€</span> Neue Idee einreichen
+                    <span>🚀</span> Neue Idee einreichen
                 </h3>
-                <p class="text-xs text-gray-400 mt-1">Deine Idee wird automatisch geprÃ¼ft und verÃ¶ffentlicht.</p>
+                <p class="text-xs text-gray-400 mt-1">Deine Idee wird automatisch geprüft und veröffentlicht.</p>
             </div>
 
             <form id="ideaForm" onsubmit="handleIdeaSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">
-                        Ãœberschrift <span class="text-red-400">*</span>
+                        Überschrift <span class="text-red-400">*</span>
                     </label>
                     <input type="text" id="ideaTitle" required maxlength="100" placeholder="z. B. Mehr Sitzgelegenheiten im Pausenhof"
                            class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
@@ -581,7 +581,7 @@
                             Beschreibung <span class="text-red-400">*</span>
                         </label>
                         <div class="flex items-center gap-1">
-                            <button id="undoBtn" type="button" class="undo-redo-btn" title="RÃ¼ckgÃ¤ngig" aria-label="RÃ¼ckgÃ¤ngig">
+                            <button id="undoBtn" type="button" class="undo-redo-btn" title="Rückgängig" aria-label="Rückgängig">
                                 <i class="fa-solid fa-rotate-left"></i>
                             </button>
                             <button id="redoBtn" type="button" class="undo-redo-btn" title="Wiederholen" aria-label="Wiederholen">
@@ -589,7 +589,7 @@
                             </button>
                         </div>
                     </div>
-                    <textarea id="ideaDescription" required rows="4" maxlength="1000" placeholder="Beschreibe kurz, was verÃ¤ndert werden soll..."
+                    <textarea id="ideaDescription" required rows="4" maxlength="1000" placeholder="Beschreibe kurz, was verändert werden soll..."
                               class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"></textarea>
                     <div class="flex items-center justify-between gap-2 mt-2">
                         <p id="descriptionError" class="hidden text-xs text-rose-300"></p>
@@ -609,7 +609,7 @@
 
                 <div id="aiProcessingState" class="hidden flex items-center gap-3 bg-brand-600/10 border border-brand-500/20 p-3 rounded-xl">
                     <div class="animate-spin rounded-full h-4 w-4 border-2 border-brand-500 border-t-transparent"></div>
-                    <span id="aiProcessingLabel" class="text-xs text-brand-300 font-medium">KI prÃ¼ft Rechtschreibung, Relevanz & Duplikate ... 10s</span>
+                    <span id="aiProcessingLabel" class="text-xs text-brand-300 font-medium">KI prüft Rechtschreibung, Relevanz & Duplikate ... 10s</span>
                 </div>
 
                 <div class="pt-2 flex justify-end gap-3">
@@ -617,7 +617,7 @@
                         Abbrechen
                     </button>
                     <button type="submit" id="submitBtn" class="bg-gradient-to-r from-brand-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 active:scale-95 transition-all flex items-center gap-2">
-                        <span>VerÃ¶ffentlichen</span>
+                        <span>Veröffentlichen</span>
                         <i data-lucide="send" class="w-3.5 h-3.5"></i>
                     </button>
                 </div>
@@ -632,7 +632,7 @@
                 <i data-lucide="alert-circle" class="w-6 h-6"></i>
             </div>
             <h3 class="text-lg font-bold text-white mb-2">Diese Idee gibt es schon!</h3>
-            <p class="text-xs text-gray-300 mb-4">Ein sehr Ã¤hnlicher Vorschlag existiert bereits:</p>
+            <p class="text-xs text-gray-300 mb-4">Ein sehr ähnlicher Vorschlag existiert bereits:</p>
 
             <div class="bg-darkbg/80 p-4 rounded-2xl border border-white/5 text-left mb-6">
                 <h4 id="dupTitle" class="font-bold text-sm text-brand-300 break-words"></h4>
@@ -641,7 +641,7 @@
 
             <div class="flex gap-3">
                 <button onclick="closeDuplicateModal()" class="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-gray-300">
-                    SchlieÃŸen
+                    Schließen
                 </button>
                 <button id="goToExistingBtn" class="flex-1 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 rounded-xl text-xs font-bold text-white shadow-lg shadow-brand-600/30">
                     Zur bestehenden Idee
@@ -692,9 +692,9 @@
             const isIpLimit = err && err.serverReason === 'ip_rate_limit';
             const retry = err && err.retryAfter ? ` Bitte warte ca. ${formatRetryTime(err.retryAfter)}.` : '';
             if (isIpLimit) {
-                return `ðŸš¦ Rate-Limit erreicht: Zu viele ${context} in kurzer Zeit.${retry}`;
+                return `🚦 Rate-Limit erreicht: Zu viele ${context} in kurzer Zeit.${retry}`;
             }
-            return `ðŸš¦ Rate-Limit aktiv: ${context} sind vorÃ¼bergehend gesperrt (Schutz vor Spam).${retry}`;
+            return `🚦 Rate-Limit aktiv: ${context} sind vorübergehend gesperrt (Schutz vor Spam).${retry}`;
         }
 
         function formatRetryTime(seconds) {
@@ -730,12 +730,12 @@
         const statusEntered = { rejected: false, done: false };
 
         const STATUS_CONFIG = {
-            'waiting_for_review': { label: '<i class="fa-solid fa-clock mr-1"></i> In PrÃ¼fung', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
+            'waiting_for_review': { label: '<i class="fa-solid fa-clock mr-1"></i> In Prüfung', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
             'in_discussion': { label: '<i class="fa-solid fa-comments mr-1"></i> In Besprechung', color: 'bg-sky-500/10 text-sky-400 border-sky-500/20' },
             'reviewing': { label: '<i class="fa-solid fa-check-circle mr-1"></i> Angenommen', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
             'in_progress': { label: '<i class="fa-solid fa-hammer mr-1"></i> Wird umgesetzt', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
             'done': { label: '<i class="fa-solid fa-flag-checkered mr-1"></i> Umgesetzt', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-            'rejected': { label: '<i class="fa-solid fa-ban mr-1"></i> Nicht mÃ¶glich', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
+            'rejected': { label: '<i class="fa-solid fa-ban mr-1"></i> Nicht möglich', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
             'invisible': { label: '<i class="fa-solid fa-eye-slash mr-1"></i> Unsichtbar', color: 'bg-gray-500/10 text-gray-300 border-gray-500/20' }
         };
 
@@ -794,7 +794,7 @@
             window.addEventListener('resize', updateIndicatorPosition);
         });
 
-        // HINTERGRUND-REFRESH (GerÃ¤uschlos, lÃ¶st keine Seitenanimation aus)
+        // HINTERGRUND-REFRESH (Geräuschlos, löst keine Seitenanimation aus)
         async function refreshRealtime() {
             try {
                 await loadCommentCounts();
@@ -806,7 +806,7 @@
                 document.getElementById('ideaCount').textContent = getVisibleIdeas().length;
                 updateStatusHighlights();
                 
-                // Aktualisiere Liste nur, wenn sich tatsÃ¤chlich Daten verÃ¤ndert haben
+                // Aktualisiere Liste nur, wenn sich tatsächlich Daten verändert haben
                 if (prevSig !== nextSig) {
                     if (currentSort !== 'timeline') {
                         sortAndRenderIdeas(false); // animate = false verhindert Aufblenden
@@ -1154,7 +1154,7 @@
         }
 
         // ==========================================
-        // 3b. VOTE-SYNC (IP-basiert â†” localStorage)
+        // 3b. VOTE-SYNC (IP-basiert ↔ localStorage)
         // ==========================================
         // Beim Laden: Server-Votes (IP) mit localStorage mergen.
         // Einmalige Migration: alte localStorage-Votes werden zur IP hochgeladen,
@@ -1199,7 +1199,7 @@ async function syncVotesWithServer() {
             try {
                 commentCountsMap = await workerFetch('/api/comment-counts');
             } catch (e) {
-                console.warn('Kommentar-ZÃ¤hler konnten nicht geladen werden.', e);
+                console.warn('Kommentar-Zähler konnten nicht geladen werden.', e);
             }
         }
 
@@ -1283,21 +1283,21 @@ async function syncVotesWithServer() {
         }
 
         /* --- KORRIGIERTE OPEN / CLOSE LOGIK ---
-           Ã–ffnet und schlieÃŸt die Panels flÃ¼ssig per HÃ¶hen-Animation.
-           Setzt direkt ein synchrones HÃ¶hen-Reset, damit die Animation
-           sofort (ohne VerzÃ¶gerung) startet und nicht flackert. */
+           Öffnet und schließt die Panels flüssig per Höhen-Animation.
+           Setzt direkt ein synchrones Höhen-Reset, damit die Animation
+           sofort (ohne Verzögerung) startet und nicht flackert. */
         function openStatusPanel(wrapper) {
             const panel = wrapper ? wrapper.querySelector('.status-panel') : null;
             if (!panel) return;
             const inner = panel.firstElementChild;
             if (!inner) return;
 
-            // Ausgangszustand ohne Transition auf 0 setzen (verhindert SprÃ¼nge)
+            // Ausgangszustand ohne Transition auf 0 setzen (verhindert Sprünge)
             panel.style.transition = 'none';
             panel.style.height = '0px';
             void panel.offsetHeight;
 
-            // Transition wieder aktivieren und ZielhÃ¶he ermitteln
+            // Transition wieder aktivieren und Zielhöhe ermitteln
             panel.style.transition = '';
 
             wrapper.classList.add('is-open');
@@ -1323,7 +1323,7 @@ async function syncVotesWithServer() {
             const panel = wrapper ? wrapper.querySelector('.status-panel') : null;
             if (!panel) return;
 
-            // Aktuelle HÃ¶he fixieren und anschlieÃŸend auf 0 animieren
+            // Aktuelle Höhe fixieren und anschließend auf 0 animieren
             const current = panel.getBoundingClientRect().height;
             panel.style.transition = 'none';
             panel.style.height = `${Math.ceil(current)}px`;
@@ -1382,7 +1382,7 @@ async function syncVotesWithServer() {
         }
 
         async function getOfficialStatusReason(ideaId) {
-            // PrÃ¼fung aus dem bereits geladenen Timeline-Cache, fÃ¼r schnelles Rendern
+            // Prüfung aus dem bereits geladenen Timeline-Cache, für schnelles Rendern
             if (ideaTimelineCache[ideaId]) {
                 const statusEntry = ideaTimelineCache[ideaId].find(e => e.source === 'status_change');
                 if (statusEntry) return statusEntry.description;
@@ -1402,12 +1402,12 @@ async function syncVotesWithServer() {
             const wrapper = document.getElementById(isRejected ? 'statusRejectedWrapper' : 'statusDoneWrapper');
             const otherWrapper = document.getElementById(isRejected ? 'statusDoneWrapper' : 'statusRejectedWrapper');
 
-            // Andere Box ggf. sanft schlieÃŸen
+            // Andere Box ggf. sanft schließen
             if (otherWrapper.classList.contains('is-open')) {
                 closeStatusPanel(otherWrapper);
             }
 
-            // Gleiche Box -> sanft schlieÃŸen
+            // Gleiche Box -> sanft schließen
             if (wrapper.classList.contains('is-open')) {
                 closeStatusPanel(wrapper);
                 return;
@@ -1418,7 +1418,7 @@ async function syncVotesWithServer() {
 
             const listEl = document.getElementById(isRejected ? 'statusRejectedList' : 'statusDoneList');
 
-            // Datenstruktur aufbauen, BEVOR die HÃ¶hen-Animation startet.
+            // Datenstruktur aufbauen, BEVOR die Höhen-Animation startet.
             const entries = await Promise.all(matchingIdeas.map(async idea => {
                 const reason = await getOfficialStatusReason(idea.id);
                 return `
@@ -1445,7 +1445,7 @@ async function syncVotesWithServer() {
 
             listEl.innerHTML = entries.join('');
 
-            // Sanft Ã¶ffnen
+            // Sanft öffnen
             openStatusPanel(wrapper);
         }
 
@@ -1467,7 +1467,7 @@ async function syncVotesWithServer() {
                     toggleStatusReason(ideaId);
                 }
 
-                // Erst nach der HÃ¶hen-Animation die tatsÃ¤chliche Position nutzen.
+                // Erst nach der Höhen-Animation die tatsächliche Position nutzen.
                 setTimeout(() => {
                     const target = document.getElementById(`status-reason-${ideaId}`);
                     const row = target ? target.parentElement : wrapper;
@@ -1486,7 +1486,7 @@ async function syncVotesWithServer() {
                     const dw = document.getElementById('statusDoneWrapper');
                     if (rw && rw.classList.contains('is-open')) closeStatusPanel(rw);
                     if (dw && dw.classList.contains('is-open')) closeStatusPanel(dw);
-                    // Auch beim SchlieÃŸen erst die endgÃ¼ltige Kartenposition nutzen.
+                    // Auch beim Schließen erst die endgültige Kartenposition nutzen.
                     setTimeout(() => {
                         const target = document.getElementById(`idea-card-${ideaId}`);
                         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1507,7 +1507,7 @@ async function syncVotesWithServer() {
                 el.classList.add('hidden');
                 if (chevron) chevron.style.transform = 'rotate(0deg)';
             }
-            // Panel-HÃ¶he nachziehen (falls bereits voll geÃ¶ffnet -> auto)
+            // Panel-Höhe nachziehen (falls bereits voll geöffnet -> auto)
             const wrapper = el.closest('.status-wrapper');
             const panel = wrapper ? wrapper.querySelector('.status-panel') : null;
             if (panel && wrapper.classList.contains('is-open')) {
@@ -1646,7 +1646,7 @@ async function syncVotesWithServer() {
             if (visibleIdeas.length === 0) {
                 container.innerHTML = `
                     <div class="glass-card rounded-3xl p-12 text-center border border-white/5">
-                        <p class="text-4xl mb-3">ðŸŒ±</p>
+                        <p class="text-4xl mb-3">🌱</p>
                         <h3 class="text-base font-bold text-white">Noch keine Ideen vorhanden</h3>
                         <p class="text-xs text-gray-400 mt-1">Sei der Erste und reiche einen Vorschlag ein!</p>
                     </div>`;
@@ -1665,7 +1665,7 @@ async function syncVotesWithServer() {
                         <div class="flex items-start gap-4">
 
                             <button onclick="handleVote('${idea.id}')"
-                                    title="${isVoted ? 'Stimme zurÃ¼cknehmen' : 'UnterstÃ¼tzen'}"
+                                    title="${isVoted ? 'Stimme zurücknehmen' : 'Unterstützen'}"
                                     class="shrink-0 flex flex-col items-center justify-center w-12 h-14 rounded-xl border border-white/10 ${isVoted ? 'upvote-btn-active' : 'bg-darkbg/60 text-gray-300 hover:border-brand-500/50 hover:text-white'} transition-all duration-150 active:scale-95">
                                 <i data-lucide="chevron-up" class="w-5 h-5"></i>
                                 <span class="text-xs font-extrabold mt-0.5">${idea.upvotes_count}</span>
@@ -1677,7 +1677,7 @@ async function syncVotesWithServer() {
                                         <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${statusInfo.color}">
                                             ${statusInfo.label}
                                         </span>
-                                        ${!idea.is_my_idea ? '<span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-gray-500/30 bg-gray-500/10 text-gray-400">SchÃ¼leridee</span>' : ''}
+                                        ${!idea.is_my_idea ? '<span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-gray-500/30 bg-gray-500/10 text-gray-400">Schüleridee</span>' : ''}
                                     </div>
                                     <span class="text-[11px] text-gray-500 font-medium">${timeAgo}</span>
                                 </div>
@@ -1744,7 +1744,7 @@ async function syncVotesWithServer() {
                 <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3 rounded-xl border border-amber-500/30 shadow-lg relative overflow-hidden">
                     <div class="flex justify-between items-center text-[10px] mb-1">
                         <span class="font-black text-amber-400 flex items-center gap-1 uppercase tracking-wider">
-                            ${escapeHtml(comment.author_name || 'SchÃ¼lersprecher')}
+                            ${escapeHtml(comment.author_name || 'Schülersprecher')}
                         </span>
                         <span class="text-amber-500/60 font-medium">${formatTimeAgo(comment.created_at)}</span>
                     </div>
@@ -1799,7 +1799,7 @@ async function syncVotesWithServer() {
                     }
                 });
 
-                // Server ist die AutoritÃ¤t: falls der Server anderer Meinung ist
+                // Server ist die Autorität: falls der Server anderer Meinung ist
                 // (z. B. anderer Browser mit gleicher IP hat schon gevotet),
                 // passen wir den lokalen State an den Server an.
                 if (res && typeof res.voted === 'boolean') {
@@ -1820,13 +1820,13 @@ async function syncVotesWithServer() {
 
                 showToast(
                     hasVoted
-                        ? 'Stimme zurÃ¼ckgenommen'
-                        : 'Idee unterstÃ¼tzt! ðŸš€',
+                        ? 'Stimme zurückgenommen'
+                        : 'Idee unterstützt! 🚀',
                     hasVoted ? 'info' : 'success'
                 );
 
             } catch (e) {
-                console.warn('Vote fehlgeschlagen â€“ Ã„nderung wird zurÃ¼ckgesetzt:', e);
+                console.warn('Vote fehlgeschlagen – Änderung wird zurückgesetzt:', e);
 
                 idea.upvotes_count = oldCount;
 
@@ -1847,7 +1847,7 @@ async function syncVotesWithServer() {
 
                 const msg = (e && e.code === 'RATE_LIMITED')
                     ? rateLimitMessage(e, 'Votes')
-                    : 'Der Server ist gerade nicht erreichbar. Deine Ã„nderung wurde nicht Ã¼bernommen. âš ï¸';
+                    : 'Der Server ist gerade nicht erreichbar. Deine Änderung wurde nicht übernommen. ⚠️';
                 showToast(msg, 'error');
             }
         }
@@ -1868,7 +1868,7 @@ async function syncVotesWithServer() {
             const updateLabel = value => {
                 label.textContent = value === 'done'
                     ? 'Fast fertig'
-                    : `KI prÃ¼ft Rechtschreibung, Relevanz & Duplikate ... ${value}s`;
+                    : `KI prüft Rechtschreibung, Relevanz & Duplikate ... ${value}s`;
             };
             updateLabel(seconds);
             let timer;
@@ -1892,7 +1892,7 @@ async function syncVotesWithServer() {
             const button = document.getElementById('generateDescriptionBtn');
             const label = document.getElementById('generateDescriptionLabel');
             if (!title) {
-                setFormMessage('titleError', 'Gib zuerst eine Ãœberschrift ein.');
+                setFormMessage('titleError', 'Gib zuerst eine Überschrift ein.');
                 return;
             }
 
@@ -1907,11 +1907,11 @@ async function syncVotesWithServer() {
                 });
 
                 if (res.status === 'ERROR') {
-                    setFormMessage('descriptionError', 'Die KI-PrÃ¼fung konnte nicht sicher abgeschlossen werden.');
+                    setFormMessage('descriptionError', 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden.');
                     return;
                 }
                 if (res.status === 'REJECTED') {
-                    setFormMessage('titleError', res.reason || 'Diese Ãœberschrift ist nicht erlaubt.');
+                    setFormMessage('titleError', res.reason || 'Diese Überschrift ist nicht erlaubt.');
                     return;
                 }
                 if (res.status === 'DUPLICATE') {
@@ -1988,7 +1988,7 @@ async function syncVotesWithServer() {
                 const res = await workerFetch('/api/ideas', { method: 'POST', body });
 
                 if (res.result === 'ERROR') {
-                    setFormMessage('descriptionError', res.reason || 'Die KI-PrÃ¼fung konnte nicht sicher abgeschlossen werden. Bitte versuche es erneut.');
+                    setFormMessage('descriptionError', res.reason || 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden. Bitte versuche es erneut.');
                     return;
                 }
 
@@ -2003,13 +2003,13 @@ async function syncVotesWithServer() {
                 }
 
                 if (res.result === 'REJECTED') {
-                    const message = res.reason || 'Diese Idee kann so nicht verÃ¶ffentlicht werden.';
+                    const message = res.reason || 'Diese Idee kann so nicht veröffentlicht werden.';
                     setFormMessage(rawDescription ? 'descriptionError' : 'titleError', message);
-                    showToast(`Nicht verÃ¶ffentlicht: ${message}`, 'error');
+                    showToast(`Nicht veröffentlicht: ${message}`, 'error');
                     return;
                 }
 
-                showToast(res.result === 'CORRECTED' ? 'Idee korrigiert & verÃ¶ffentlicht! âœ¨' : 'Idee verÃ¶ffentlicht! ðŸŽ‰', 'success');
+                showToast(res.result === 'CORRECTED' ? 'Idee korrigiert & veröffentlicht! ✨' : 'Idee veröffentlicht! 🎉', 'success');
 
                 document.getElementById('ideaForm').reset();
                 resetHistory();
@@ -2086,14 +2086,14 @@ async function syncVotesWithServer() {
 
         function renderCommentsHtml(data) {
             if (!data || data.length === 0) {
-                return '<p class="text-gray-500 italic text-[11px]">Noch keine SchÃ¼ler-Kommentare.</p>';
+                return '<p class="text-gray-500 italic text-[11px]">Noch keine Schüler-Kommentare.</p>';
             }
             return data.map(c => `
                 <div class="${c.is_official ? 'bg-amber-500/10 border-amber-500/30' : 'bg-darkbg/50 border-white/5'} p-2.5 rounded-xl border">
                     <div class="flex justify-between items-center text-[10px] text-gray-400 mb-1">
                         <span class="font-bold ${c.is_official ? 'text-amber-400 flex items-center gap-1' : 'text-gray-300'}">
                             ${c.is_official ? '<img src="ich.png" alt="SV" class="w-4 h-4 rounded-full object-cover">' : ''}
-                            ${escapeHtml(c.author_name || 'SchÃ¼ler')}
+                            ${escapeHtml(c.author_name || 'Schüler')}
                         </span>
                         <span>${formatTimeAgo(c.created_at)}</span>
                     </div>
@@ -2101,7 +2101,7 @@ async function syncVotesWithServer() {
                 </div>
             `).join('') + `
                 <p class="text-gray-400 text-[10px] font-medium text-center pt-1">
-                    Gold markierte Kommentare sind offizielle RÃ¼ckmeldungen des SchÃ¼lersprechers.
+                    Gold markierte Kommentare sind offizielle Rückmeldungen des Schülersprechers.
                 </p>
             `;
         }
@@ -2141,8 +2141,8 @@ async function syncVotesWithServer() {
                 if (res.published) {
                     commentsLastText[ideaId] = text;
                     showToast(res.corrected
-                        ? 'Kommentar gepostet (Rechtschreibung korrigiert)! ðŸŽ‰'
-                        : 'Kommentar gepostet! ðŸŽ‰', 'success');
+                        ? 'Kommentar gepostet (Rechtschreibung korrigiert)! 🎉'
+                        : 'Kommentar gepostet! 🎉', 'success');
                     await loadCommentCounts();
                     await loadIdeas();
                     loadComments(ideaId);
@@ -2226,14 +2226,14 @@ async function syncVotesWithServer() {
             container.innerHTML = `
                 <div class="glass-card rounded-2xl p-6 border border-white/5 space-y-6">
                     <div class="flex items-center gap-2 border-b border-white/5 pb-4">
-                        <span class="text-lg">ðŸ“£</span>
+                        <span class="text-lg">📣</span>
                         <h3 class="text-base font-extrabold text-white">News & Updates</h3>
                     </div>
                     <div class="space-y-6">
                         ${entries.map(e => {
                             const dt = new Date(e.event_date);
                             const dateStr = dt.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
-                                + ' Â· ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                                + ' · ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
                             const iconClass = e.icon || 'fa-solid fa-bullhorn';
                             const idea = e.idea_id ? currentIdeas.find(i => i.id === e.idea_id) : null;
 
@@ -2276,7 +2276,7 @@ async function syncVotesWithServer() {
             const renderEntry = (e, index) => {
                 const dt = new Date(e.event_date);
                 const dateStr = dt.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
-                    + ' Â· ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                    + ' · ' + dt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
                 const iconClass = e.icon || 'fa-solid fa-bullhorn';
                 
                 const olderClass = index >= 2 ? ' timeline-older-entry' : '';
@@ -2304,7 +2304,7 @@ async function syncVotesWithServer() {
                 <button onclick="${isExpanded ? `collapseIdeaTimeline('${ideaId}')` : `expandIdeaTimeline('${ideaId}')`}"
                         class="timeline-toggle-btn relative z-20 flex items-center gap-1.5 text-[10px] font-bold text-indigo-300 hover:text-white transition-all duration-300 mt-2">
                     <i class="fa-solid fa-chevron-down timeline-toggle-icon"></i>
-                    <span>${isExpanded ? 'Weniger anzeigen' : `Ã„ltere anzeigen (${hiddenCount})`}</span>
+                    <span>${isExpanded ? 'Weniger anzeigen' : `Ältere anzeigen (${hiddenCount})`}</span>
                 </button>` : '';
 
             return `
@@ -2357,7 +2357,7 @@ async function syncVotesWithServer() {
             }
             
             if (buttonLabel) {
-                buttonLabel.textContent = expanded ? 'Weniger anzeigen' : `Ã„ltere anzeigen (${hiddenCount})`;
+                buttonLabel.textContent = expanded ? 'Weniger anzeigen' : `Ältere anzeigen (${hiddenCount})`;
             }
 
             const fade = clip.querySelector('.timeline-fade-overlay');
@@ -2469,7 +2469,7 @@ async function syncVotesWithServer() {
 
     </script>
 <script>
-  // Service Worker registrieren â€“ OHNE Reload
+  // Service Worker registrieren – OHNE Reload
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/index/sw.js', { scope: '/index/' })
       .then((reg) => {
@@ -2480,9 +2480,9 @@ async function syncVotesWithServer() {
           newWorker?.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               if (typeof showToast === 'function') {
-                showToast('Neue Version verfÃ¼gbar âœ¨', 'info');
+                showToast('Neue Version verfügbar ✨', 'info');
               }
-              console.log('Update bereit â€“ wird beim nÃ¤chsten Ã–ffnen aktiv');
+              console.log('Update bereit – wird beim nächsten Öffnen aktiv');
             }
           });
         });
