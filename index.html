@@ -1164,7 +1164,7 @@ async function syncVotesWithServer() {
         const isNew = sessionStorage.getItem('avh_device_is_new') === '1';
         if (isNew) sessionStorage.removeItem('avh_device_is_new');
 
-        const url = isNew ? '/api/ideas/my-votes?adopt=1' : '/api/ideas/my-votes';
+        const url = '/api/ideas/my-votes';
         const serverData = await workerFetch(url);
         const serverVotes = new Set(serverData.voted_idea_ids || []);
         const localVotes = getVotedIdeasSet();
