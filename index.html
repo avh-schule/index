@@ -1303,20 +1303,27 @@ async function syncVotesWithServer() {
             wrapper.classList.add('is-open');
             updateStatusChevrons();
 
-            const target = Math.ceil(inner.getBoundingClientRect().height);
-
+            // Nach dem Einblenden der Begründung die aktuelle Höhe messen.
             requestAnimationFrame(() => {
-                panel.style.height = `${target}px`;
+                if (!wrapper.classList.contains('is-open')) return;
+                panel.style.height = `${Math.ceil(inner.getBoundingClientRect().height)}px`;
             });
 
-            const onEnd = (e) => {
-                if (e.target !== panel || e.propertyName !== 'height') return;
+            // Auch ohne transitionend (z. B. beim Wechsel von auto auf px)
+            // muss der Bereich anschließend mit seinem Inhalt mitwachsen.
+            let finishTimer;
+            const finish = () => {
+                clearTimeout(finishTimer);
                 panel.removeEventListener('transitionend', onEnd);
                 if (wrapper.classList.contains('is-open')) {
                     panel.style.height = 'auto';
                 }
             };
+            const onEnd = (e) => {
+                if (e.target === panel && e.propertyName === 'height') finish();
+            };
             panel.addEventListener('transitionend', onEnd);
+            finishTimer = setTimeout(finish, 450);
         }
 
         function closeStatusPanel(wrapper) {
