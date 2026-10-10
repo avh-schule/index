@@ -1784,6 +1784,40 @@
             }
         }
 
+        const voteCleanupPending = new Set();
+        async function removeDuplicateIpVotes(button) {
+            const ip = button.dataset.ip;
+            if (!ip || voteCleanupPending.has(ip)) return;
+            if (!confirm(`Zusätzliche Stimmen von ${ip} löschen? Pro Idee bleibt die älteste Stimme bestehen. Auch Stimmen verschiedener Personen im gleichen WLAN werden zusammengefasst.`)) return;
+            voteCleanupPending.add(ip);
+            button.disabled = true;
+            button.textContent = 'Bereinige…';
+            let result;
+            try {
+                result = await adminFetch('/api/admin/vote-audit/deduplicate', {
+                    method: 'POST', body: { ip }
+                });
+            } catch (error) {
+                alert('Bereinigung nicht bestätigt. Bitte die Übersicht neu laden, bevor du es erneut versuchst.');
+                voteCleanupPending.delete(ip);
+                button.disabled = false;
+                button.textContent = 'Doppelte entfernen';
+                return;
+            }
+            try {
+                listData = await adminFetch('/api/admin/ideas');
+                await loadVoteAudit();
+            } catch (error) {
+                alert(`Bereinigung abgeschlossen (${result.removed} entfernt). Bitte die Seite neu laden, um die aktuellen Zahlen zu sehen.`);
+                return;
+            } finally {
+                voteCleanupPending.delete(ip);
+                button.disabled = false;
+                button.textContent = 'Doppelte entfernen';
+            }
+            alert(`${result.removed} zusätzliche Stimme(n) entfernt. Pro Idee bleibt eine Stimme dieser IP bestehen.`);
+        }
+
         function renderVoteAudit() {
             const box = document.getElementById('voteAuditContent');
             if (!box || !voteAuditData) return;
@@ -1871,6 +1905,14 @@
                             <span class="text-[10px] text-gray-500 ml-1">${totalDevices} ${totalDevices === 1 ? 'Gerät' : 'Geräte'} · ${totalVotes} ${totalVotes === 1 ? 'Stimme' : 'Stimmen'}</span>
                             ${suspicious ? `<span class="ml-auto text-[9px] px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold uppercase">${totalDevices} Geräte</span>` : ''}
                         </button>
+                        <div class="px-3 pb-2 flex justify-end">
+                            <button type="button" data-ip="${esc(ip)}" onclick="removeDuplicateIpVotes(this)"
+                                    ${voteCleanupPending.has(ip) || ip === '(unbekannt)' || ip === 'unknown' ? 'disabled' : ''}
+                                    title="Pro Idee eine Stimme dieser IP behalten"
+                                    class="px-2 py-1 text-[10px] font-bold rounded-lg border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Doppelte entfernen
+                            </button>
+                        </div>
                         <div id="vote-audit-body-${safeIp}" class="${isCollapsed ? 'hidden ' : ''}px-3 pb-3">
                             ${devicesHtml}
                         </div>
