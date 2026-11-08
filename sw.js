@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'avh-v2';   // 👈 v1 → v2, damit der neue SW greift
+const CACHE_VERSION = 'avh-v3';   // 👈 v2 → v3: neue App-Navigation + Fragen-Modul
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
