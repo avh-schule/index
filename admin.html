@@ -238,10 +238,48 @@
             overflow: hidden;
         }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        :root, html {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.28); }
+        ::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+
+        /* Frage-Chat im Admin-Modal */
+        .q-chat-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(245, 158, 11, 0.4) transparent;
+            overscroll-behavior: contain;
+        }
+        .q-chat-scroll:hover {
+            scrollbar-color: rgba(245, 158, 11, 0.75) transparent;
+        }
+        .q-chat-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .q-chat-scroll::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 6px 0;
+        }
+        .q-chat-scroll::-webkit-scrollbar-thumb {
+            background: rgba(245, 158, 11, 0.4);
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: background 0.2s ease;
+        }
+        .q-chat-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(245, 158, 11, 0.75);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+        }
+        .q-chat-scroll::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-20 selection:bg-indigo-500 selection:text-white">
@@ -317,6 +355,11 @@
                 <span>Timeline / News</span>
                 <span class="badge" id="drawerCountTimeline">0</span>
             </button>
+            <button class="drawer-link" data-page-link="questions" onclick="switchPage('questions')">
+                <i data-lucide="message-circle-question" class="w-4 h-4"></i>
+                <span>Fragen</span>
+                <span class="badge" id="drawerCountQuestions">0</span>
+            </button>
 
             <div class="px-3 py-2 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sicherheit</div>
             <button class="drawer-link" data-page-link="emergency" onclick="switchPage('emergency')">
@@ -387,6 +430,14 @@
                                 Alle gelesen
                             </button>
                         </div>
+                        <button id="sysNotifToggleBtn" type="button" onclick="toggleAdminSysNotifs()"
+                                class="w-full px-4 py-2.5 border-b border-surface-border/50 flex items-center gap-2.5 text-left hover:bg-surface-hover transition-colors">
+                            <i data-lucide="bell-plus" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+                            <span class="min-w-0">
+                                <span id="sysNotifLabel" class="block text-[10px] font-bold text-gray-200">System-Benachrichtigungen aktivieren</span>
+                                <span class="block text-[9px] text-gray-500 mt-0.5">Hintergrund-Prüfung alle 90 Min. · 22–7 Uhr still · Tab muss offen bleiben</span>
+                            </span>
+                        </button>
                         <div id="notifList" class="max-h-[60vh] sm:max-h-80 overflow-y-auto"></div>
                     </div>
                 </div>
@@ -598,6 +649,59 @@
             </div>
         </section>
 
+        <!-- PAGE: FRAGEN (privater Chat) -->
+        <section data-page-content="questions" class="space-y-4 hidden">
+
+            <!-- Statistiken -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="glass-panel p-3.5 rounded-2xl">
+                    <span class="text-[11px] font-medium text-gray-400"><i class="fa-regular fa-comments mr-1"></i>Gesamt</span>
+                    <span id="qStatTotal" class="text-xl font-extrabold text-white mt-1 block">0</span>
+                </div>
+                <div class="glass-panel p-3.5 rounded-2xl">
+                    <span class="text-[11px] font-medium text-amber-400"><i class="fa-regular fa-bell mr-1"></i>Wartet auf Antwort</span>
+                    <span id="qStatWaiting" class="text-xl font-extrabold text-amber-400 mt-1 block">0</span>
+                </div>
+                <div class="glass-panel p-3.5 rounded-2xl">
+                    <span class="text-[11px] font-medium text-rose-400"><i class="fa-regular fa-eye mr-1"></i>Neu / Ungelesen</span>
+                    <span id="qStatUnread" class="text-xl font-extrabold text-rose-300 mt-1 block">0</span>
+                </div>
+                <div class="glass-panel p-3.5 rounded-2xl">
+                    <span class="text-[11px] font-medium text-slate-400"><i class="fa-solid fa-lock mr-1"></i>Geschlossen</span>
+                    <span id="qStatClosed" class="text-xl font-extrabold text-slate-300 mt-1 block">0</span>
+                </div>
+            </div>
+
+            <!-- Filter + Suche -->
+            <div class="glass-panel rounded-2xl p-3 space-y-2">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div id="qFilterChips" class="flex items-center gap-1.5 flex-wrap"></div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="loadQuestionThreads()" class="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-gray-300 text-[10px] font-bold rounded-lg border border-white/10 transition-all">
+                            <i data-lucide="refresh-cw" class="w-3 h-3 inline"></i> Aktualisieren
+                        </button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    <input type="text" id="qThreadSearch" placeholder="Fragen durchsuchen (Titel, Nachricht, Code)..."
+                           oninput="onQThreadSearch(this.value)" class="search-input">
+                </div>
+            </div>
+
+            <!-- Chat-Liste -->
+            <div id="questionThreadsList" class="space-y-2">
+                <div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-400">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400"></i>
+                    Lade Fragen...
+                </div>
+            </div>
+            <p class="text-center text-[10px] text-gray-500 px-4">
+                💡 Private 1:1-Chats. Antworthexte direkt im Chat — die Schüler sehen die Antwort unter „Fragen“.
+                Ein Frage-Code (6 Ziffern) öffnet denselben Chat von jedem Gerät.
+            </p>
+        </section>
+
         <!-- PAGE: NOTFALL-MODUS -->
         <section data-page-content="emergency" class="space-y-4 hidden">
             <div class="glass-panel rounded-2xl p-5 space-y-4">
@@ -661,6 +765,18 @@
                             </div>
                         </div>
                         <input type="checkbox" id="rl_block_comments" class="sr-only toggle-input" onchange="updateRateLimit('block_comments', this.checked)">
+                        <span class="toggle-switch"></span>
+                    </label>
+
+                    <label class="rl-item flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-base border border-surface-border cursor-pointer transition-all">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <i data-lucide="message-circle-question" class="w-4 h-4 text-fuchsia-400 shrink-0"></i>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-white">Fragen &amp; Chat</div>
+                                <div class="text-[10px] text-gray-500">Neue Fragen &amp; Antworten senden sperren</div>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="rl_block_questions" class="sr-only toggle-input" onchange="updateRateLimit('block_questions', this.checked)">
                         <span class="toggle-switch"></span>
                     </label>
                 </div>
@@ -921,6 +1037,72 @@
         </div>
     </div>
 
+    <!-- FRAGEN CHAT MODAL (privater 1:1-Chat) -->
+    <div id="questionChatModal" class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 hidden">
+        <div class="glass-panel w-full max-w-xl rounded-2xl border border-amber-500/20 relative overflow-hidden max-h-[92vh] flex flex-col">
+            <!-- Kopf: Thema + Code + Aktionen -->
+            <div class="p-4 border-b border-surface-border space-y-2.5">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0">
+                                <i data-lucide="message-circle-question" class="w-4 h-4 text-amber-400"></i>
+                            </div>
+                            <h3 id="qChatSubject" class="text-sm font-bold text-white break-words leading-snug min-w-0">Frage</h3>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap mt-1.5 pl-11">
+                            <button id="qChatCodeBtn" type="button" onclick="copyQCodeAdmin()" title="Frage-Code kopieren"
+                                    class="text-[10px] font-bold text-cyan-200 hover:text-cyan-100 bg-cyan-500/10 border border-cyan-500/25 rounded-full px-2.5 py-0.5 transition-colors tracking-widest">
+                                Code 000000 <i class="fa-regular fa-copy ml-0.5"></i>
+                            </button>
+                            <span id="qChatStatusChip" class="text-[10px] font-bold px-2 py-0.5 rounded-full border"></span>
+                            <span id="qChatCountChip" class="text-[10px] text-gray-500"></span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button id="qChatToggleClosedBtn" onclick="toggleQuestionClosed()" title="Chat abschließen / wieder öffnen"
+                                class="p-2 bg-surface-hover hover:bg-white/10 text-gray-300 rounded-lg border border-white/10 transition-all">
+                            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="deleteThreadAdmin()" title="Chat löschen"
+                                class="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg border border-rose-500/20 transition-all">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="closeModal('questionChatModal')" title="Schließen"
+                                class="p-2 bg-surface-hover hover:bg-white/10 text-gray-300 rounded-lg border border-white/10 transition-all">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner: Vom Schüler gelöscht -->
+            <div id="qChatDeletedBanner" class="hidden px-4 py-2.5 bg-rose-500/10 border-b border-rose-500/20 text-[11px] text-rose-300 flex items-center gap-2">
+                <i data-lucide="user-x" class="w-4 h-4 text-rose-400 shrink-0"></i>
+                <div class="leading-snug">
+                    <span class="font-bold">Vom Schüler gelöscht:</span> Der Schüler hat diesen Chat von seinem Gerät entfernt. Nur du als Admin hast noch Zugriff und kannst ihn oben über das Papierkorb-Symbol endgültig aus der Datenbank löschen.
+                </div>
+            </div>
+
+            <!-- Nachrichten -->
+            <div id="qChatMessages" class="q-chat-scroll flex-1 min-h-0 max-h-[52vh] sm:max-h-[56vh] overflow-y-auto p-4 space-y-3 bg-black/20"></div>
+
+            <!-- Verfassen (geschlossen => Banner) -->
+            <div id="qChatClosedBanner" class="hidden px-4 py-2.5 bg-slate-500/10 border-t border-slate-500/20 text-[11px] text-slate-200 flex items-center gap-2">
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-300 shrink-0"></i>
+                <span>Dieser Chat ist abgeschlossen. Über „Chat wieder öffnen“ kannst du weiter antworten.</span>
+            </div>
+            <form id="qChatForm" onsubmit="submitQAdminReply(event)" class="p-3 border-t border-surface-border flex items-end gap-2">
+                <textarea id="qChatInput" rows="1" maxlength="1200" placeholder="Als Schülersprecher antworten …"
+                          class="flex-1 min-w-0 resize-none bg-surface-base border border-surface-border rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all leading-relaxed"></textarea>
+                <button type="submit" id="qChatSendBtn" title="Senden"
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white flex items-center justify-center shrink-0 transition-all active:scale-90 shadow-lg shadow-amber-600/25">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- PASSWORD CHANGE MODAL -->
     <div id="passwordModal" class="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
         <div class="glass-panel w-full max-w-md rounded-2xl p-6 glow-indigo relative">
@@ -1014,6 +1196,7 @@
     votes:      { title: 'Abstimmungen',    subtitle: 'Geräte, IPs und abgegebene Stimmen' },
             messages:   { title: 'Nachrichten',     subtitle: 'Nachrichten an Schüler' },
             timeline:   { title: 'Timeline / News', subtitle: 'Verlauf & Updates' },
+            questions:  { title: 'Fragen',          subtitle: 'Privater Chat mit Schülern' },
             emergency:  { title: 'Notfall-Modus',   subtitle: 'Schreibfunktionen sperren' },
             ratelimits: { title: 'Rate-Limits',     subtitle: 'IP-basierte Limits konfigurieren' }
         };
@@ -1068,20 +1251,26 @@
             { key: 'ai_icon',     label: 'KI-Icon-Vorschlag',       icon: 'wand-2',        color: 'text-indigo-400' },
             { key: 'comment',     label: 'Kommentare',              icon: 'message-square',color: 'text-emerald-400' },
             { key: 'vote',        label: 'Votes',                   icon: 'thumbs-up',     color: 'text-cyan-400' },
+            { key: 'question_create', label: 'Neue Fragen',         icon: 'message-circle-question', color: 'text-fuchsia-400' },
+            { key: 'question_msg',    label: 'Fragen-Nachrichten',  icon: 'messages-square',color: 'text-fuchsia-400' },
+            { key: 'q_verify',        label: 'Frage-Codes prüfen',  icon: 'key-round',     color: 'text-cyan-400' },
             { key: 'visitor',     label: 'Besucher-Registrierung',  icon: 'user-check',    color: 'text-sky-400' },
             { key: 'read',        label: 'Lese-Anfragen',           icon: 'book-open',     color: 'text-gray-400' },
             { key: 'general',     label: 'Sonstige Anfragen',       icon: 'activity',      color: 'text-gray-400' }
         ];
 
         const IP_RL_STANDARD = {
-            create_idea: { windowSec: 3600, max: 5,   blockSec: 1800 },
-            ai_generate: { windowSec: 3600, max: 25,  blockSec: 900  },
-            ai_icon:     { windowSec: 3600, max: 25,  blockSec: 900  },
-            comment:     { windowSec: 300,  max: 6,   blockSec: 600  },
-            vote:        { windowSec: 60,   max: 30,  blockSec: 300  },
-            visitor:     { windowSec: 300,  max: 30,  blockSec: 60   },
-            read:        { windowSec: 60,   max: 300, blockSec: 60   },
-            general:     { windowSec: 60,   max: 240, blockSec: 60   }
+            create_idea:     { windowSec: 3600, max: 5,   blockSec: 1800 },
+            ai_generate:     { windowSec: 3600, max: 25,  blockSec: 900  },
+            ai_icon:         { windowSec: 3600, max: 25,  blockSec: 900  },
+            comment:         { windowSec: 300,  max: 6,   blockSec: 600  },
+            vote:            { windowSec: 60,   max: 30,  blockSec: 300  },
+            question_create: { windowSec: 3600, max: 5,   blockSec: 1800 },
+            question_msg:    { windowSec: 300,  max: 20,  blockSec: 600  },
+            q_verify:        { windowSec: 60,   max: 60,  blockSec: 300  },
+            visitor:         { windowSec: 300,  max: 30,  blockSec: 60   },
+            read:            { windowSec: 60,   max: 300, blockSec: 60   },
+            general:         { windowSec: 60,   max: 240, blockSec: 60   }
         };
 
         let ipRateLimitsCache = null;
@@ -1189,6 +1378,7 @@
                     closeModal('timelineModalAdmin');
                     closeModal('statusModal');
                     closeModal('passwordModal');
+                    closeModal('questionChatModal');
                 }
             });
 
@@ -1289,6 +1479,10 @@
                 loadVoteAudit();
             }
 
+            if (page === 'questions') {
+                loadQuestionThreads();
+            }
+
             if (!skipAnimation) {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -1316,7 +1510,8 @@
                 loadIpRateLimits(),
                                 loadUnreadComments(),
                 loadTimelineAdmin(),
-                loadVoteAudit()
+                loadVoteAudit(),
+                loadQuestionThreads()
             ]);
             loadUnreadIdeas();
             updateStats();
@@ -1337,6 +1532,7 @@
             setCount('drawerCountComments', totalComments, unreadComments.length > 0);
             setCount('drawerCountMessages', messagesData.length);
                         setCount('drawerCountTimeline', timelineAdminData.length);
+            setCount('drawerCountQuestions', questionThreads.length, questionThreads.filter(t => t.admin_unread).length > 0);
             const voteBadge = document.getElementById('drawerCountVotes');
             if (voteBadge && voteAuditData) voteBadge.textContent = voteAuditData.total_votes || 0;
         }
@@ -1502,7 +1698,7 @@
         // NOTFALL-MODUS / RATE LIMITS
         // ============================================================
         let rateLimitsCache = null;
-        const RL_IDS = ['block_new_ideas', 'block_ai_description', 'block_votes', 'block_comments'];
+        const RL_IDS = ['block_new_ideas', 'block_ai_description', 'block_votes', 'block_comments', 'block_questions'];
 
         async function loadRateLimits() {
             try {
@@ -1512,7 +1708,8 @@
                     block_new_ideas: false,
                     block_ai_description: false,
                     block_votes: false,
-                    block_comments: false
+                    block_comments: false,
+                    block_questions: false
                 };
             }
             renderRateLimits();
@@ -1555,7 +1752,7 @@
         }
 
         async function blockAll() {
-            if (!confirm('Alle Schreibfunktionen sperren? (Ideen, KI, Votes, Kommentare)')) return;
+            if (!confirm('Alle Schreibfunktionen sperren? (Ideen, KI, Votes, Kommentare, Fragen)')) return;
             try {
                 rateLimitsCache = await adminFetch('/api/admin/rate-limits', {
                     method: 'PATCH',
@@ -1563,7 +1760,8 @@
                         block_new_ideas: true,
                         block_ai_description: true,
                         block_votes: true,
-                        block_comments: true
+                        block_comments: true,
+                        block_questions: true
                     }
                 });
                 renderRateLimits();
@@ -1580,7 +1778,8 @@
                         block_new_ideas: false,
                         block_ai_description: false,
                         block_votes: false,
-                        block_comments: false
+                        block_comments: false,
+                        block_questions: false
                     }
                 });
                 renderRateLimits();
@@ -2901,7 +3100,9 @@
 
         function closeModal(modalId) {
             const el = document.getElementById(modalId);
-            if (el) el.classList.add('hidden');
+            if (!el) return;
+            el.classList.add('hidden');
+            if (modalId === 'questionChatModal') stopQChatPolling();
         }
         function openModal(modalId) {
             const el = document.getElementById(modalId);
@@ -3185,6 +3386,515 @@
         }
 
         // ============================================================
+        // FRAGEN: privater 1:1-Chat (Schüler ↔ Schülersprecher)
+        // ============================================================
+        let questionThreads = [];
+        let qThreadsLoaded = false;
+        let unreadQuestionThreads = [];
+        let qFilter = 'all';
+        let qSearchQuery = '';
+        let qActiveThread = null;
+        let qActiveMessages = [];
+        let qChatPollTimer = null;
+        let qEditingMsgId = null;
+
+        const Q_FILTERS = [
+            { key: 'all',     label: 'Alle' },
+            { key: 'waiting', label: 'Wartet auf Antwort' },
+            { key: 'unread',  label: 'Neu / Ungelesen' },
+            { key: 'closed',  label: 'Geschlossen' },
+            { key: 'deleted', label: 'Vom Schüler gelöscht' }
+        ];
+
+        function qRel(iso) {
+            if (!iso) return '';
+            const t = new Date(iso).getTime();
+            if (!Number.isFinite(t)) return '';
+            const diff = Date.now() - t;
+            if (diff < 45000) return 'gerade eben';
+            const min = Math.floor(diff / 60000);
+            if (min < 60) return `vor ${min} Min.`;
+            if (min < 24 * 60) return `vor ${Math.floor(min / 60)} Std.`;
+            const d = new Date(iso);
+            const opts = { day: '2-digit', month: 'short' };
+            if (d.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric';
+            return d.toLocaleDateString('de-DE', opts);
+        }
+
+        function qTimestamp(iso) {
+            const d = iso ? new Date(iso) : null;
+            if (!d || Number.isNaN(d.getTime())) return '';
+            return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+                + ' · ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        async function loadQuestionThreads() {
+            if (!getAdminPassword()) return;
+            try {
+                const data = await adminFetch('/api/admin/questions');
+                questionThreads = Array.isArray(data) ? data : [];
+                qThreadsLoaded = true;
+            } catch (e) {
+                if (e.message !== 'Unauthorized') console.warn('Fragen laden fehlgeschlagen:', e);
+            }
+            unreadQuestionThreads = (questionThreads || []).filter(t => t.admin_unread);
+            renderQuestionPage();
+            renderNotifications();
+            updateDrawerCounts();
+        }
+
+        function onQThreadSearch(val) {
+            qSearchQuery = (val || '').toLowerCase().trim();
+            renderQuestionThreads();
+        }
+
+        function setQFilter(key) {
+            qFilter = Q_FILTERS.some(f => f.key === key) ? key : 'all';
+            renderQuestionPage();
+        }
+
+        function filteredQThreads() {
+            let list = questionThreads || [];
+            if (qFilter === 'waiting') list = list.filter(t => t.needs_answer && !t.student_deleted);
+            else if (qFilter === 'unread') list = list.filter(t => t.admin_unread && !t.student_deleted);
+            else if (qFilter === 'closed') list = list.filter(t => t.is_closed && !t.student_deleted);
+            else if (qFilter === 'deleted') list = list.filter(t => t.student_deleted);
+            if (qSearchQuery) {
+                list = list.filter(t => (
+                    (t.subject || '') + ' ' +
+                    ((t.last_message && t.last_message.content) || '') + ' ' +
+                    (t.access_code || '')
+                ).toLowerCase().includes(qSearchQuery));
+            }
+            return list;
+        }
+
+        function renderQuestionPage() {
+            const list = questionThreads || [];
+            const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v); };
+            setText('qStatTotal', list.length);
+            setText('qStatWaiting', list.filter(t => t.needs_answer && !t.student_deleted).length);
+            setText('qStatUnread', list.filter(t => t.admin_unread && !t.student_deleted).length);
+            setText('qStatClosed', list.filter(t => t.is_closed && !t.student_deleted).length);
+
+            const total = list.length;
+            const waiting = list.filter(t => t.needs_answer && !t.student_deleted).length;
+            const unread = list.filter(t => t.admin_unread && !t.student_deleted).length;
+            const closed = list.filter(t => t.is_closed && !t.student_deleted).length;
+            const deleted = list.filter(t => t.student_deleted).length;
+
+            const chips = document.getElementById('qFilterChips');
+            if (chips) {
+                chips.innerHTML = Q_FILTERS.map(f => {
+                    const count = f.key === 'all' ? total
+                        : f.key === 'waiting' ? waiting
+                        : f.key === 'unread' ? unread
+                        : f.key === 'closed' ? closed
+                        : deleted;
+                    const active = qFilter === f.key;
+                    const isDelTab = f.key === 'deleted';
+                    return `
+                        <button onclick="setQFilter('${f.key}')"
+                                class="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${active
+                                    ? (isDelTab ? 'bg-rose-500/15 border-rose-500/40 text-rose-200' : 'bg-indigo-500/15 border-indigo-500/40 text-indigo-200')
+                                    : 'bg-surface-base border-surface-border text-gray-400 hover:text-white'}">
+                            ${f.label} <span class="opacity-70">${count}</span>
+                        </button>`;
+                }).join('');
+            }
+            renderQuestionThreads();
+        }
+
+        function renderQuestionThreads() {
+            const box = document.getElementById('questionThreadsList');
+            if (!box) return;
+            const list = filteredQThreads();
+            if (!(questionThreads || []).length) {
+                box.innerHTML = '<div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-500 italic">Noch keine Fragen gestellt.<br><span class="text-[10px] text-gray-600">Schüler finden das Modul „Fragen“ unten links auf der Schüler-Website.</span></div>';
+                return;
+            }
+            if (!list.length) {
+                box.innerHTML = '<div class="glass-panel p-8 rounded-2xl text-center text-xs text-gray-500 italic">Keine Fragen für diesen Filter.</div>';
+                return;
+            }
+            box.innerHTML = list.map((t, i) => {
+                const isDel = !!t.student_deleted;
+                const closed = !!t.is_closed;
+                const unread = !!t.admin_unread && !isDel;
+                const waiting = !!t.needs_answer && !closed && !isDel;
+                const last = t.last_message || null;
+                const preview = last ? last.content : '';
+
+                const chips = [];
+                if (isDel) chips.push('<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300"><i class="fa-solid fa-user-xmark mr-1"></i>Vom Schüler gelöscht</span>');
+                if (unread) chips.push('<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 uppercase tracking-wider">Neu</span>');
+                if (waiting) chips.push('<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400">Wartet</span>');
+                if (closed) chips.push('<span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-500/15 border border-slate-500/30 text-slate-300"><i class="fa-solid fa-lock mr-0.5"></i>Abgeschlossen</span>');
+
+                const safeId = String(t.id).replace(/['"\\]/g, '');
+                const borderCls = isDel
+                    ? 'border-rose-500/30 opacity-80 hover:border-rose-500/50'
+                    : unread
+                        ? 'border-fuchsia-500/35 hover:border-fuchsia-500/60'
+                        : closed
+                            ? 'border-slate-700/50 opacity-80 hover:border-slate-600'
+                            : 'border-surface-border hover:border-amber-500/40';
+
+                return `
+                    <div onclick="openQuestionChatAdmin('${safeId}')" role="button"
+                         class="p-3.5 rounded-xl border ${borderCls} bg-surface-base cursor-pointer transition-all hover:bg-white/[0.03]">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h4 class="text-xs font-bold text-white break-words">${esc(t.subject)}</h4>
+                                    ${chips.join('')}
+                                </div>
+                                ${last ? `
+                                <p class="text-[11px] text-gray-400 mt-1 break-words line-clamp-2">
+                                    <span class="font-bold ${last.sender === 'admin' ? 'text-amber-300' : 'text-gray-300'}">${last.sender === 'admin' ? 'Du (SV):' : 'Schüler:'}</span>
+                                    ${esc(preview)}
+                                </p>` : ''}
+                            </div>
+                            <div class="shrink-0 flex flex-col items-end gap-1.5">
+                                <span class="text-[10px] text-gray-500 whitespace-nowrap">${qRel(t.updated_at || t.created_at)}</span>
+                                <span class="text-[9px] font-bold tracking-widest text-cyan-200/80 bg-cyan-500/5 border border-cyan-500/20 rounded-full px-2 py-0.5">Code ${esc(t.access_code || '')}</span>
+                                <span class="text-[10px] text-gray-500"><i class="fa-regular fa-comments mr-1"></i>${Number(t.message_count) || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openQuestionNotification(threadId) {
+            const panel = document.getElementById('notifPanel');
+            if (panel) panel.classList.add('hidden');
+            notifPanelOpen = false;
+            if (currentPage !== 'questions') switchPage('questions');
+            openQuestionChatAdmin(threadId);
+        }
+
+        async function openQuestionChatAdmin(threadId) {
+            const modal = document.getElementById('questionChatModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            document.getElementById('qChatSubject').textContent = 'Lade …';
+            try {
+                const data = await adminFetch(`/api/admin/questions/${encodeURIComponent(threadId)}`);
+                if (!data || !data.thread) {
+                    alert('Frage nicht gefunden.');
+                    closeModal('questionChatModal');
+                    loadQuestionThreads();
+                    return;
+                }
+                qActiveThread = data.thread;
+                qActiveMessages = data.messages || [];
+                qEditingMsgId = null;
+                renderQChat();
+                startQChatPolling();
+
+                // Als gelesen markieren (Server macht das beim GET ebenfalls)
+                const t = (questionThreads || []).find(x => String(x.id) === String(threadId));
+                if (t) t.admin_unread = false;
+                unreadQuestionThreads = (questionThreads || []).filter(x => x.admin_unread);
+                renderNotifications();
+                updateDrawerCounts();
+            } catch (e) {
+                closeModal('questionChatModal');
+                if (e.message !== 'Unauthorized') alert('Fehler: ' + e.message);
+            }
+        }
+
+        function renderQChat() {
+            if (!qActiveThread) return;
+            const t = qActiveThread;
+            setTextById('qChatSubject', t.subject || 'Frage');
+
+            const codeBtn = document.getElementById('qChatCodeBtn');
+            if (codeBtn) codeBtn.innerHTML = `Code ${esc(t.access_code || '??????')} <i class="fa-regular fa-copy ml-0.5"></i>`;
+
+            const chip = document.getElementById('qChatStatusChip');
+            if (chip) {
+                chip.textContent = t.is_closed ? 'Abgeschlossen' : 'Offen';
+                chip.className = t.is_closed
+                    ? 'text-[10px] font-bold px-2 py-0.5 rounded-full border bg-slate-500/15 border-slate-500/30 text-slate-300'
+                    : 'text-[10px] font-bold px-2 py-0.5 rounded-full border bg-emerald-500/15 border-emerald-500/30 text-emerald-300';
+            }
+
+            const cnt = document.getElementById('qChatCountChip');
+            if (cnt) cnt.textContent = `${Number(t.message_count) || 0} Nachrichten`;
+
+            document.getElementById('qChatDeletedBanner')?.classList.toggle('hidden', !t.student_deleted);
+            document.getElementById('qChatClosedBanner')?.classList.toggle('hidden', !t.is_closed);
+            document.getElementById('qChatForm')?.classList.toggle('hidden', !!t.is_closed);
+
+            const toggleBtn = document.getElementById('qChatToggleClosedBtn');
+            if (toggleBtn) {
+                toggleBtn.innerHTML = `<i data-lucide="${t.is_closed ? 'unlock' : 'lock'}" class="w-3.5 h-3.5"></i>`;
+                toggleBtn.title = t.is_closed ? 'Chat wieder öffnen' : 'Chat abschließen';
+            }
+
+            renderQChatMessages();
+            if (window.lucide) lucide.createIcons();
+            if (!t.is_closed) {
+                const input = document.getElementById('qChatInput');
+                if (input) input.focus({ preventScroll: true });
+            }
+        }
+
+        function setTextById(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+
+        function renderQChatMessages() {
+            const box = document.getElementById('qChatMessages');
+            if (!box || !qActiveThread) return;
+            const list = qActiveMessages || [];
+            const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 180;
+
+            if (!list.length) {
+                box.innerHTML = '<div class="text-center text-[11px] text-gray-500 italic py-8">Noch keine Nachrichten.</div>';
+                return;
+            }
+
+            box.innerHTML = list.map(m => {
+                const time = qTimestamp(m.created_at);
+                if (qEditingMsgId && String(qEditingMsgId) === String(m.id)) {
+                    return `
+                        <div class="flex justify-end">
+                            <div class="w-full sm:w-4/5">
+                                <textarea id="qEditTextarea" rows="3" maxlength="1200"
+                                          class="w-full bg-surface-base border border-amber-500/40 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 leading-relaxed">${esc(m.content)}</textarea>
+                                <div class="flex justify-end gap-1.5 mt-1.5">
+                                    <button type="button" onclick="qCancelEditMessage()" class="px-3 py-1.5 text-[10px] font-bold text-gray-400 hover:text-white rounded-lg transition-all">Abbrechen</button>
+                                    <button type="button" onclick="qSaveEditMessage('${String(m.id).replace(/['"\\]/g, '')}')" class="px-3 py-1.5 text-[10px] font-bold bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-all"><i class="fa-solid fa-check mr-1"></i>Speichern</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                if (m.sender === 'admin') {
+                    return `
+                        <div class="flex flex-col items-end group">
+                            <div class="max-w-[85%] sm:max-w-[72%]">
+                                <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-2xl rounded-br-md px-3.5 py-2.5 text-xs leading-relaxed shadow-lg shadow-amber-600/20">
+                                    <p class="whitespace-pre-line break-words">${esc(m.content)}</p>
+                                </div>
+                                <div class="flex items-center justify-end gap-2 mt-1">
+                                    <button type="button" onclick="qEditMessage('${String(m.id).replace(/['"\\]/g, '')}')" title="Bearbeiten"
+                                            class="opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-surface-hover hover:bg-white/10 text-gray-400 hover:text-amber-300 rounded-md border border-white/5">
+                                        <i data-lucide="pencil" class="w-3 h-3"></i>
+                                    </button>
+                                    <button type="button" onclick="qDeleteQuestionMessage('${String(m.id).replace(/['"\\]/g, '')}')" title="Löschen"
+                                            class="opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-surface-hover hover:bg-white/10 text-gray-400 hover:text-rose-400 rounded-md border border-white/5">
+                                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                    </button>
+                                    <span class="text-[9px] text-gray-500">${time} · Ich</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="flex flex-col items-start group">
+                        <div class="max-w-[85%] sm:max-w-[72%]">
+                            <div class="bg-surface-card border border-surface-border text-gray-100 rounded-2xl rounded-bl-md px-3.5 py-2.5 text-xs leading-relaxed">
+                                <p class="whitespace-pre-line break-words">${esc(m.content)}</p>
+                            </div>
+                            <div class="text-[9px] text-gray-500 mt-1 pl-0.5">Schüler · ${time}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (nearBottom) box.scrollTop = box.scrollHeight;
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function qEditMessage(msgId) {
+            if (!msgId || !qActiveThread) return;
+            qEditingMsgId = msgId;
+            renderQChatMessages();
+            const ta = document.getElementById('qEditTextarea');
+            if (ta) {
+                ta.focus();
+                ta.style.height = 'auto';
+                ta.style.height = `${Math.min(ta.scrollHeight + 2, 200)}px`;
+                ta.selectionStart = ta.selectionEnd = ta.value.length;
+            }
+        }
+
+        function qCancelEditMessage() {
+            qEditingMsgId = null;
+            renderQChatMessages();
+        }
+
+        async function qSaveEditMessage(msgId) {
+            const ta = document.getElementById('qEditTextarea');
+            const content = (ta && ta.value || '').trim();
+            if (!content) { alert('Die Nachricht darf nicht leer sein.'); return; }
+            if (!qActiveThread) return;
+            try {
+                const res = await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}/messages/${encodeURIComponent(msgId)}`, {
+                    method: 'PATCH',
+                    body: { content }
+                });
+                if (res && res.error) throw new Error(res.error);
+                qEditingMsgId = null;
+                const data = await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}`);
+                if (data && data.thread) { qActiveThread = data.thread; qActiveMessages = data.messages || []; }
+                renderQChat();
+                loadQuestionThreads();
+            } catch (e) {
+                if (e.message !== 'Unauthorized') alert('Fehler: ' + e.message);
+            }
+        }
+
+        async function qDeleteQuestionMessage(msgId) {
+            if (!msgId || !qActiveThread) return;
+            if (!confirm('Diese eigene Nachricht endgültig löschen?')) return;
+            try {
+                const res = await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}/messages/${encodeURIComponent(msgId)}`, {
+                    method: 'DELETE'
+                });
+                if (res && res.error) throw new Error(res.error);
+                const data = await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}`);
+                if (data && data.thread) { qActiveThread = data.thread; qActiveMessages = data.messages || []; }
+                renderQChat();
+                loadQuestionThreads();
+            } catch (e) {
+                if (e.message !== 'Unauthorized') alert('Fehler: ' + e.message);
+            }
+        }
+
+        async function submitQAdminReply(event) {
+            event.preventDefault();
+            const input = document.getElementById('qChatInput');
+            const text = (input && input.value || '').trim();
+            if (!text || !qActiveThread) return;
+            if (qActiveThread.is_closed) { alert('Dieser Chat ist abgeschlossen. Öffne ihn über das Schloss-Symbol, um weiter zu schreiben.'); return; }
+
+            // Optimistisch sofort anzeigen
+            const prev = qActiveMessages;
+            qActiveMessages = [...prev, {
+                id: 'tmp-' + Date.now(),
+                thread_id: qActiveThread.id,
+                sender: 'admin',
+                content: text,
+                created_at: new Date().toISOString(),
+                _optimistic: true
+            }];
+            if (input) input.value = '';
+            renderQChatMessages();
+
+            try {
+                const res = await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}/messages`, {
+                    method: 'POST',
+                    body: { content: text }
+                });
+                if (res && res.error) throw new Error(res.error);
+                const data = await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}`);
+                if (data && data.thread) { qActiveThread = data.thread; qActiveMessages = data.messages || []; }
+                renderQChat();
+                loadQuestionThreads();
+            } catch (e) {
+                qActiveMessages = prev;
+                renderQChatMessages();
+                if (input) { input.value = text; input.focus(); }
+                if (e.message !== 'Unauthorized') alert('Fehler: ' + (e.message || 'Senden fehlgeschlagen'));
+            }
+        }
+
+        async function toggleQuestionClosed() {
+            if (!qActiveThread) return;
+            const next = !qActiveThread.is_closed;
+            try {
+                await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}`, {
+                    method: 'PATCH',
+                    body: { is_closed: next }
+                });
+                qActiveThread.is_closed = next;
+                renderQChat();
+                loadQuestionThreads();
+            } catch (e) {
+                if (e.message !== 'Unauthorized') alert('Fehler: ' + e.message);
+            }
+        }
+
+        async function deleteThreadAdmin() {
+            if (!qActiveThread) return;
+            const isDel = !!qActiveThread.student_deleted;
+            const promptText = isDel
+                ? 'Diesen vom Schüler bereits entfernten Chat jetzt endgültig und unwiderruflich aus der Datenbank löschen?'
+                : 'Diesen Chat UND alle Nachrichten endgültig aus der Datenbank löschen? (Kann nicht rückgängig gemacht werden)';
+            if (!confirm(promptText)) return;
+            try {
+                await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}`, { method: 'DELETE' });
+                closeModal('questionChatModal');
+                qActiveThread = null;
+                qActiveMessages = [];
+                await loadQuestionThreads();
+            } catch (e) {
+                if (e.message !== 'Unauthorized') alert('Fehler: ' + e.message);
+            }
+        }
+
+        function stopQChatPolling() {
+            if (qChatPollTimer) { clearInterval(qChatPollTimer); qChatPollTimer = null; }
+        }
+
+        function startQChatPolling() {
+            stopQChatPolling();
+            qChatPollTimer = setInterval(refreshQChatThread, 5000);
+        }
+
+        async function refreshQChatThread() {
+            if (document.hidden) return;
+            const modal = document.getElementById('questionChatModal');
+            if (!qActiveThread || !modal || modal.classList.contains('hidden')) { stopQChatPolling(); return; }
+            try {
+                const data = await adminFetch(`/api/admin/questions/${encodeURIComponent(qActiveThread.id)}`);
+                if (!data || !data.thread) return;
+                const prevKey = (qActiveMessages || []).map(m => String(m.id)).join(',');
+                const nextMessages = data.messages || [];
+                qActiveThread = data.thread;
+                if (nextMessages.map(m => String(m.id)).join(',') !== prevKey) {
+                    qActiveMessages = nextMessages;
+                    renderQChatMessages();
+                }
+                updateQChatHeaderLight();
+            } catch (e) { /* still leise weiter rufen */ }
+        }
+
+        function updateQChatHeaderLight() {
+            if (!qActiveThread) return;
+            const cnt = document.getElementById('qChatCountChip');
+            if (cnt) cnt.textContent = `${Number(qActiveThread.message_count) || 0} Nachrichten`;
+            document.getElementById('qChatClosedBanner')?.classList.toggle('hidden', !qActiveThread.is_closed);
+            document.getElementById('qChatForm')?.classList.toggle('hidden', !!qActiveThread.is_closed);
+            const toggleBtn = document.getElementById('qChatToggleClosedBtn');
+            if (toggleBtn) {
+                const wantIcon = qActiveThread.is_closed ? 'unlock' : 'lock';
+                if (toggleBtn.dataset.icon !== wantIcon) {
+                    toggleBtn.dataset.icon = wantIcon;
+                    toggleBtn.innerHTML = `<i data-lucide="${wantIcon}" class="w-3.5 h-3.5"></i>`;
+                    toggleBtn.title = qActiveThread.is_closed ? 'Chat wieder öffnen' : 'Chat abschließen';
+                    if (window.lucide) lucide.createIcons();
+                }
+            }
+        }
+
+        async function copyQCodeAdmin() {
+            const code = qActiveThread ? (qActiveThread.access_code || '') : '';
+            if (!code) return;
+            try { await navigator.clipboard.writeText(code); } catch (e) { /* ignore */ }
+            const btn = document.getElementById('qChatCodeBtn');
+            if (btn) {
+                const old = btn.innerHTML;
+                btn.innerHTML = 'Kopiert ✓';
+                setTimeout(() => { if (btn) btn.innerHTML = old; }, 1400);
+            }
+        }
+
+        // ============================================================
         // BENACHRICHTIGUNGEN
         // ============================================================
         async function loadUnreadComments() {
@@ -3204,7 +3914,7 @@
             const list = document.getElementById('notifList');
             if (!badge || !list) return;
 
-            const total = unreadComments.length + unreadIdeas.length;
+            const total = unreadComments.length + unreadIdeas.length + unreadQuestionThreads.length;
             if (total > 0) {
                 badge.textContent = total > 99 ? '99+' : String(total);
                 badge.classList.remove('hidden');
@@ -3219,7 +3929,8 @@
 
             const items = [
                 ...unreadIdeas.map(i => ({ type: 'idea', date: new Date(i.created_at || 0).getTime(), data: i })),
-                ...unreadComments.map(c => ({ type: 'comment', date: new Date(c.created_at || 0).getTime(), data: c }))
+                ...unreadComments.map(c => ({ type: 'comment', date: new Date(c.created_at || 0).getTime(), data: c })),
+                ...unreadQuestionThreads.map(q => ({ type: 'question', date: new Date(q.updated_at || 0).getTime(), data: q }))
             ].sort((a, b) => b.date - a.date);
 
             list.innerHTML = items.map(item => {
@@ -3240,6 +3951,27 @@
                                     </div>
                                     <p class="text-[11px] text-gray-200 mt-0.5 font-semibold line-clamp-2">${esc(i.title)}</p>
                                     <p class="text-[10px] text-gray-500 mt-0.5 truncate">von ${esc(i.author_name || 'Anonym')}</p>
+                                </div>
+                            </div>
+                        </button>
+                    `;
+                } else if (item.type === 'question') {
+                    const q = item.data;
+                    const dt = q.updated_at ? new Date(q.updated_at) : null;
+                    const timeStr = dt ? dt.toLocaleString('de-DE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+                    return `
+                        <button onclick="openQuestionNotification('${q.id}')" class="w-full text-left px-4 py-3 border-b border-surface-border/50 hover:bg-surface-hover transition-colors">
+                            <div class="flex items-start gap-2">
+                                <div class="w-7 h-7 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center shrink-0">
+                                    <i data-lucide="message-circle-question" class="w-3.5 h-3.5 text-fuchsia-400"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[10px] font-bold text-fuchsia-300">Neue Frage</span>
+                                        <span class="text-[9px] text-gray-500">${timeStr}</span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-200 mt-0.5 font-semibold line-clamp-2">${esc(q.subject)}</p>
+                                    <p class="text-[10px] text-gray-500 mt-0.5 truncate">${esc((q.last_message && q.last_message.content) || '')}</p>
                                 </div>
                             </div>
                         </button>
@@ -3354,11 +4086,260 @@
             }
         });
 
+        // ============================================================
+        // HINTERGRUND-BENACHRICHTIGUNGEN (System-Notis)
+        //  * Admin-Tab bleibt offen → prüft auch ohne Fokus weiter
+        //  * Vordergrund (Tab sichtbar): Kommentare + Fragen alle 60 Sek.,
+        //    Ideen ca. alle 6 Min.
+        //  * Hintergrund-Prüfung (Tab nicht sichtbar): alle 90 Minuten
+        //    (Ideen + Kommentare + Fragen)
+        //  * Zwischen 22 und 7 Uhr: keine Hintergrund-Prüfungen und keine
+        //    Meldungen (nach Rechner-Zeit)
+        // ============================================================
+        const BG_NOTIF_KEY = 'avh_bg_notif_v1';
+        const BG_CHECK_KEY = 'avh_bg_check_at';
+        const ADMIN_BG_CHECK_MS = 90 * 60 * 1000;
+        const QUIET_FROM = 22;   // ab 22:00 Uhr
+        const QUIET_UNTIL = 7;   // bis 07:00 Uhr
+        let adminBgCheckTimer = null;
+        let adminBgVisHooked = false;
+        let adminFgPollTicks = 0;
+
+        function isQuietHours() {
+            const h = new Date().getHours();
+            return h >= QUIET_FROM || h < QUIET_UNTIL;
+        }
+
+        function sysNotifSupported() { return ('Notification' in window); }
+
+        function sysNotifEnabled() {
+            return sysNotifSupported() && Notification.permission === 'granted'
+                && localStorage.getItem('avh_admin_sysnotif') === '1';
+        }
+
+        function bgStateGet() {
+            try {
+                const s = JSON.parse(localStorage.getItem(BG_NOTIF_KEY) || 'null');
+                return (s && typeof s === 'object') ? s : null;
+            } catch (e) { return null; }
+        }
+
+        function bgStateSave(s) {
+            try { localStorage.setItem(BG_NOTIF_KEY, JSON.stringify(s)); } catch (e) {}
+        }
+
+        function fireAdminNotification(tag, title, body, data = {}) {
+            try {
+                const n = new Notification(title, { tag, body, icon: 'avh.png', badge: 'avh.png' });
+                n.onclick = () => {
+                    try { window.focus(); } catch (e) {}
+                    if (data.ideaId && typeof jumpToIdea === 'function') jumpToIdea(data.ideaId);
+                    if (data.questionId) {
+                        if (currentPage !== 'questions') switchPage('questions');
+                        openQuestionChatAdmin(data.questionId);
+                    }
+                    try { n.close(); } catch (e) {}
+                };
+                return true;
+            } catch (e) { return false; }
+        }
+
+        // Lädt Ideen/Kommentare/Fragen leise und aktualisiert Badges & Listen
+        async function fetchNotifSources({ includeIdeas = true, includeQuestions = true } = {}) {
+            if (includeIdeas) {
+                try { listData = await adminFetch('/api/admin/ideas'); } catch (e) { if (e.message === 'Unauthorized') throw e; }
+                loadUnreadIdeas();
+            }
+            try {
+                const data = await adminFetch('/api/admin/unread-comments');
+                unreadComments = Array.isArray(data) ? data : [];
+            } catch (e) { if (e.message === 'Unauthorized') throw e; }
+            if (includeQuestions) {
+                const modal = document.getElementById('questionChatModal');
+                if (!modal || modal.classList.contains('hidden')) {
+                    try { questionThreads = (await adminFetch('/api/admin/questions')) || []; }
+                    catch (e) { if (e.message === 'Unauthorized') throw e; }
+                    qThreadsLoaded = true;
+                    unreadQuestionThreads = (questionThreads || []).filter(t => t.admin_unread);
+                }
+            }
+            renderNotifications();
+            updateDrawerCounts();
+            if (includeQuestions && qThreadsLoaded) renderQuestionPage();
+        }
+
+        // Vergleicht neuen Stand vs. letzte Prüfung und sendet ggf. System-Notis
+        function processNotifFindings(allowNotify) {
+            const state = bgStateGet();
+            const comments = Array.isArray(unreadComments) ? unreadComments : [];
+            const threads = questionThreads || [];
+
+            if (!state) {
+                // Erster Lauf: Basislinie setzen, nichts meldet sich nachträglich
+                bgStateSave({
+                    ideaAt: new Date().toISOString(),
+                    questionAt: new Date().toISOString(),
+                    commentIds: comments.map(c => c.id).slice(0, 300)
+                });
+                return;
+            }
+
+            const newIdeas = (listData || []).filter(i => i.created_at
+                && new Date(i.created_at).getTime() > new Date(state.ideaAt || 0).getTime());
+            const newQuestions = threads.filter(t => t.admin_unread && t.updated_at
+                && new Date(t.updated_at).getTime() > new Date(state.questionAt || 0).getTime());
+            const seenIds = new Set(state.commentIds || []);
+            const newComments = comments.filter(c => !seenIds.has(c.id));
+
+            if (!allowNotify) return; // 22–7 Uhr: Meldungen & Marker ausgesetzt
+
+            if (newIdeas.length) {
+                state.ideaAt = new Date(Math.max(...newIdeas.map(i => new Date(i.created_at).getTime()))).toISOString();
+            }
+            if (newQuestions.length) {
+                state.questionAt = new Date(Math.max(...newQuestions.map(t => new Date(t.updated_at).getTime()))).toISOString();
+            }
+            if (newComments.length) {
+                state.commentIds = [...newComments.map(c => c.id), ...(state.commentIds || [])].slice(0, 300);
+            }
+            if (newIdeas.length || newQuestions.length || newComments.length) bgStateSave(state);
+
+            if (!sysNotifEnabled()) return;
+
+            if (newIdeas.length) {
+                const preview = newIdeas.slice(0, 3).map(i => i.title).join(' · ');
+                fireAdminNotification('avh-ideas',
+                    newIdeas.length === 1 ? '🆕 Neue Idee' : `🆕 ${newIdeas.length} neue Ideen`,
+                    preview + (newIdeas.length > 3 ? ` (+${newIdeas.length - 3} weitere)` : ''),
+                    { ideaId: newIdeas[0].id });
+            }
+            if (newQuestions.length) {
+                const preview = newQuestions.slice(0, 3).map(q => q.subject).join(' · ');
+                fireAdminNotification('avh-questions',
+                    newQuestions.length === 1 ? '💬 Neue Frage' : `💬 ${newQuestions.length} neue Fragen`,
+                    preview + (newQuestions.length > 3 ? ` (+${newQuestions.length - 3})` : ''),
+                    { questionId: newQuestions[0].id });
+            }
+            if (newComments.length) {
+                const preview = newComments.slice(0, 3).map(c => c.content).join(' · ');
+                fireAdminNotification('avh-comments',
+                    newComments.length === 1 ? '💬 Neuer Kommentar' : `💬 ${newComments.length} neue Kommentare`,
+                    preview + (newComments.length > 3 ? ` (+${newComments.length - 3})` : ''), {});
+            }
+        }
+
+        async function runAdminNotifCheck(opts = {}) {
+            if (!getAdminPassword()) return;
+            const background = !!opts.background;
+            // Hintergrund-Prüfung nachts komplett auslassen (keine Worker-Last)
+            if (background && isQuietHours()) return;
+            const includeIdeas = opts.includeIdeas !== false;
+            try { localStorage.setItem(BG_CHECK_KEY, String(Date.now())); } catch (e) {}
+            try {
+                await fetchNotifSources({ includeIdeas, includeQuestions: true });
+            } catch (e) { return; }
+            // Nachts (Tab offen): UI aktualisieren, aber keine Meldungen/Marker
+            processNotifFindings(!isQuietHours());
+        }
+
+        function scheduleAdminBgNotifs() {
+            if (adminBgCheckTimer) clearInterval(adminBgCheckTimer);
+            adminBgCheckTimer = setInterval(() => runAdminNotifCheck({ background: true }), ADMIN_BG_CHECK_MS);
+            if (!adminBgVisHooked) {
+                adminBgVisHooked = true;
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden || !getAdminPassword()) return;
+                    let last = 0;
+                    try { last = parseInt(localStorage.getItem(BG_CHECK_KEY) || '0', 10) || 0; } catch (e) {}
+                    if (Date.now() - last > 10 * 60 * 1000) runAdminNotifCheck();
+                });
+            }
+        }
+
+        function updateSysNotifUI() {
+            const label = document.getElementById('sysNotifLabel');
+            const btn = document.getElementById('sysNotifToggleBtn');
+            if (!label) return;
+            if (!sysNotifSupported()) {
+                label.textContent = 'System-Benachrichtigungen: vom Browser nicht unterstützt';
+                label.className = 'block text-[10px] font-bold text-rose-300';
+                if (btn) btn.classList.add('opacity-60');
+                return;
+            }
+            const prefOn = localStorage.getItem('avh_admin_sysnotif') === '1';
+            let text, cls;
+            if (Notification.permission === 'denied') {
+                text = 'System-Benachrichtigungen: im Browser blockiert';
+                cls = 'text-rose-300';
+            } else if (Notification.permission === 'granted' && prefOn) {
+                text = 'System-Benachrichtigungen: AKTIV ✓';
+                cls = 'text-emerald-300';
+            } else {
+                text = 'System-Benachrichtigungen aktivieren';
+                cls = 'text-gray-200';
+            }
+            label.textContent = text;
+            label.className = 'block text-[10px] font-bold ' + cls;
+            if (btn) btn.classList.remove('opacity-60');
+        }
+
+        async function toggleAdminSysNotifs() {
+            if (!sysNotifSupported()) {
+                alert('Dein Browser unterstützt keine System-Benachrichtigungen.\n\nTipp: Nutze am Desktop Chrome, Edge oder Firefox.');
+                return;
+            }
+            if (Notification.permission === 'denied') {
+                alert('Benachrichtigungen sind für diese Website derzeit blockiert.\n\nSo zulassen: Schloss-Symbol in der Adressleiste → Website-Einstellungen → Benachrichtigungen → „Zulassen" → Seite neu laden.');
+                updateSysNotifUI();
+                return;
+            }
+            if (Notification.permission === 'granted') {
+                const wasOn = localStorage.getItem('avh_admin_sysnotif') === '1';
+                localStorage.setItem('avh_admin_sysnotif', wasOn ? '0' : '1');
+                if (!wasOn) {
+                    try {
+                        new Notification('✅ Hintergrund-Benachrichtigungen aktiv', {
+                            body: 'Neue Ideen & Fragen werden erkannt · Prüfung alle 90 Min. · 22–7 Uhr still',
+                            icon: 'avh.png', badge: 'avh.png', tag: 'avh-test'
+                        });
+                    } catch (e) {}
+                }
+                updateSysNotifUI();
+                return;
+            }
+            // Noch nicht gefragt → Browser-Freigabe anfragen
+            try {
+                const res = await Notification.requestPermission();
+                if (res === 'granted') {
+                    localStorage.setItem('avh_admin_sysnotif', '1');
+                    try {
+                        new Notification('✅ Hintergrund-Benachrichtigungen aktiv', {
+                            body: 'Neue Ideen & Fragen werden erkannt · Prüfung alle 90 Min. · 22–7 Uhr still',
+                            icon: 'avh.png', badge: 'avh.png', tag: 'avh-test'
+                        });
+                    } catch (e) {}
+                } else {
+                    localStorage.setItem('avh_admin_sysnotif', '0');
+                }
+            } catch (e) {}
+            updateSysNotifUI();
+        }
+
         function startNotifPolling() {
             if (notifPollTimer) clearInterval(notifPollTimer);
-            loadUnreadComments();
-            notifPollTimer = setInterval(loadUnreadComments, 25000);
+            updateSysNotifUI();
+            runAdminNotifCheck();                 // beim Start sofort prüfen
+            scheduleAdminBgNotifs();              // 90-Minuten-Hintergrund-Prüfung
+            // Vordergrund: leichter 60-Sekunden-Takt (Fragen/Kommentare),
+            // Ideen im Vordergrund ca. alle 6 Minuten. Nachts aus.
+            notifPollTimer = setInterval(() => {
+                if (document.hidden) return;      // Hintergrund: 90-Min-Prüfung übernimmt
+                if (isQuietHours()) return;       // 22–7 Uhr: keine Prüfungen
+                const includeIdeas = (++adminFgPollTicks % 6 === 0);
+                runAdminNotifCheck({ includeIdeas });
+            }, 60000);
         }
+
     </script>
 </body>
 </html>
