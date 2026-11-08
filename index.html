@@ -191,10 +191,16 @@
             transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0b0f17; }
-        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+        /* Globaler Scrollbalken (dunkel & dezent) */
+        :root, html {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.22); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.38); }
+        ::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
 
         .undo-redo-btn {
             background: none;
@@ -402,9 +408,249 @@
             transform: translate3d(0, -10px, 0);
             filter: blur(2px);
         }
+
+        /* ==========================================
+           APP-BOTTOM-NAVIGATION (Ideen · Updates · Fragen)
+           ========================================== */
+        #bottomNav {
+            background: rgba(11, 15, 23, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            animation: navSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+        }
+        @keyframes navSlideUp {
+            from { transform: translateY(24px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 0.5rem 0.25rem 0.55rem;
+            border-radius: 14px;
+            color: #9ca3af;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            transition: color 0.25s ease;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+        }
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+        }
+        .nav-item:hover { color: #e5e7eb; }
+        .nav-item:hover svg { transform: translateY(-1px) scale(1.06); }
+        .nav-item:active svg { transform: scale(0.9); }
+        .nav-item.active { color: #fff; }
+        .nav-item.active svg { color: #a5b4fc; filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.45)); }
+        .nav-indicator {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 33.33%;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.20), rgba(34, 211, 238, 0.08));
+            border: 1px solid rgba(99, 102, 241, 0.28);
+            border-radius: 14px;
+            box-shadow: 0 8px 22px -10px rgba(99, 102, 241, 0.5);
+            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), width 0.32s cubic-bezier(0.16, 1, 0.3, 1), left 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            will-change: transform, left, width;
+        }
+        #navQuestionDot {
+            position: absolute;
+            top: 6px;
+            right: calc(50% - 14px);
+            width: 9px;
+            height: 9px;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            box-shadow: 0 0 0 2px #0b0f17, 0 0 12px rgba(255, 71, 87, 0.9);
+            animation: navDotPulse 1.7s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 20;
+        }
+        @keyframes navDotPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.28); opacity: 0.72; }
+        }
+
+        /* ==========================================
+           FRAGEN (privater Fragen-Chat)
+           ========================================== */
+        .q-fade { animation: qFadeIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        @keyframes qFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .q-bubble { animation: qBubbleIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        @keyframes qBubbleIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .q-chat-enter { animation: qChatEnter 0.36s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        @keyframes qChatEnter {
+            from { opacity: 0; transform: translateY(18px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .q-thread-card {
+            cursor: pointer;
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.25s ease,
+                        box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+        .q-thread-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.38) !important;
+            box-shadow: 0 14px 34px -20px rgba(99, 102, 241, 0.6);
+        }
+        .q-thread-card:active { transform: translateY(0) scale(0.995); }
+        /* Kein äußerer Scrollbalken, wenn der Fragen-Chat geöffnet ist */
+        html.chat-open,
+        body.chat-open {
+            overflow: hidden !important;
+            height: 100% !important;
+            max-height: 100vh !important;
+            overscroll-behavior: none !important;
+        }
+        body.chat-open {
+            padding-bottom: 0 !important;
+        }
+
+        /* Frage-Chat & Fragen-Bereich: Eleganter, moderner Scrollbalken */
+        .q-chat-scroll,
+        #questionModalContainer,
+        #questionDeleteConfirmContainer {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(129, 140, 248, 0.35) transparent;
+            overscroll-behavior: contain;
+        }
+        .q-chat-scroll:hover,
+        #questionModalContainer:hover,
+        #questionDeleteConfirmContainer:hover {
+            scrollbar-color: rgba(129, 140, 248, 0.7) transparent;
+        }
+        .q-chat-scroll::-webkit-scrollbar,
+        #questionModalContainer::-webkit-scrollbar,
+        #questionDeleteConfirmContainer::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .q-chat-scroll::-webkit-scrollbar-track,
+        #questionModalContainer::-webkit-scrollbar-track,
+        #questionDeleteConfirmContainer::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 6px 0;
+        }
+        .q-chat-scroll::-webkit-scrollbar-thumb,
+        #questionModalContainer::-webkit-scrollbar-thumb,
+        #questionDeleteConfirmContainer::-webkit-scrollbar-thumb {
+            background: rgba(129, 140, 248, 0.35);
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: background 0.2s ease;
+        }
+        .q-chat-scroll::-webkit-scrollbar-thumb:hover,
+        #questionModalContainer::-webkit-scrollbar-thumb:hover,
+        #questionDeleteConfirmContainer::-webkit-scrollbar-thumb:hover {
+            background: rgba(129, 140, 248, 0.75);
+            box-shadow: 0 0 10px rgba(129, 140, 248, 0.4);
+        }
+        .q-chat-scroll::-webkit-scrollbar-thumb:active,
+        #questionModalContainer::-webkit-scrollbar-thumb:active,
+        #questionDeleteConfirmContainer::-webkit-scrollbar-thumb:active {
+            background: rgba(165, 180, 252, 0.95);
+        }
+        .q-chat-scroll::-webkit-scrollbar-button,
+        #questionModalContainer::-webkit-scrollbar-button,
+        #questionDeleteConfirmContainer::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+        .q-code-input {
+            letter-spacing: 0.5em;
+            text-align: left;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 6-stellige Code-Kästchen (Kompakt & elegant) */
+        .q-code-boxes {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+            min-width: 0;
+        }
+        .q-code-box {
+            width: 0;
+            min-width: 0;
+            flex: 1 1 0;
+            height: 38px;
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 10px;
+            background: rgba(15,23,42,0.65);
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+            font-variant-numeric: tabular-nums;
+        }
+        .q-code-box::-webkit-outer-spin-button,
+        .q-code-box::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+        .q-code-box:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.3);
+            background: rgba(15,23,42,0.95);
+        }
+        .q-code-box:disabled {
+            background: rgba(9,13,22,0.4);
+            color: #6b7280;
+            border-color: rgba(255,255,255,0.1);
+        }
+        @media (max-width: 640px) {
+            .q-code-box {
+                height: 36px;
+                font-size: 0.95rem;
+            }
+        }
+        .q-code-chip {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.24em;
+        }
+        .q-send-btn {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            box-shadow: 0 8px 20px -8px rgba(99, 102, 241, 0.7);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                        opacity 0.2s ease,
+                        box-shadow 0.25s ease;
+        }
+        .q-send-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px -10px rgba(99, 102, 241, 0.9);
+        }
+        .q-send-btn:active:not(:disabled) { transform: scale(0.93); }
+        .q-send-btn:disabled { opacity: 0.45; }
+        .pulse-dot { animation: pulseDot 1.7s ease-in-out infinite; }
+        @keyframes pulseDot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.55); }
+            50% { box-shadow: 0 0 0 5px rgba(244, 63, 94, 0); }
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col pb-24 md:pb-12">
+<body class="min-h-screen flex flex-col pb-32 md:pb-20">
 
     <!-- TOP NAVIGATION BAR -->
     <header class="sticky top-0 z-40 glass-nav px-4 py-3 transition-all duration-300">
@@ -420,6 +666,9 @@
     </header>
 
     <main class="max-w-4xl mx-auto w-full px-4 pt-6 flex-grow">
+
+        <!-- ============ MODULE 1: IDEEN ============ -->
+        <div id="viewIdeas">
 
         <!-- IDEE EINREICHEN CTA -->
         <div id="ideaCtaSection" class="mb-8 text-center">
@@ -508,7 +757,7 @@
             </div>
         </div>
 
-        <!-- FILTER & SORTING TABS -->
+        <!-- FILTER & SORTING (innerhalb des Ideen-Moduls) -->
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6 w-full">
             <!-- Gemeinsamer Hauptrahmen für Tabs (dehnt sich bis zur Anzahl oder auf 100% aus) -->
             <div id="tabNavWrapper" class="relative flex items-center bg-cardbg/80 p-1 rounded-2xl border border-white/5 w-full sm:w-auto flex-1 min-w-[280px] overflow-hidden transition-all duration-200">
@@ -524,15 +773,6 @@
                         class="relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
                     ✨ Neueste
                 </button>
-
-                <!-- Deutliche vertikale Trennlinie -->
-                <div id="timelineDivider" class="hidden h-5 w-[1px] bg-white/20 mx-1 shrink-0 z-10"></div>
-
-                <!-- Updates Button mit Emoji 📣 -->
-                <button id="sortTimelineBtn" onclick="setSort('timeline')"
-                        class="hidden relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
-                    📣 Updates
-                </button>
             </div>
 
             <div class="text-xs text-gray-400 font-medium px-1 shrink-0 ml-auto sm:ml-0">
@@ -540,7 +780,7 @@
             </div>
         </div>
 
-        <!-- IDEAS / TIMELINE CONTAINER -->
+        <!-- IDEAS CONTAINER -->
         <div id="ideasList" class="space-y-4 relative">
             <div class="glass-card rounded-2xl p-5 animate-pulse space-y-3">
                 <div class="h-4 bg-gray-700/50 rounded w-1/3"></div>
@@ -548,7 +788,159 @@
                 <div class="h-3 bg-gray-700/30 rounded w-2/3"></div>
             </div>
         </div>
+
+        </div><!-- /#viewIdeas -->
+
+        <!-- ============ MODULE 2: UPDATES (statt oben, jetzt als eigenes Modul) ============ -->
+        <div id="viewUpdates" class="hidden">
+            <div id="timelineList" class="space-y-4">
+                <div id="timelinePlaceholder" class="glass-card rounded-3xl p-12 text-center border border-white/5">
+                    <p class="text-4xl mb-3">📣</p>
+                    <h3 class="text-base font-bold text-white">Lade Updates …</h3>
+                    <p class="text-xs text-gray-400 mt-1">News & Fortschritt deiner Ideen werden geladen.</p>
+                </div>
+            </div>
+            <p class="text-center text-[10px] text-gray-500 font-medium mt-4 px-6">
+                Alle offiziellen Fortschritte & News rund um deine Vorschläge ⚡
+            </p>
+        </div>
+
+        <!-- ============ MODULE 3: FRAGEN (100 % privat) ============ -->
+        <div id="viewFragen" class="hidden">
+
+            <!-- Hero + Code-Zugriff (Perfekt ausbalanciert & gleiche Höhe) -->
+            <div id="questionHeaderGrid" class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-stretch mb-5">
+                <div id="questionHero" class="glass-card rounded-2xl p-4 sm:p-5 relative overflow-hidden border border-indigo-500/20 md:col-span-7 flex flex-col justify-between">
+                    <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none"></div>
+                    <div class="absolute -bottom-20 -left-10 w-40 h-40 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2.5 mb-2">
+                            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                                <i data-lucide="message-circle-question" class="w-4 h-4 text-indigo-300"></i>
+                            </div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 class="text-sm font-extrabold text-white leading-snug">Frag direkt &amp; privat</h2>
+                                <span class="text-[9px] font-bold text-indigo-300 bg-indigo-500/15 border border-indigo-500/25 rounded-full px-2 py-0.5">100% Anonym</span>
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-300 leading-relaxed mt-1">
+                            Deine Fragen sind <strong class="text-white font-bold">nicht öffentlich</strong> — nur du und der Schülersprecher sehen diesen Chat. Bei Rückfragen antwortest du direkt im selben Chat.
+                        </p>
+                    </div>
+                    <div class="relative z-10 pt-3">
+                        <button id="newQuestionBtn" class="w-full bg-gradient-to-r from-brand-600 via-indigo-500 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-500/25 active:scale-[0.99] transition-all cursor-pointer">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>Neue Frage stellen</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Code-Zugriff (andere Geräte) -->
+                <div id="questionCodeBox" class="glass-card rounded-2xl p-4 sm:p-5 border border-white/5 md:col-span-5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-2.5 mb-1.5">
+                            <div class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center shrink-0">
+                                <i data-lucide="key-round" class="w-3.5 h-3.5 text-cyan-300"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="text-xs font-extrabold text-white">Auf anderen Geräten öffnen</h3>
+                                <p class="text-[10px] text-gray-400 leading-relaxed">6-stelligen Code eingeben, um Chat zu laden.</p>
+                            </div>
+                        </div>
+                        <form id="questionCodeForm" class="flex flex-col gap-2 mt-2" autocomplete="off">
+                            <div class="q-code-boxes flex gap-1.5">
+                                <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="q-code-box" data-index="0" autocomplete="off">
+                                <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="q-code-box" data-index="1" autocomplete="off">
+                                <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="q-code-box" data-index="2" autocomplete="off">
+                                <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="q-code-box" data-index="3" autocomplete="off">
+                                <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="q-code-box" data-index="4" autocomplete="off">
+                                <input type="text" inputmode="numeric" pattern="[0-9]" maxlength="1" class="q-code-box" data-index="5" autocomplete="off">
+                                <input id="questionCodeInput" type="hidden" required>
+                            </div>
+                            <p id="questionCodeError" class="hidden text-[10px] text-rose-300 leading-none py-0.5"></p>
+                            <button type="submit" id="questionCodeSubmit" class="bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-600 text-white text-xs font-bold py-3 px-3 rounded-xl transition-all shadow-md shadow-indigo-500/20 active:scale-[0.98] w-full flex items-center justify-center gap-1.5 cursor-pointer">
+                                <span>Chat öffnen</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste der Fragen mit sauberem Header -->
+            <div id="questionListSection">
+                <div id="questionListHeader" class="flex items-center justify-between px-1 mb-2.5">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Deine privaten Chats</span>
+                    <span id="questionCountBadge" class="hidden text-[10px] font-bold text-gray-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full"></span>
+                </div>
+                <div id="questionList" class="space-y-3"></div>
+            </div>
+
+            <!-- Chat-Detailansicht -->
+            <div id="questionChat" class="hidden mt-4">
+                <div id="questionChatCard" class="glass-card rounded-2xl border border-white/5 overflow-hidden flex flex-col">
+                    <div class="flex items-center gap-2 p-3 border-b border-white/5 shrink-0">
+                        <button id="questionBackBtn" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white flex items-center justify-center transition-all shrink-0 active:scale-90" aria-label="Zurück zur Übersicht">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        </button>
+                        <div class="flex-1 min-w-0">
+                            <h3 id="questionChatTitle" class="text-sm font-bold text-white break-words line-clamp-2 leading-snug">Frage</h3>
+                            <button id="questionChatCodeBtn" type="button" class="q-code-chip mt-1 text-[10px] font-bold text-cyan-300 hover:text-cyan-100 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-2.5 py-0.5 transition-colors" title="Frage-Code kopieren">
+                                Code 000000 <i class="fa-regular fa-copy ml-0.5"></i>
+                            </button>
+                        </div>
+                        <button id="questionDeleteThreadBtn" class="w-9 h-9 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 flex items-center justify-center transition-all shrink-0 active:scale-90" title="Frage und Chat löschen">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <div id="questionClosedBanner" class="hidden px-4 py-2.5 bg-slate-500/10 border-y border-slate-500/20 text-[11px] text-slate-200 flex items-center gap-2 shrink-0">
+                        <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-300 shrink-0"></i>
+                        <span>Dieser Chat ist abgeschlossen — antworten ist nicht mehr möglich.</span>
+                    </div>
+
+                    <div id="questionMessages" class="q-chat-scroll flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-darkbg/30"></div>
+
+                    <form id="questionComposer" class="flex items-end gap-2 p-3 border-t border-white/5 bg-darkbg/40 shrink-0">
+                        <textarea id="questionInput" rows="1" maxlength="800" placeholder="Rückfrage schreiben …"
+                                  class="flex-1 min-w-0 resize-none bg-darkbg/90 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"></textarea>
+                        <button type="submit" id="questionSendBtn" class="q-send-btn w-11 h-11 rounded-xl text-white flex items-center justify-center shrink-0" title="Senden">
+                            <i data-lucide="send-horizontal" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+                <p class="text-center text-[10px] text-gray-500 font-medium mt-2 px-6 leading-relaxed">
+                    💡 Rückfragen gehören in denselben Chat · Neues Thema?
+                    <button type="button" onclick="backToQuestionList()" class="underline decoration-dotted text-gray-400 hover:text-brand-300 transition-colors font-bold">Neue Frage stellen</button>
+                </p>
+            </div>
+
+        </div><!-- /#viewFragen -->
     </main>
+
+    <!-- ============ APP-NAVIGATION UNTEN (3 Module) ============ -->
+    <nav id="bottomNav" class="fixed bottom-0 inset-x-0 z-40" aria-label="Hauptnavigation">
+        <div class="max-w-4xl mx-auto px-5 pt-1.5 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
+            <div class="relative">
+                <div id="navIndicator" class="nav-indicator"></div>
+                <div class="relative z-10 grid grid-cols-3">
+                    <button type="button" class="nav-item active" data-view="ideas" onclick="switchView('ideas')">
+                        <i data-lucide="lightbulb"></i>
+                        <span>Ideen</span>
+                    </button>
+                    <button type="button" class="nav-item" data-view="updates" onclick="switchView('updates')">
+                        <i data-lucide="megaphone"></i>
+                        <span>Updates</span>
+                    </button>
+                    <button type="button" class="nav-item relative" data-view="fragen" onclick="switchView('fragen')">
+                        <i data-lucide="message-circle-question"></i>
+                        <span>Fragen</span>
+                        <span id="navQuestionDot" class="hidden"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <!-- MODAL: NEUE IDEE EINREICHEN -->
     <div id="ideaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
@@ -650,8 +1042,112 @@
         </div>
     </div>
 
+    <!-- MODAL: NEUE FRAGE STELLEN (privat) -->
+    <div id="questionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card w-full max-w-lg rounded-3xl p-6 relative shadow-2xl border border-indigo-500/20 transform scale-95 transition-transform duration-300 mx-4 max-h-[92vh] overflow-y-auto" id="questionModalContainer">
+            <button id="closeQuestionModalBtn" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 p-2 rounded-full transition-colors z-10">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Aufgaben-Formular -->
+            <div id="questionModalFormWrap">
+                <div class="mb-5">
+                    <h3 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>💬</span> Neue Frage stellen
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-1 flex items-center gap-1.5">
+                        <i data-lucide="lock" class="w-3 h-3 text-emerald-400 shrink-0"></i>
+                        Privat — nur du &amp; der Schülersprecher sehen diesen Chat.
+                    </p>
+                </div>
+
+                <form id="questionForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">
+                            Worum geht es? <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" id="questionSubject" required maxlength="120" placeholder="z. B. Autofreier Freitag im Schulhof"
+                               class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+                        <p id="questionSubjectError" class="hidden text-xs text-rose-300 mt-1"></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">
+                            Deine Frage <span class="text-red-400">*</span>
+                        </label>
+                        <textarea id="questionText" required rows="4" maxlength="800" placeholder="Beschreibe deine Frage oder dein Anliegen …"
+                                  class="w-full bg-darkbg/90 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all resize-none"></textarea>
+                        <p id="questionTextError" class="hidden text-xs text-rose-300"></p>
+                    </div>
+
+                    <div class="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-3 text-[11px] text-cyan-100/90 leading-relaxed">
+                        <i data-lucide="key-round" class="w-3 h-3 inline -mt-0.5 mr-1 text-cyan-400"></i>
+                        Nach dem Absenden bekommst du einen <strong class="text-cyan-300 font-bold">6-stelligen Frage-Code</strong>. Mit dem Code öffnest du diesen Chat von jedem anderen Gerät.
+                    </div>
+
+                    <div class="pt-1 flex justify-end gap-3">
+                        <button type="button" id="cancelQuestionModalBtn" class="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-400 hover:bg-white/5 transition-all">
+                            Abbrechen
+                        </button>
+                        <button type="submit" id="questionSubmitBtn" class="bg-gradient-to-r from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white text-xs font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 active:scale-95 transition-all flex items-center gap-2">
+                            <span>Frage senden</span>
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Erfolgsansicht mit Frage-Code -->
+            <div id="questionModalSuccessWrap" class="hidden text-center py-2">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mb-4">
+                    <i data-lucide="check" class="w-6 h-6 text-emerald-400"></i>
+                </div>
+                <h3 class="text-lg font-extrabold text-white">Frage gestellt! 🎉</h3>
+                <p class="text-xs text-gray-300 mt-1.5">Notiere dir deinen persönlichen Frage-Code:</p>
+                <div class="mt-4 mx-auto inline-flex items-center gap-3 bg-darkbg/80 border border-cyan-500/30 rounded-2xl px-6 py-4 shadow-lg">
+                    <span id="newQuestionCode" class="q-code-chip text-2xl sm:text-3xl font-extrabold text-cyan-300">000000</span>
+                    <button id="copyNewQuestionCode" type="button" class="w-9 h-9 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 flex items-center justify-center transition-all active:scale-90" title="Code kopieren">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <p class="text-[11px] text-amber-200/90 bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 mt-4 leading-relaxed text-left">
+                    <i class="fa-solid fa-circle-info mr-1"></i>Speichere den Code gut — er ist die einzige Möglichkeit,
+                    diesen Chat von einem <span class="font-bold">anderen Gerät</span> aus zu öffnen.
+                </p>
+                <button id="openNewQuestionChatBtn" type="button" class="mt-5 w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <span>Zum Chat</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST CONTAINER MIT SICHEREM SEITENABSTAND -->
-    <div id="toastContainer" class="fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 z-50 space-y-2 pointer-events-none flex flex-col items-center sm:items-end"></div>
+    <div id="toastContainer" class="fixed bottom-24 md:bottom-20 left-4 right-4 sm:left-auto sm:right-5 z-50 space-y-2 pointer-events-none flex flex-col items-center sm:items-end"></div>
+
+    <!-- MODAL: FRAGE LÖSCHEN BESTÄTIGEN (privat, im Seiten-Design) -->
+    <div id="questionDeleteConfirmModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 relative shadow-2xl border border-white/10 transform scale-95 transition-transform duration-300 mx-4 max-h-[80vh] overflow-y-auto" id="questionDeleteConfirmContainer">
+            <div class="mb-4 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+                    <i data-lucide="trash-2" class="w-4 h-4 text-rose-400"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-white">Frage löschen?</h3>
+            </div>
+            <p class="text-sm text-gray-300 mb-6 leading-relaxed">
+                Dieser private Chat und alle Nachrichten werden unwiderruflich gelöscht. Das kann nicht rückgängig gemacht werden.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button id="questionDeleteConfirmCancelBtn" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-200 active:scale-[0.98] cursor-pointer">
+                    Abbrechen
+                </button>
+                <button id="questionDeleteConfirmDeleteBtn" type="button" class="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-rose-600 via-rose-500 to-red-500 hover:from-rose-500 hover:via-rose-400 hover:to-red-400 border border-rose-400/30 shadow-lg shadow-rose-600/30 hover:shadow-xl hover:shadow-rose-500/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                    <span>Ja, löschen</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // ==========================================
@@ -710,6 +1206,7 @@
         let currentIdeas = [];
         let commentCountsMap = {};
         let currentSort = 'votes';
+        let currentView = 'ideas';
         let deviceId = getOrCreateDeviceId();
         let moderationCache = null;
 
@@ -748,6 +1245,15 @@
             setupWelcomeModal();
             setupMessageModal();
             setupScrollCta();
+            setupQuestionUI();
+            initQCodeBoxes();
+            initBottomNav();
+
+            // Messenger-Layout des Fragen-Chats bei Größenänderungen (Fenster/Tastatur) nachziehen
+            window.addEventListener('resize', layoutQuestionChat);
+            window.addEventListener('orientationchange', layoutQuestionChat);
+            if (window.visualViewport) window.visualViewport.addEventListener('resize', layoutQuestionChat);
+
             document.getElementById('generateDescriptionBtn').addEventListener('click', generateDescription);
             document.getElementById('undoBtn').addEventListener('click', undo);
             document.getElementById('redoBtn').addEventListener('click', redo);
@@ -768,8 +1274,10 @@
 
             registerPlatformVisitor();
             loadIdeas();
+            loadMyQuestions();
             resetHistory();
             updateUndoRedoButtons();
+            switchView('ideas', true);
 
             setTimeout(() => showPendingMessages(), 1200);
 
@@ -791,7 +1299,10 @@
                 refreshRealtime();
             });
 
-            window.addEventListener('resize', updateIndicatorPosition);
+            window.addEventListener('resize', () => {
+                updateIndicatorPosition();
+                updateNavIndicator();
+            });
         });
 
         // HINTERGRUND-REFRESH (Geräuschlos, löst keine Seitenanimation aus)
@@ -808,10 +1319,10 @@
                 
                 // Aktualisiere Liste nur, wenn sich tatsächlich Daten verändert haben
                 if (prevSig !== nextSig) {
-                    if (currentSort !== 'timeline') {
-                        sortAndRenderIdeas(false); // animate = false verhindert Aufblenden
-                    } else {
+                    if (currentView === 'updates') {
                         renderCentralTimeline(false);
+                    } else {
+                        sortAndRenderIdeas(false); // animate = false verhindert Aufblenden
                     }
                 } else {
                     currentIdeas.forEach(idea => {
@@ -827,6 +1338,8 @@
                 openCommentSections.forEach(id => {
                     loadComments(id);
                 });
+                // Fragen lautlos im Hintergrund aktualisieren (ohne Aufblenden)
+                await loadMyQuestions(false);
             } catch (e) {
                 console.warn('Realtime refresh failed:', e);
             }
@@ -854,6 +1367,10 @@
 
             document.getElementById('closeModalBtn').addEventListener('click', closeModal);
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+            // Klicks auf den abgedunkelten Hintergrund schließen das Formular nicht.
+            modal.addEventListener('mousedown', event => {
+                if (event.target === modal) event.preventDefault();
+            });
         }
 
         function setupScrollCta() {
@@ -864,14 +1381,28 @@
             const brandBlock = document.getElementById('brandBlock');
             if (!section || !button) return;
 
-            let floatThreshold = section.offsetTop + section.offsetHeight;
+            let floatThreshold = 0;
             let isFloating = false;
 
             const recalculateThreshold = () => {
-                if (!isFloating) {
-                    floatThreshold = section.offsetTop + section.offsetHeight;
-                }
+                const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+                floatThreshold = Math.max(0, sectionTop - 20);
             };
+
+            const refreshCta = () => {
+                // Beim Zurückwechseln zuerst den alten Floating-Zustand vollständig lösen.
+                isFloating = false;
+                recalculateThreshold();
+                // Explizit alle Floating-Styles entfernen, damit beim Zurückkommen sauber neu gestartet wird
+                button.classList.remove('is-floating');
+                button.style.removeProperty('--floating-cta-width');
+                button.style.removeProperty('--floating-cta-height');
+                button.style.right = '';
+                brandBlock.style.paddingRight = '';
+                updateCta();
+            };
+
+            recalculateThreshold();
 
             const getFloatingWidth = () => {
                 const savedPadding = brandBlock.style.paddingRight;
@@ -895,8 +1426,20 @@
             };
 
             const updateCta = () => {
-                const shouldFloat = window.scrollY > floatThreshold;
-                if (shouldFloat === isFloating) return;
+                // Der schwebende Button gehört nur zum Ideen-Modul.
+                const shouldFloat = currentView === 'ideas' && window.scrollY > floatThreshold;
+                if (shouldFloat === isFloating) {
+                    // Defensive Bereinigung, falls ein View-Wechsel die Klasse/Inline-Styles
+                    // hinterlassen hat, obwohl der Button nicht schweben soll.
+                    if (!shouldFloat && button.classList.contains('is-floating')) {
+                        button.classList.remove('is-floating');
+                        button.style.removeProperty('--floating-cta-width');
+                        button.style.removeProperty('--floating-cta-height');
+                        button.style.right = '';
+                        if (brandBlock) brandBlock.style.paddingRight = '';
+                    }
+                    return;
+                }
 
                 if (shouldFloat && headerInner && brandBlock) {
                     const innerBox = headerInner.getBoundingClientRect();
@@ -920,11 +1463,25 @@
             };
 
             window.addEventListener('scroll', updateCta, { passive: true });
+            window.__updateCta = updateCta;
+            window.__refreshCtaThreshold = refreshCta;
+            window.__resetCtaFloating = () => {
+                isFloating = false;
+                button.classList.remove('is-floating');
+                button.style.removeProperty('--floating-cta-width');
+                button.style.removeProperty('--floating-cta-height');
+                button.style.right = '';
+                if (brandBlock) brandBlock.style.paddingRight = '';
+            };
             window.addEventListener('resize', () => {
                 recalculateThreshold();
                 updateFloatingMetrics();
                 updateCta();
             });
+            window.addEventListener('load', () => {
+                recalculateThreshold();
+                updateCta();
+            }, { once: true });
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', updateFloatingMetrics);
             }
@@ -1211,26 +1768,6 @@ async function syncVotesWithServer() {
             } catch (e) { /* ignore */ }
         }
 
-        function updateTimelineTabVisibility() {
-            const hasUpdates = centralTimelineCache && centralTimelineCache.length > 0;
-            const divider = document.getElementById('timelineDivider');
-            const btn = document.getElementById('sortTimelineBtn');
-
-            if (divider) {
-                divider.classList.toggle('hidden', !hasUpdates);
-                divider.classList.toggle('block', hasUpdates);
-            }
-            if (btn) {
-                btn.classList.toggle('hidden', !hasUpdates);
-            }
-
-            if (!hasUpdates && currentSort === 'timeline') {
-                setSort('votes', false);
-            } else {
-                updateIndicatorPosition();
-            }
-        }
-
         async function loadTimelineCounts() {
             try {
                 const entries = await workerFetch('/api/timeline');
@@ -1245,11 +1782,8 @@ async function syncVotesWithServer() {
                     ideaTimelineCache[e.idea_id].push(e);
                 });
 
-                updateTimelineTabVisibility();
-
-                if (currentSort === 'timeline') {
-                    renderCentralTimeline(false);
-                }
+                // Updates-Modul immer aktuell halten (eigenes Modul unten)
+                renderCentralTimeline(false);
             } catch (e) {
                 console.warn('Timeline-Liste konnte nicht geladen werden.', e);
             }
@@ -1462,6 +1996,13 @@ async function syncVotesWithServer() {
 
             // Ausgeblendete Ideen direkt in ihrem oberen Statusbereich zeigen.
             if (idea.status === 'rejected' || idea.status === 'done') {
+                // Wenn wir nicht im Ideen-Modul sind, zuerst dorthin wechseln und Ideen laden
+                if (currentView !== 'ideas') {
+                    switchView('ideas');
+                    await loadIdeas();
+                    await new Promise(r => setTimeout(r, 100));
+                }
+
                 const wrapper = document.getElementById(idea.status === 'rejected'
                     ? 'statusRejectedWrapper' : 'statusDoneWrapper');
                 if (!wrapper) return;
@@ -1483,8 +2024,8 @@ async function syncVotesWithServer() {
                 return;
             }
 
-            if (currentSort === 'timeline') {
-                setSort('votes', true);
+            if (currentView !== 'ideas') {
+                switchView('ideas');
             }
             setTimeout(() => {
                 const card = document.getElementById(`idea-card-${ideaId}`);
@@ -1544,20 +2085,16 @@ async function syncVotesWithServer() {
             document.getElementById('ideaCount').textContent = getVisibleIdeas().length;
             updateStatusHighlights();
             
-            if (currentSort === 'timeline') {
-                renderCentralTimeline(false);
-            } else {
-                sortAndRenderIdeas(false);
-            }
+            sortAndRenderIdeas(false);
+            updateIndicatorPosition();
         }
 
         // BERECHNET UND ANIMIERT DAS BLAUE BILD (SLIDER) ZU JEDEM AKTIVEN TAB
         function updateIndicatorPosition() {
             const indicator = document.getElementById('sortIndicator');
-            let activeBtn;
-            if (currentSort === 'votes') activeBtn = document.getElementById('sortVotesBtn');
-            else if (currentSort === 'newest') activeBtn = document.getElementById('sortNewestBtn');
-            else if (currentSort === 'timeline') activeBtn = document.getElementById('sortTimelineBtn');
+            const activeBtn = (currentSort === 'newest')
+                ? document.getElementById('sortNewestBtn')
+                : document.getElementById('sortVotesBtn');
 
             if (indicator && activeBtn && !activeBtn.classList.contains('hidden')) {
                 indicator.style.width = `${activeBtn.offsetWidth}px`;
@@ -1567,24 +2104,17 @@ async function syncVotesWithServer() {
         }
 
         function setSort(type, animate = true) {
-            currentSort = type;
+            currentSort = (type === 'newest') ? 'newest' : 'votes';
             const votesBtn = document.getElementById('sortVotesBtn');
             const newestBtn = document.getElementById('sortNewestBtn');
-            const timelineBtn = document.getElementById('sortTimelineBtn');
 
             const baseClass = "relative z-10 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-150 whitespace-nowrap text-center flex-1";
 
-            if (votesBtn) votesBtn.className = `${baseClass} ${type === 'votes' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
-            if (newestBtn) newestBtn.className = `${baseClass} ${type === 'newest' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
-            if (timelineBtn) timelineBtn.className = `${baseClass} ${type === 'timeline' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
+            if (votesBtn) votesBtn.className = `${baseClass} ${currentSort === 'votes' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
+            if (newestBtn) newestBtn.className = `${baseClass} ${currentSort === 'newest' ? 'text-white' : 'text-gray-400 hover:text-white'}`;
 
             updateIndicatorPosition();
-
-            if (type === 'timeline') {
-                renderCentralTimeline(animate);
-            } else {
-                sortAndRenderIdeas(animate);
-            }
+            sortAndRenderIdeas(animate);
         }
 
         function sortAndRenderIdeas(animate = false) {
@@ -1792,7 +2322,7 @@ async function syncVotesWithServer() {
                 JSON.stringify([...votedSet])
             );
 
-            if (currentSort !== 'timeline') {
+            if (currentView === 'ideas') {
                 sortAndRenderIdeas(false);
             }
 
@@ -1819,7 +2349,7 @@ async function syncVotesWithServer() {
                             votedSet.delete(ideaId);
                         }
                         localStorage.setItem('avh_user_upvotes', JSON.stringify([...votedSet]));
-                        if (currentSort !== 'timeline') {
+                        if (currentView === 'ideas') {
                             sortAndRenderIdeas(false);
                         }
                     }
@@ -1848,7 +2378,7 @@ async function syncVotesWithServer() {
                     JSON.stringify([...votedSet])
                 );
 
-                if (currentSort !== 'timeline') {
+                if (currentView === 'ideas') {
                     sortAndRenderIdeas(false);
                 }
 
@@ -1899,7 +2429,7 @@ async function syncVotesWithServer() {
             const button = document.getElementById('generateDescriptionBtn');
             const label = document.getElementById('generateDescriptionLabel');
             if (!title) {
-                setFormMessage('titleError', 'Gib zuerst eine Überschrift ein.');
+                setFormMessage('titleError', 'Gib zuerst eine Überschrift ein');
                 return;
             }
 
@@ -1914,18 +2444,18 @@ async function syncVotesWithServer() {
                 });
 
                 if (res.status === 'ERROR') {
-                    setFormMessage('descriptionError', 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden.');
+                    setFormMessage('descriptionError', 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden');
                     return;
                 }
                 if (res.status === 'REJECTED') {
-                    setFormMessage('titleError', res.reason || 'Diese Überschrift ist nicht erlaubt.');
+                    setFormMessage('titleError', res.reason || 'Diese Überschrift ist nicht erlaubt');
                     return;
                 }
                 if (res.status === 'DUPLICATE') {
                     if (res.idea) {
                         showDuplicateModal(res.idea);
                     } else {
-                        setFormMessage('descriptionError', 'Diese Idee ist bereits vorhanden.');
+                        setFormMessage('descriptionError', 'Diese Idee ist bereits vorhanden');
                     }
                     return;
                 }
@@ -1954,7 +2484,7 @@ async function syncVotesWithServer() {
             } catch (error) {
                 const msg = (error && error.code === 'RATE_LIMITED')
                     ? rateLimitMessage(error, 'KI-Beschreibungen')
-                    : 'Die KI konnte gerade keine Beschreibung erstellen.';
+                    : 'Die KI konnte gerade keine Beschreibung erstellen';
                 setFormMessage('descriptionError', msg);
             } finally {
                 button.disabled = false;
@@ -1975,7 +2505,7 @@ async function syncVotesWithServer() {
             const aiState = document.getElementById('aiProcessingState');
 
             if (!rawDescription) {
-                setFormMessage('descriptionError', 'Bitte schreibe eine Beschreibung oder lasse sie zuerst von der KI erstellen.');
+                setFormMessage('descriptionError', 'Bitte schreibe eine Beschreibung oder lasse sie zuerst von der KI erstellen');
                 return;
             }
 
@@ -1995,7 +2525,7 @@ async function syncVotesWithServer() {
                 const res = await workerFetch('/api/ideas', { method: 'POST', body });
 
                 if (res.result === 'ERROR') {
-                    setFormMessage('descriptionError', res.reason || 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden. Bitte versuche es erneut.');
+                    setFormMessage('descriptionError', res.reason || 'Die KI-Prüfung konnte nicht sicher abgeschlossen werden. Bitte versuche es erneut');
                     return;
                 }
 
@@ -2005,12 +2535,12 @@ async function syncVotesWithServer() {
                         resetFormState();
                         return;
                     }
-                    setFormMessage('descriptionError', 'Diese Idee ist bereits vorhanden.');
+                    setFormMessage('descriptionError', 'Diese Idee ist bereits vorhanden');
                     return;
                 }
 
                 if (res.result === 'REJECTED') {
-                    const message = res.reason || 'Diese Idee kann so nicht veröffentlicht werden.';
+                    const message = res.reason || 'Diese Idee kann so nicht veröffentlicht werden';
                     setFormMessage(rawDescription ? 'descriptionError' : 'titleError', message);
                     showToast(`Nicht veröffentlicht: ${message}`, 'error');
                     return;
@@ -2027,7 +2557,7 @@ async function syncVotesWithServer() {
             } catch (err) {
                 const msg = (err && err.code === 'RATE_LIMITED')
                     ? rateLimitMessage(err, 'neue Ideen')
-                    : 'Fehler beim Speichern der Idee.';
+                    : 'Fehler beim Speichern der Idee';
                 showToast(msg, 'error');
             } finally {
                 stopCountdown();
@@ -2159,7 +2689,7 @@ async function syncVotesWithServer() {
             } catch (err) {
                 const msg = (err && err.code === 'RATE_LIMITED')
                     ? rateLimitMessage(err, 'Kommentare')
-                    : 'Fehler beim Senden des Kommentars.';
+                    : 'Fehler beim Senden des Kommentars';
                 showToast(msg, 'error');
             } finally {
                 setTimeout(() => {
@@ -2210,33 +2740,45 @@ async function syncVotesWithServer() {
         const ideaTimelineCache = {};
         const ideaTimelineExpanded = new Set();
         let centralTimelineCache = null;
+        let centralTimelineSort = 'newest';
 
         function renderCentralTimeline(animate = false) {
-            const container = document.getElementById('ideasList');
+            const container = document.getElementById('timelineList');
             if (!container) return;
-            const entries = centralTimelineCache || [];
+            if (centralTimelineCache === null) return; // Daten laden noch → Platzhalter bleibt
+            const entries = [...(centralTimelineCache || [])].sort((a, b) => {
+                const da = new Date(a.event_date).getTime();
+                const db = new Date(b.event_date).getTime();
+                return centralTimelineSort === 'newest' ? db - da : da - db;
+            });
 
+            // Leerzustand, wenn es (noch) keine Updates gibt.
             if (!entries.length) {
-                container.innerHTML = '';
-                setSort('votes', false);
+                container.innerHTML = `
+                    <div class="text-center q-fade py-12">
+                        <p class="text-4xl mb-3">📣</p>
+                        <h3 class="text-base font-bold text-white">Noch keine Updates</h3>
+                        <p class="text-xs text-gray-400 mt-1">Sobald es Neuigkeiten zu den Ideen gibt, erscheinen sie hier.</p>
+                    </div>
+                `;
                 return;
             }
 
-            if (animate) {
-                container.classList.remove('tab-content-anim');
-                void container.offsetWidth; // re-trigger animation
-                container.classList.add('tab-content-anim');
-            } else {
-                container.classList.remove('tab-content-anim');
-            }
-
             container.innerHTML = `
-                <div class="glass-card rounded-2xl p-6 border border-white/5 space-y-6">
-                    <div class="flex items-center gap-2 border-b border-white/5 pb-4">
-                        <span class="text-lg">📣</span>
-                        <h3 class="text-base font-extrabold text-white">News & Updates</h3>
+                <div class="flex items-center gap-2 border-b border-white/5 pb-4 mb-6">
+                    <span class="text-lg">📣</span>
+                    <h3 class="text-base font-extrabold text-white flex-1">News & Updates</h3>
+                    <div class="tl-sort-wrapper relative flex items-center bg-cardbg/80 p-1 rounded-xl border border-white/5">
+                        <div id="tlSortIndicator" class="absolute top-1 bottom-1 rounded-xl bg-brand-600 shadow-md pointer-events-none transition-all duration-200 cubic-bezier(0.16,1,0.3,1) z-0"></div>
+                        <button onclick="setTimelineSort('newest')" id="tlSortNewest" class="relative z-10 px-2 sm:px-4 py-1.5 rounded-xl text-xs font-bold text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
+                            ✨ Neueste
+                        </button>
+                        <button onclick="setTimelineSort('oldest')" id="tlSortOldest" class="relative z-10 px-2 sm:px-4 py-1.5 rounded-xl text-xs font-bold text-gray-400 hover:text-white transition-colors duration-150 whitespace-nowrap text-center flex-1">
+                            ⏳ Älteste
+                        </button>
                     </div>
-                    <div class="space-y-6">
+                </div>
+                <div id="timelineEntries" class="space-y-6">
                         ${entries.map(e => {
                             const dt = new Date(e.event_date);
                             const dateStr = dt.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -2265,15 +2807,1065 @@ async function syncVotesWithServer() {
                             `;
                         }).join('')}
                     </div>
-                </div>
             `;
+            if (animate) {
+                const entriesContainer = document.getElementById('timelineEntries');
+                if (entriesContainer) {
+                    entriesContainer.classList.remove('tab-content-anim');
+                    void entriesContainer.offsetHeight;
+                    entriesContainer.classList.add('tab-content-anim');
+                }
+            }
             if (window.lucide) lucide.createIcons();
+            updateTimelineSortButtons();
+        }
+
+        function setTimelineSort(sort) {
+            const oldIndicator = document.getElementById('tlSortIndicator');
+            const oldWrapper = oldIndicator?.parentElement;
+            const oldRect = oldIndicator?.getBoundingClientRect();
+            const wrapperRect = oldWrapper?.getBoundingClientRect();
+            const start = oldRect && wrapperRect ? {
+                left: oldRect.left - wrapperRect.left,
+                width: oldRect.width
+            } : null;
+
+            centralTimelineSort = sort;
+            renderCentralTimeline(true);
+
+            // Der Timeline-Header wird beim Sortieren neu aufgebaut. Den neuen
+            // Indikator deshalb erst an der alten Position einsetzen und dann
+            // zum aktiven Button gleiten lassen.
+            const indicator = document.getElementById('tlSortIndicator');
+            if (indicator && start) {
+                indicator.style.transition = 'none';
+                indicator.style.left = `${start.left}px`;
+                indicator.style.width = `${start.width}px`;
+                void indicator.offsetWidth;
+                indicator.style.removeProperty('transition');
+                updateTimelineSortButtons();
+            }
+        }
+
+        function updateTimelineSortButtons() {
+            const newestBtn = document.getElementById('tlSortNewest');
+            const oldestBtn = document.getElementById('tlSortOldest');
+            const indicator = document.getElementById('tlSortIndicator');
+            if (!newestBtn || !oldestBtn || !indicator) return;
+            const base = "relative z-10 px-2 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition-colors duration-150 whitespace-nowrap text-center flex-1";
+            if (centralTimelineSort === 'newest') {
+                newestBtn.className = `${base} text-white`;
+                oldestBtn.className = `${base} text-gray-400 hover:text-white`;
+                indicator.style.width = `${newestBtn.offsetWidth}px`;
+                indicator.style.left = `${newestBtn.offsetLeft}px`;
+                indicator.style.opacity = '1';
+            } else {
+                oldestBtn.className = `${base} text-white`;
+                newestBtn.className = `${base} text-gray-400 hover:text-white`;
+                indicator.style.width = `${oldestBtn.offsetWidth}px`;
+                indicator.style.left = `${oldestBtn.offsetLeft}px`;
+                indicator.style.opacity = '1';
+            }
         }
 
         function jumpToIdeaFromCentralTimeline(ideaId) {
             return jumpToIdea(ideaId);
         }
-    
+
+        // ============================================================
+        //  MODUL 3: FRAGEN
+        //  Privater Chat mit dem Schülersprecher. Jedes Gerät sieht nur
+        //  seine eigenen Chats. Mit dem 6-stelligen Frage-Code kann ein
+        //  Chat auf einem anderen Gerät geöffnet werden.
+        // ============================================================
+
+        const Q_CODES_KEY = 'avh_q_codes';
+        const Q_SEEN_KEY = 'avh_q_seen';
+        const Q_POLL_MS = 4000;
+        const QUESTION_BASE_TITLE = (document.title || 'AVH Ideenplattform').trim();
+
+        let myQuestions = [];
+        let myQuestionsLoaded = false;
+        let activeQuestion = null;        // offener Thread (Zusammenfassung vom Server)
+        let activeQuestionMessages = [];  // Nachrichten des offenen Chats
+        let questionPollTimer = null;
+        let isSendingMessage = false;     // verhindert Doppel-Send während Request läuft
+        let qSeenMsgIds = new Set();
+        let qRenderedThreadId = null;
+
+        // ---------- Fragen-hilfsfunktionen ----------
+
+        function getQCodes() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(Q_CODES_KEY) || '[]');
+                return Array.isArray(raw) ? raw.map(String).filter(c => /^\d{6}$/.test(c)) : [];
+            } catch (e) { return []; }
+        }
+
+        function saveQCodes(codes) {
+            const clean = Array.from(new Set((codes || []).map(String).filter(c => /^\d{6}$/.test(c)))).slice(0, 20);
+            try { localStorage.setItem(Q_CODES_KEY, JSON.stringify(clean)); } catch (e) {}
+            return clean;
+        }
+
+        function addQCode(code) {
+            const c = String(code || '');
+            if (!/^\d{6}$/.test(c)) return;
+            const codes = getQCodes().filter(x => x !== c);
+            codes.unshift(c); // neueste zuerst
+            saveQCodes(codes.slice(0, 20));
+        }
+
+        function removeQCode(code) {
+            saveQCodes(getQCodes().filter(x => x !== String(code)));
+        }
+
+        function removeQCodeAndRerender(code) {
+            removeQCode(code);
+            loadMyQuestions();
+        }
+
+        function getQSeen() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(Q_SEEN_KEY) || '{}');
+                return (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+            } catch (e) { return {}; }
+        }
+
+        function markQSeen(threadId, atIso) {
+            if (!threadId) return;
+            const seen = getQSeen();
+            seen[String(threadId)] = atIso || new Date().toISOString();
+            try { localStorage.setItem(Q_SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
+        }
+
+        function isQuestionUnread(t) {
+            if (!t || t.is_closed || t.last_sender !== 'admin' || !t.last_message) return false;
+            const seenIso = getQSeen()[String(t.id)];
+            if (!seenIso) return true;
+            return new Date(t.updated_at).getTime() > (new Date(seenIso).getTime() + 500);
+        }
+
+        function countUnreadQuestions() {
+            return (myQuestions || []).filter(isQuestionUnread).length;
+        }
+
+        function updateQuestionNavBadge() {
+            const dot = document.getElementById('navQuestionDot');
+            const n = countUnreadQuestions();
+            const inOpenChat = currentView === 'fragen' && activeQuestion;
+            if (dot) dot.classList.toggle('hidden', n === 0 || inOpenChat);
+            document.title = n > 0 ? `(${n}) ${QUESTION_BASE_TITLE}` : QUESTION_BASE_TITLE;
+        }
+
+        function qAccessQS(thread) {
+            const code = thread && thread.access_code ? String(thread.access_code) : '';
+            return code ? `?code=${encodeURIComponent(code)}` : '';
+        }
+
+        function questionErrorMessage(e, fallback) {
+            if (e && e.code === 'RATE_LIMITED') return rateLimitMessage(e, 'Fragen');
+            return fallback;
+        }
+
+        function qRelativeDate(iso) {
+            if (!iso) return '';
+            const t = new Date(iso).getTime();
+            if (!Number.isFinite(t)) return '';
+            const diff = Date.now() - t;
+            if (diff < 45000) return 'gerade eben';
+            const min = Math.floor(diff / 60000);
+            if (min < 60) return `vor ${min} Min.`;
+            if (min < 24 * 60) return `vor ${Math.floor(min / 60)} Std.`;
+            const d = new Date(iso);
+            const opts = { day: '2-digit', month: 'short' };
+            if (d.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric';
+            return d.toLocaleDateString('de-DE', opts);
+        }
+
+        function qTimestamp(iso) {
+            const d = iso ? new Date(iso) : null;
+            if (!d || Number.isNaN(d.getTime())) return '';
+            return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+                + ' · ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function setQFieldError(id, msg) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = msg || '';
+            el.classList.toggle('hidden', !msg);
+        }
+
+        function showQuestionCodeError(msg) {
+            setQFieldError('questionCodeError', msg);
+        }
+
+        async function copyQuestionText(text, button = null) {
+            if (!text) return;
+            const showCopied = () => {
+                if (!button) return;
+                const icon = button.querySelector('i');
+                if (!icon) return;
+                icon.className = 'fa-solid fa-check ml-0.5';
+                clearTimeout(button._copyIconTimer);
+                button._copyIconTimer = setTimeout(() => {
+                    const currentIcon = button.querySelector('i');
+                    if (currentIcon) currentIcon.className = button.id === 'questionChatCodeBtn'
+                        ? 'fa-regular fa-copy ml-0.5'
+                        : 'fa-regular fa-copy';
+                }, 900);
+            };
+            try {
+                await navigator.clipboard.writeText(text);
+                showCopied();
+                showToast('Kopiert ✓', 'success');
+                return;
+            } catch (e) { /* Fallback unten */ }
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                showCopied();
+                showToast('Kopiert ✓', 'success');
+            } catch (e2) {
+                showToast('Kopieren nicht möglich — bitte manuell notieren', 'error');
+            }
+        }
+
+        function autoGrowQuestionInput() {
+            const ta = document.getElementById('questionInput');
+            if (!ta) return;
+            ta.style.height = 'auto';
+            ta.style.height = `${Math.min(ta.scrollHeight, 140)}px`;
+        }
+
+        // ---------- App-Navigation unten ----------
+
+        function initBottomNav() {
+            // Erst beim nächsten Frame messen (nach dem Layout) und nach dem Font-Load
+            requestAnimationFrame(updateNavIndicator);
+            setTimeout(updateNavIndicator, 350);
+            window.addEventListener('load', updateNavIndicator);
+            if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+                document.fonts.ready.then(() => updateNavIndicator());
+            }
+        }
+
+        function updateNavIndicator() {
+            const nav = document.getElementById('bottomNav');
+            const indicator = document.getElementById('navIndicator');
+            if (!nav || !indicator) return;
+            const btn = nav.querySelector(`.nav-item[data-view="${currentView}"]`);
+            if (!btn) return;
+            indicator.style.width = `${btn.offsetWidth}px`;
+            indicator.style.left = `${btn.offsetLeft}px`;
+            indicator.style.opacity = '1';
+        }
+
+        function switchView(view, silent = false) {
+            const target = ({ ideas: 'viewIdeas', updates: 'viewUpdates', fragen: 'viewFragen' })[view]
+                ? view : 'ideas';
+            currentView = target;
+
+            // Ansicht umschalten (+ sanfte Einblend-Animation)
+            const targetId = ({ ideas: 'viewIdeas', updates: 'viewUpdates', fragen: 'viewFragen' })[target];
+            ['viewIdeas', 'viewUpdates', 'viewFragen'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const isTarget = id === targetId;
+                el.classList.toggle('hidden', !isTarget);
+                // Die Ideenansicht enthält den schwebenden CTA. Ein transformiertes
+                // Elternelement würde dessen position:fixed an den Container binden.
+                if (isTarget && !silent && id !== 'viewIdeas') {
+                    el.classList.remove('tab-content-anim');
+                    void el.offsetWidth;
+                    el.classList.add('tab-content-anim');
+                } else if (id === 'viewIdeas') {
+                    el.classList.remove('tab-content-anim');
+                }
+            });
+
+            // Nav-Buttons markieren + Indikator verschieben
+            document.querySelectorAll('#bottomNav .nav-item').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === target);
+            });
+            updateNavIndicator();
+
+            // Der schwebende CTA-Button gehört nur zum Ideen-Modul.
+            if (target === 'ideas' && typeof window.__refreshCtaThreshold === 'function') {
+                window.__refreshCtaThreshold();
+            } else if (typeof window.__resetCtaFloating === 'function') {
+                window.__resetCtaFloating();
+            } else if (typeof window.__updateCta === 'function') {
+                window.__updateCta();
+            }
+
+            // Modul-spezifisches Nachladen
+            if (target === 'ideas') { setChatPageLock(false); loadIdeas(); }
+            if (target === 'updates') { setChatPageLock(false); renderCentralTimeline(false); }
+            if (target === 'fragen') {
+                if (!activeQuestion) setChatPageLock(false);
+                renderQuestionList(false);
+                loadMyQuestions(false);
+                if (activeQuestion) startQuestionPolling();
+                // Falls der Chat offen ist: Messenger-Höhe frisch berechnen
+                layoutQuestionChat();
+            }
+            updateQuestionNavBadge();
+
+            if (!silent) window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (target === 'ideas' && typeof window.__refreshCtaThreshold === 'function') {
+                requestAnimationFrame(() => {
+                    window.__refreshCtaThreshold();
+                    window.__updateCta?.();
+                });
+                if (!silent) {
+                    window.addEventListener('scrollend', () => window.__updateCta?.(), { once: true });
+                }
+            }
+        }
+
+        // ---------- UI-Verkabelung ----------
+
+        function setupQuestionUI() {
+            const $ = id => document.getElementById(id);
+
+            // Zurück zur Übersicht
+            $('questionBackBtn') && $('questionBackBtn').addEventListener('click', backToQuestionList);
+
+            // Chat löschen (2-stufig bestätigt)
+            $('questionDeleteThreadBtn') && $('questionDeleteThreadBtn').addEventListener('click', deleteActiveQuestionThread);
+
+            // Code-Eingabe: nur Ziffern, Fehler ausblenden
+            const codeInput = $('questionCodeInput');
+            if (codeInput) {
+                codeInput.addEventListener('input', e => {
+                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    showQuestionCodeError('');
+                });
+            }
+            $('questionCodeForm') && $('questionCodeForm').addEventListener('submit', submitQuestionCode);
+
+            // Composer: Senden + Enter/Shift+Enter + Auto-Zeilenhöhe
+            $('questionComposer') && $('questionComposer').addEventListener('submit', submitQuestionMessage);
+            const ta = $('questionInput');
+            if (ta) {
+                ta.addEventListener('input', autoGrowQuestionInput);
+                ta.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if ($('questionComposer')) $('questionComposer').requestSubmit();
+                    }
+                });
+            }
+
+            // Frage-Code im Chat-Header kopieren
+            $('questionChatCodeBtn') && $('questionChatCodeBtn').addEventListener('click', () => {
+                copyQuestionText(activeQuestion ? (activeQuestion.access_code || '') : '', $('questionChatCodeBtn'));
+            });
+
+            // Modal: Neue Frage
+            $('newQuestionBtn') && $('newQuestionBtn').addEventListener('click', openQuestionModal);
+            $('closeQuestionModalBtn') && $('closeQuestionModalBtn').addEventListener('click', closeQuestionModal);
+            $('cancelQuestionModalBtn') && $('cancelQuestionModalBtn').addEventListener('click', closeQuestionModal);
+            $('questionForm') && $('questionForm').addEventListener('submit', handleQuestionSubmit);
+            ['questionSubject', 'questionText'].forEach(id => {
+                $(id) && $(id).addEventListener('input', () => {
+                    setQFieldError(id === 'questionSubject' ? 'questionSubjectError' : 'questionTextError', '');
+                });
+            });
+
+            // Erfolgsansicht: Code kopieren / zum Chat
+            $('copyNewQuestionCode') && $('copyNewQuestionCode').addEventListener('click', () => {
+                copyQuestionText(($('newQuestionCode') || {}).textContent || '', $('copyNewQuestionCode'));
+            });
+            $('openNewQuestionChatBtn') && $('openNewQuestionChatBtn').addEventListener('click', () => {
+                const code = (($('newQuestionCode') || {}).textContent || '').trim();
+                const thread = activeQuestion;
+                closeQuestionModal();
+                // Zur Fragen-Seite wechseln, damit der Chat sichtbar ist
+                window.switchView('fragen');
+                if (thread) {
+                    activeQuestionMessages = activeQuestionMessages.filter(m => m.thread_id === String(thread.id) || m.thread_id === thread.id);
+                    showQuestionChat(thread, activeQuestionMessages, true);
+                } else if (/^\d{6}$/.test(code)) {
+                    openQuestionThreadByCode(code);
+                }
+            });
+
+            // Escape schließt das Frage-Modal
+            document.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+                const modal = $('questionModal');
+                if (modal && !modal.classList.contains('hidden')) closeQuestionModal();
+            });
+        }
+
+        // ---------- Meine Fragen laden & Liste rendern ----------
+
+        let lastQuestionsSig = '';
+        async function loadMyQuestions(animate = false) {
+            try {
+                const codes = getQCodes();
+                const qs = codes.length ? `?codes=${encodeURIComponent(codes.join(','))}` : '';
+                const fresh = (await workerFetch(`/api/questions/mine${qs}`)) || [];
+                
+                const nextSig = JSON.stringify(fresh.map(q => [
+                    q.id, q.updated_at, q.message_count, q.is_closed,
+                    q.last_message ? q.last_message.id : null,
+                    q.last_message ? q.last_message.content : null,
+                    isQuestionUnread(q)
+                ]));
+                const changed = nextSig !== lastQuestionsSig;
+                lastQuestionsSig = nextSig;
+                myQuestions = fresh;
+                myQuestionsLoaded = true;
+
+                if (currentView === 'fragen') {
+                    const listEl = document.getElementById('questionList');
+                    const hasRendered = listEl && listEl.children.length > 0;
+                    // Neu rendern, wenn sich Daten geändert haben, animate erzwungen ist oder noch nichts im DOM gerendert ist
+                    if (changed || animate || !hasRendered) {
+                        renderQuestionList(animate);
+                    }
+                }
+            } catch (e) {
+                serviceUnseen('Fragen konnten nicht geladen werden');
+                myQuestions = myQuestions || [];
+            }
+            updateQuestionNavBadge();
+        }
+
+        let qLoadWarnShown = false;
+        function serviceUnseen(msg) {
+            if (qLoadWarnShown || myQuestionsLoaded) return; // nur einmal überhaupt melden
+            qLoadWarnShown = true;
+            showToast(msg, 'info');
+        }
+
+        function renderQuestionList(animate = false) {
+            const list = document.getElementById('questionList');
+            if (!list) return;
+            const chat = document.getElementById('questionChat');
+            const inChat = chat && !chat.classList.contains('hidden');
+
+            const headerGrid = document.getElementById('questionHeaderGrid');
+            const listHeader = document.getElementById('questionListHeader');
+            if (headerGrid) headerGrid.classList.toggle('hidden', inChat);
+            if (listHeader) listHeader.classList.toggle('hidden', inChat);
+            list.classList.toggle('hidden', inChat);
+            if (inChat) return;
+
+            const badge = document.getElementById('questionCountBadge');
+            if (badge) {
+                badge.textContent = `${myQuestions.length}`;
+                badge.classList.toggle('hidden', myQuestions.length === 0);
+            }
+
+            if (!myQuestions.length) {
+                list.innerHTML = `
+                    <div class="glass-card rounded-2xl p-10 text-center border border-white/5${animate ? ' q-fade' : ''}">
+                        <p class="text-4xl mb-3">💬</p>
+                        <h3 class="text-sm font-bold text-white">Dein privater Fragen-Chat ist leer</h3>
+                        <p class="text-xs text-gray-400 mt-1.5 leading-relaxed max-w-xs mx-auto">Stelle oben deine erste Frage — nur du und der Schülersprecher sehen sie.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = myQuestions.map((t, i) => {
+                const unread = isQuestionUnread(t);
+                const closed = !!t.is_closed;
+                const last = t.last_message || null;
+                const chipHtml = closed
+                    ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-300 bg-slate-500/10 border border-slate-500/20 rounded-full px-2 py-0.5"><i class="fa-solid fa-lock text-[8px]"></i> Abgeschlossen</span>`
+                    : (unread
+                        ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5 pulse-dot"><i class="fa-solid fa-comment-dots text-[8px]"></i> Neue Antwort</span>`
+                        : '');
+                const safeId = String(t.id).replace(/['"\\]/g, '');
+                const animCls = animate ? ' q-fade' : '';
+                const animStyle = animate ? ` style="animation-delay:${Math.min(i * 60, 300)}ms"` : '';
+                return `
+                    <div class="q-thread-card glass-card rounded-2xl p-4 border border-white/5${animCls}"${animStyle} onclick="openQuestionThread('${safeId}')" role="button">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-sm font-bold text-white break-words leading-snug">${escapeHtml(t.subject)}</h3>
+                                ${last ? `
+                                <p class="text-[11px] text-gray-400 mt-1.5 break-words line-clamp-2 leading-relaxed">
+                                    <span class="${last.sender === 'admin' ? 'text-amber-200 font-bold' : 'text-gray-500 font-bold'}">${last.sender === 'admin' ? 'Schülersprecher' : 'Du'}:</span>
+                                    <span>${escapeHtml(last.content)}</span>
+                                </p>` : ''}
+                            </div>
+                            <div class="shrink-0 flex flex-col items-end gap-1.5">
+                                <span class="text-[10px] text-gray-500 whitespace-nowrap">${qRelativeDate(t.updated_at || t.created_at)}</span>
+                                ${chipHtml}
+                                <span class="q-code-chip text-[9px] font-bold text-gray-600" title="Dein Frage-Code">Code ${escapeHtml(t.access_code || '')}</span>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5 text-[10px] text-gray-500">
+                            <i class="fa-regular fa-comments"></i>
+                            <span>${Number(t.message_count) || 0} Nachrichten</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderQuestionStoredCodes() {
+            const wrap = document.getElementById('questionStoredCodes');
+            const box = document.getElementById('questionStoredCodesWrapper');
+            if (!wrap) return;
+            const codes = getQCodes();
+            if (!codes.length) {
+                wrap.innerHTML = '';
+                if (box) box.classList.add('hidden');
+                return;
+            }
+            if (box) box.classList.remove('hidden');
+            wrap.innerHTML = codes.map(c => `
+                <span class="group inline-flex items-center gap-1.5 text-[9px] font-bold text-cyan-200 bg-cyan-500/10 border border-cyan-500/20 rounded-full pl-2.5 pr-1 py-0.5 shrink-0 transition-colors" title="Chat öffnen">
+                    <button type="button" class="hover:text-cyan-100 tracking-wider transition-colors" onclick="openQuestionThreadByCode('${c}')">Code ${c}</button>
+                    <button type="button" class="w-4 h-4 shrink-0 rounded-full bg-white/10 hover:bg-rose-500/30 text-gray-400 hover:text-rose-200 flex items-center justify-center transition-colors" title="Code vergessen" aria-label="Code ${c} vergessen" onclick="removeQCodeAndRerender('${c}')">
+                        <i class="fa-solid fa-xmark text-[9px]"></i>
+                    </button>
+                </span>
+            `).join('');
+        }
+
+        // ---------- Chat öffnen / senden / löschen ----------
+
+        async function openQuestionThread(id) {
+            const cached = myQuestions.find(t => String(t.id) === String(id));
+            if (cached) {
+                activeQuestion = cached;
+                activeQuestionMessages = [];
+                showQuestionChat(cached, [], true);
+                showQuestionSkeleton();
+                // Liste/Hero SOFORT ausblenden → Chat öffnet direkt mit Animation (kein "erst darunter")
+                renderQuestionList();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            try {
+                const res = await workerFetch(`/api/questions/${encodeURIComponent(id)}${qAccessQS(cached)}`);
+                if (!res || res.error) {
+                    showToast(res && res.error ? res.error : 'Diese Frage existiert nicht (mehr)', 'error');
+                    if (!cached) backToQuestionList();
+                    return;
+                }
+                activeQuestion = res.thread;
+                activeQuestionMessages = res.messages || [];
+                markQSeen(id, res.thread && res.thread.updated_at);
+                // animate=false: Der Container-Effekt lief schon beim Skeleton – nur Inhalte auffrischen
+                showQuestionChat(activeQuestion, activeQuestionMessages, false);
+                loadMyQuestions();
+            } catch (e) {
+                showToast(questionErrorMessage(e, 'Chat konnte nicht geladen werden'), 'error');
+                if (!cached) backToQuestionList();
+            }
+        }
+
+        async function openQuestionThreadByCode(code) {
+            showQuestionCodeError('');
+            if (!/^\d{6}$/.test(String(code || ''))) {
+                showQuestionCodeError('Bitte gib genau 6 Ziffern ein');
+                return null;
+            }
+            try {
+                const res = await workerFetch(`/api/questions/by-code/${encodeURIComponent(code)}`);
+                if (!res || res.error) {
+                    showQuestionCodeError(res && res.error ? res.error : 'Dieser Code passt zu keiner aktiven Frage');
+                    return null;
+                }
+                addQCode(res.code || code);
+                activeQuestion = res.thread;
+                activeQuestionMessages = res.messages || [];
+                markQSeen(activeQuestion.id, res.thread && res.thread.updated_at);
+                showQuestionChat(activeQuestion, activeQuestionMessages, true);
+                renderQuestionList();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                loadMyQuestions();
+                return res.thread;
+            } catch (e) {
+                showQuestionCodeError(questionErrorMessage(e, 'Fragen-Service gerade nicht erreichbar. Bitte versuche es gleich erneut'));
+                return null;
+            }
+        }
+
+        async function submitQuestionCode(event) {
+            event.preventDefault();
+            const boxes = document.querySelectorAll('.q-code-box');
+            const code = Array.from(boxes).map(b => b.value).join('');
+            const input = document.getElementById('questionCodeInput');
+            if (!input) return;
+            input.value = code;
+            if (!/^\d{6}$/.test(code)) {
+                showQuestionCodeError('Bitte gib genau 6 Ziffern ein');
+                return;
+            }
+            const btn = document.getElementById('questionCodeSubmit');
+            const original = btn ? btn.textContent : '';
+            if (btn) { btn.disabled = true; btn.textContent = 'Prüfe …'; }
+            const thread = await openQuestionThreadByCode(code);
+            if (btn) { btn.disabled = false; btn.textContent = original; }
+            if (thread) {
+                boxes.forEach(b => b.value = '');
+                boxes[0].focus();
+            }
+        }
+
+        // ---------- OTP-Boxen: Fokus-Wechsel & nur Ziffern ----------
+        function initQCodeBoxes() {
+            const boxes = document.querySelectorAll('.q-code-box');
+            boxes.forEach((box, idx) => {
+                // Nur Ziffern erlauben
+                box.addEventListener('input', (e) => {
+                    const v = box.value.replace(/\D/g, '');
+                    if (v.length > 1) box.value = v.slice(-1);
+                    else box.value = v;
+                    if (v && idx < boxes.length - 1) {
+                        boxes[idx + 1].focus();
+                    }
+                    // Hidden input aktualisieren
+                    const hidden = document.getElementById('questionCodeInput');
+                    if (hidden) hidden.value = Array.from(boxes).map(b => b.value).join('');
+                });
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !box.value && idx > 0) {
+                        e.preventDefault();
+                        boxes[idx - 1].focus();
+                    }
+                    if (e.key === 'ArrowLeft' && idx > 0) {
+                        e.preventDefault();
+                        boxes[idx - 1].focus();
+                    }
+                    if (e.key === 'ArrowRight' && idx < boxes.length - 1) {
+                        e.preventDefault();
+                        boxes[idx + 1].focus();
+                    }
+                });
+                box.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+                    paste.split('').forEach((ch, i) => {
+                        if (boxes[idx + i]) boxes[idx + i].value = ch;
+                    });
+                    const next = Math.min(idx + paste.length, boxes.length - 1);
+                    boxes[next].focus();
+                    const hidden = document.getElementById('questionCodeInput');
+                    if (hidden) hidden.value = Array.from(boxes).map(b => b.value).join('');
+                });
+            });
+        }
+
+        function showQuestionChat(thread, messages, animate = false) {
+            if (!thread) return;
+            activeQuestion = thread;
+            if (Array.isArray(messages)) activeQuestionMessages = messages;
+
+            // Thread gewechselt → Animation-Memory zurücksetzen
+            if (qRenderedThreadId !== String(thread.id)) {
+                qSeenMsgIds = new Set();
+                qRenderedThreadId = String(thread.id);
+            }
+
+            const chat = document.getElementById('questionChat');
+            if (!chat) return;
+
+            const wasHidden = chat.classList.contains('hidden');
+            chat.classList.remove('hidden');
+
+            // Animation nur, wenn der Chat wirklich neu eingeblendet wird (nicht bei Refresh)
+            if (animate && wasHidden) {
+                // Sanfter Slide-Up statt plumpem Fade — Chat "gleitet" an seinen Platz
+                chat.classList.remove('q-fade', 'q-chat-enter');
+                void chat.offsetWidth;
+                chat.classList.add('q-chat-enter');
+            }
+
+            // Messenger-Layout: Karte füllt die verfügbare Höhe, Composer unten
+            layoutQuestionChat();
+            if (wasHidden) requestAnimationFrame(layoutQuestionChat);
+
+            renderQuestionChatHeader(activeQuestion);
+            renderQuestionMessages(activeQuestionMessages, animate && wasHidden);
+            startQuestionPolling();
+            updateQuestionNavBadge();
+
+            if (window.matchMedia('(min-width: 768px)').matches && !activeQuestion.is_closed) {
+                const ta = document.getElementById('questionInput');
+                if (ta) ta.focus({ preventScroll: true });
+            }
+        }
+
+        function showQuestionSkeleton() {
+            const wrap = document.getElementById('questionMessages');
+            if (!wrap) return;
+            wrap.innerHTML = `
+                <div class="flex justify-start gap-2 q-fade"><div class="h-16 w-2/3 rounded-2xl bg-white/5 animate-pulse"></div></div>
+                <div class="flex justify-end q-fade" style="animation-delay:70ms"><div class="h-10 w-1/2 rounded-2xl bg-white/5 animate-pulse"></div></div>
+                <div class="flex justify-start gap-2 q-fade" style="animation-delay:140ms"><div class="h-12 w-3/5 rounded-2xl bg-white/5 animate-pulse"></div></div>
+            `;
+        }
+
+        function renderQuestionChatHeader(t) {
+            const title = document.getElementById('questionChatTitle');
+            const codeBtn = document.getElementById('questionChatCodeBtn');
+            const closedBanner = document.getElementById('questionClosedBanner');
+            const composer = document.getElementById('questionComposer');
+            if (title) title.textContent = t.subject || 'Frage';
+            if (codeBtn) codeBtn.innerHTML = `Code ${escapeHtml(t.access_code || '??????')} <i class="fa-regular fa-copy ml-0.5"></i>`;
+            const closed = !!t.is_closed;
+            if (closedBanner) closedBanner.classList.toggle('hidden', !closed);
+            if (composer) composer.classList.toggle('hidden', closed);
+        }
+
+        function renderQuestionMessages(messages, animateAll = false) {
+            const wrap = document.getElementById('questionMessages');
+            if (!wrap) return;
+            const list = Array.isArray(messages) ? messages : [];
+
+            // Nur bei nicht näher am unteren Rand kleben (User ist nach oben gescrollt → nicht springen)
+            const nearBottom = wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight < 180;
+
+            if (!list.length) {
+                wrap.innerHTML = `
+                    <div class="flex justify-center q-fade">
+                        <div class="text-center text-[11px] text-gray-400 bg-white/5 border border-white/5 rounded-2xl px-4 py-3 max-w-xs leading-relaxed">
+                            <p class="text-lg mb-1">💬</p>
+                            Deiner Frage folgt hier der Chat mit dem Schülersprecher — privat, nur sichtbar für euch beide.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Kleinere Verzögerung, damit neue Nachrichten animiert statt ruckartig erscheinen
+            let delay = 0;
+            wrap.innerHTML = list.map(m => {
+                const mine = m.sender === 'student';
+                const isNew = animateAll || !qSeenMsgIds.has(String(m.id));
+                qSeenMsgIds.add(String(m.id));
+                const anim = isNew ? ' q-bubble' : '';
+                const d = isNew ? ` style="animation-delay:${delay}ms"` : '';
+                delay = Math.min(delay + 45, 200);
+                return `
+                    <div class="flex ${mine ? 'justify-end' : 'justify-start'} gap-2${anim}"${d}>
+                        ${!mine ? `<img src="ich.png" alt="Schülersprecher" class="w-7 h-7 rounded-full object-cover border border-amber-500/40 shrink-0 self-end mb-1" onerror="this.src='https://placehold.co/56x56/f59e0b/1f2937?text=SV'">` : ''}
+                        <div class="max-w-[82%] sm:max-w-[72%] min-w-0">
+                            <div class="${mine
+                                ? 'bg-gradient-to-br from-brand-600 to-indigo-500 text-white rounded-2xl rounded-br-md px-3.5 py-2.5 text-sm leading-relaxed shadow-lg shadow-brand-600/20'
+                                : 'bg-amber-500/10 border border-amber-400/25 text-amber-50 rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm leading-relaxed'}">
+                                <p class="whitespace-pre-line break-words">${escapeHtml(m.content)}</p>
+                            </div>
+                            <div class="text-[9px] text-gray-500 mt-1 ${mine ? 'text-right' : 'text-left'}">
+                                ${qTimestamp(m.created_at)}${mine ? ' · Du' : ' · Schülersprecher'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (nearBottom || animateAll) wrap.scrollTop = wrap.scrollHeight;
+        }
+
+        function setChatPageLock(locked) {
+            const isLocked = !!locked;
+            document.documentElement.classList.toggle('chat-open', isLocked);
+            document.body.classList.toggle('chat-open', isLocked);
+            if (isLocked) {
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function backToQuestionList() {
+            setChatPageLock(false);
+            stopQuestionPolling();
+            activeQuestion = null;
+            activeQuestionMessages = [];
+            qRenderedThreadId = null;
+            document.getElementById('questionChat') && document.getElementById('questionChat').classList.add('hidden');
+            renderQuestionList(false);
+            loadMyQuestions(false);
+            updateQuestionNavBadge();
+        }
+
+        // Messenger-Layout: Chat-Karte so hoch, dass der Composer unten über der Bottom-Nav sitzt und kein äußerer Scrollbalken entsteht.
+        function layoutQuestionChat() {
+            const chat = document.getElementById('questionChat');
+            const card = document.getElementById('questionChatCard');
+            if (!chat || !card || chat.classList.contains('hidden')) {
+                setChatPageLock(false);
+                return;
+            }
+            // Ansicht gerade ausgeblendet (display:none) → messbare Maße sind kosmetisch wertlos
+            if (card.offsetParent === null) return;
+
+            setChatPageLock(true);
+
+            const nav = document.getElementById('bottomNav');
+            const hint = card.nextElementSibling; // Hinweiszeile unterhalb der Karte
+            const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+
+            const cardTop = card.getBoundingClientRect().top;
+            const topOffset = cardTop > 0 ? cardTop : 90;
+            const navH = nav ? nav.offsetHeight : 60;
+            const hintH = hint ? (hint.offsetHeight + (parseFloat(getComputedStyle(hint).marginTop) || 8)) : 0;
+
+            // Exakt verfügbare Höhe berechnen, damit nichts aus dem Viewport herausragt
+            const avail = vh - topOffset - navH - hintH - 10;
+            card.style.height = `${Math.max(260, Math.floor(avail))}px`;
+        }
+
+        function startQuestionPolling() {
+            stopQuestionPolling();
+            questionPollTimer = setInterval(() => {
+                if (document.hidden) return;
+                if (!activeQuestion || currentView !== 'fragen') { stopQuestionPolling(); return; }
+                const modal = document.getElementById('questionModal');
+                if (modal && !modal.classList.contains('hidden')) return;
+                refreshActiveQuestionThread();
+            }, Q_POLL_MS);
+        }
+
+        function stopQuestionPolling() {
+            if (questionPollTimer) { clearInterval(questionPollTimer); questionPollTimer = null; }
+        }
+
+        async function refreshActiveQuestionThread() {
+            if (!activeQuestion) return;
+            const threadId = activeQuestion.id;
+            const prevKey = activeQuestionMessages.map(m => String(m.id)).join(',');
+            try {
+                const res = await workerFetch(`/api/questions/${encodeURIComponent(threadId)}${qAccessQS(activeQuestion)}`);
+                if (!res || res.error) {
+                    const err = res && res.error ? String(res.error) : '';
+                    if (err.includes('nicht (mehr)') || err.includes('existiert nicht')) {
+                        showToast('Dieser Chat wurde gelöscht', 'info');
+                        backToQuestionList();
+                    }
+                    return;
+                }
+                const nextMessages = res.messages || [];
+                const nextKey = nextMessages.map(m => String(m.id)).join(',');
+                const wasClosed = !!activeQuestion.is_closed;
+                activeQuestion = res.thread;
+                if (nextKey !== prevKey) {
+                    activeQuestionMessages = nextMessages;
+                    renderQuestionMessages(nextMessages, false);
+                    markQSeen(threadId, res.thread && res.thread.updated_at);
+                }
+                if (wasClosed !== !!activeQuestion.is_closed) {
+                    renderQuestionChatHeader(activeQuestion);
+                    if (!activeQuestion.is_closed) showToast('Der Chat wurde wieder geöffnet', 'info');
+                }
+            } catch (e) { /* still weiter pollen */ }
+        }
+
+        async function submitQuestionMessage(event) {
+            event.preventDefault();
+            const input = document.getElementById('questionInput');
+            const btn = document.getElementById('questionSendBtn');
+            const text = (input && input.value || '').trim();
+            if (!text || !activeQuestion) return;
+            if (activeQuestion.is_closed) { showToast('Dieser Chat ist geschlossen', 'info'); return; }
+            if (isSendingMessage) return; // Doppel-Send während Request läuft verhindern
+
+            isSendingMessage = true;
+            if (btn) btn.disabled = true;
+
+            // Optimistisch sofort anzeigen (ohne Blend-Animation)
+            const prevMessages = activeQuestionMessages;
+            const optimistic = {
+                id: `tmp-${Date.now()}`,
+                thread_id: activeQuestion.id,
+                sender: 'student',
+                content: text,
+                created_at: new Date().toISOString()
+            };
+            // Optimistische ID vor dem Rendern als "gesehen" markieren → keine q-bubble Animation
+            qSeenMsgIds.add(optimistic.id);
+            activeQuestionMessages = [...prevMessages, optimistic];
+            renderQuestionMessages(activeQuestionMessages, false);
+            if (input) { input.value = ''; autoGrowQuestionInput(); }
+
+            try {
+                const res = await workerFetch(`/api/questions/${encodeURIComponent(activeQuestion.id)}/messages`, {
+                    method: 'POST',
+                    body: { text, code: activeQuestion.access_code || '' }
+                });
+                if (res && res.error) throw new Error(res.error);
+                await refreshActiveQuestionThread();
+                await loadMyQuestions();
+            } catch (e) {
+                // Optimistische Nachricht zurücknehmen
+                activeQuestionMessages = prevMessages;
+                renderQuestionMessages(prevMessages, false);
+                if (input) { input.value = text; autoGrowQuestionInput(); input.focus(); }
+                const msg = (e && e.code === 'RATE_LIMITED')
+                    ? rateLimitMessage(e, 'Fragen')
+                    : ((e && e.message && !/Worker error/.test(e.message)) ? e.message : 'Nachricht konnte nicht gesendet werden. Versuch es gleich erneut');
+                showToast(msg, 'error');
+            } finally {
+                isSendingMessage = false;
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        function deleteActiveQuestionThread() {
+            const btn = document.getElementById('questionDeleteThreadBtn');
+            if (!btn || !activeQuestion) return;
+            // Schönen In-Seite-Modal öffnen statt hässlichem Browser-Alert
+            const modal = document.getElementById('questionDeleteConfirmModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                void modal.offsetWidth;
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                const container = document.getElementById('questionDeleteConfirmContainer');
+                if (container) {
+                    container.classList.remove('scale-95');
+                    container.classList.add('scale-100');
+                }
+                window._pendingDeleteId = String(activeQuestion.id);
+                window._pendingDeleteCode = activeQuestion.access_code || '';
+                return;
+            }
+            // Fallback falls Modal nicht gefunden wird
+            const id = String(activeQuestion.id);
+            const code = activeQuestion.access_code || '';
+            doDeleteQuestionThread(id, code);
+        }
+
+        // Lösch-Bestätigungs-Modal: Abbrechen
+        document.getElementById('questionDeleteConfirmCancelBtn')?.addEventListener('click', () => {
+            const modal = document.getElementById('questionDeleteConfirmModal');
+            if (modal) {
+                modal.classList.remove('opacity-100');
+                modal.classList.add('opacity-0');
+                const container = document.getElementById('questionDeleteConfirmContainer');
+                if (container) {
+                    container.classList.remove('scale-100');
+                    container.classList.add('scale-95');
+                }
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+            window._pendingDeleteId = null;
+            window._pendingDeleteCode = null;
+        });
+
+        // Lösch-Bestätigungs-Modal: Ja, löschen
+        document.getElementById('questionDeleteConfirmDeleteBtn')?.addEventListener('click', () => {
+            const modal = document.getElementById('questionDeleteConfirmModal');
+            if (modal) {
+                modal.classList.remove('opacity-100');
+                modal.classList.add('opacity-0');
+                const container = document.getElementById('questionDeleteConfirmContainer');
+                if (container) {
+                    container.classList.remove('scale-100');
+                    container.classList.add('scale-95');
+                }
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+            const id = window._pendingDeleteId;
+            const code = window._pendingDeleteCode;
+            window._pendingDeleteId = null;
+            window._pendingDeleteCode = null;
+            if (id) doDeleteQuestionThread(id, code);
+        });
+
+        async function doDeleteQuestionThread(id, code) {
+            try {
+                const res = await workerFetch(`/api/questions/${encodeURIComponent(id)}${code ? `?code=${encodeURIComponent(code)}` : ''}`, { method: 'DELETE' });
+                if (res && res.error) { showToast(res.error, 'error'); return; }
+                if (code) removeQCode(code);
+                showToast('Frage und Chat gelöscht', 'success');
+                backToQuestionList();
+            } catch (e) {
+                showToast(questionErrorMessage(e, 'Löschen fehlgeschlagen — bitte erneut versuchen'), 'error');
+            }
+        }
+
+        // ---------- Modal: Neue Frage stellen ----------
+
+        function openQuestionModal() {
+            const modal = document.getElementById('questionModal');
+            const container = document.getElementById('questionModalContainer');
+            if (!modal) return;
+            document.getElementById('questionModalFormWrap') && document.getElementById('questionModalFormWrap').classList.remove('hidden');
+            document.getElementById('questionModalSuccessWrap') && document.getElementById('questionModalSuccessWrap').classList.add('hidden');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                container && container.classList.remove('scale-95');
+            }, 10);
+            setTimeout(() => {
+                const s = document.getElementById('questionSubject');
+                if (s) s.focus({ preventScroll: true });
+            }, 260);
+        }
+
+        function closeQuestionModal() {
+            const modal = document.getElementById('questionModal');
+            const container = document.getElementById('questionModalContainer');
+            if (!modal) return;
+            modal.classList.add('opacity-0');
+            container && container.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function handleQuestionSubmit(event) {
+            event.preventDefault();
+            const subjectEl = document.getElementById('questionSubject');
+            const textEl = document.getElementById('questionText');
+            const btn = document.getElementById('questionSubmitBtn');
+            const subject = (subjectEl && subjectEl.value || '').trim();
+            const text = (textEl && textEl.value || '').trim();
+
+            setQFieldError('questionSubjectError', subject.length < 3 ? 'Bitte gib eine kurze Überschrift ein (mind. 3 Zeichen)' : '');
+            setQFieldError('questionTextError', text.length < 3 ? 'Bitte schreibe deine Frage (mind. 3 Zeichen)' : '');
+            if (subject.length < 3 || text.length < 3) return;
+
+            const original = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<span class="flex items-center gap-2"><i class="fa-solid fa-circle-notch fa-spin"></i> Senden …</span>'; }
+
+            try {
+                const res = await workerFetch('/api/questions', {
+                    method: 'POST',
+                    body: { subject, text, deviceId }
+                });
+                if (!res || res.error) throw new Error((res && res.error) || 'Frage konnte nicht gesendet werden');
+
+                addQCode(res.code);
+                activeQuestion = res.thread || null;
+                activeQuestionMessages = res.messages || [];
+                if (activeQuestion) markQSeen(activeQuestion.id, activeQuestion.updated_at);
+
+                const codeEl = document.getElementById('newQuestionCode');
+                if (codeEl) codeEl.textContent = res.code;
+                // Erfolgs-Modal mit Code anzeigen (nicht schließen!)
+                document.getElementById('questionModalFormWrap') && document.getElementById('questionModalFormWrap').classList.add('hidden');
+                document.getElementById('questionModalSuccessWrap') && document.getElementById('questionModalSuccessWrap').classList.remove('hidden');
+                if (subjectEl) subjectEl.value = '';
+                if (textEl) textEl.value = '';
+                await loadMyQuestions();
+                // Zum Fragen-Chat wechseln, aber Erfolgs-Modal bleibt sichtbar bis User klickt
+            } catch (e) {
+                const msg = (e && e.code === 'RATE_LIMITED')
+                    ? rateLimitMessage(e, 'neue Fragen')
+                    : ((e && e.message && !/Worker error/.test(e.message)) ? e.message : 'Frage konnte nicht gesendet werden. Versuch es gleich erneut');
+                showToast(msg, 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = original; }
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
         function renderIdeaTimelineHtml(ideaId) {
             const entries = ideaTimelineCache[ideaId] || [];
             if (!entries.length) return '';
@@ -2326,9 +3918,9 @@ async function syncVotesWithServer() {
                         <div class="timeline-fade-overlay absolute inset-x-0 bottom-0 pointer-events-none"
                              style="height: 50px; background: linear-gradient(to bottom,
                                 rgba(11,15,23,0) 0%,
-                                rgba(11,15,23,0.3) 30%,
-                                rgba(11,15,23,0.8) 70%,
-                                rgba(11,15,23,1) 100%);
+                                rgba(11,15,23,0.2) 30%,
+                                rgba(11,15,23,0.55) 70%,
+                                rgba(11,15,23,0.75) 100%);
                              transition: opacity 0.4s ease;
                              opacity: ${isExpanded ? '0' : '1'};"></div>` : ''}
                     </div>
